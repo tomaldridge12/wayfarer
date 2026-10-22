@@ -1,0 +1,4 @@
+name: McDev
+version: ${version}
+main: dev.tom.mcdev.McDevPlugin
+api-version: "26.3"
