@@ -187,9 +187,30 @@ class BannerConfigParserTest {
         assertEquals(30, cleaver.edgePercent());
         assertEquals(null, cleaver.trimPattern());
         assertFalse(set.relics().containsKey("netherite"));
-        assertTrue(set.problems().stream().anyMatch(p -> p.contains("is ExcellentEnchants installed?")));
+        assertTrue(set.problems().stream().anyMatch(p -> p.contains("excellentenchants:vampire not found")));
         assertTrue(set.problems().stream().anyMatch(p -> p.contains("lowered to its maximum 3")));
         assertTrue(set.problems().stream().anyMatch(p -> p.contains("trim 'wild:gold' ignored")));
         assertTrue(set.problems().stream().anyMatch(p -> p.contains("unknown item 'netherite_axe'")));
+    }
+
+    @Test
+    void withoutExcellentEnchantsItsEnchantsAreSetAsideNotProblems() {
+        Vocabulary noPlugin = new Vocabulary() {
+            public boolean isMob(String n) { return n.equals("zombie"); }
+            public boolean isPattern(String n) { return true; }
+            public boolean isColour(String n) { return true; }
+            public boolean isSpawnReason(String n) { return true; }
+            public boolean isParticle(String n) { return true; }
+            public boolean isEffect(String n) { return true; }
+            @Override public int enchantMax(String k) { return k.startsWith("minecraft:") ? 5 : -1; }
+            @Override public boolean hasExcellentEnchants() { return false; }
+        };
+        Map<String, Object> root = new LinkedHashMap<>(root(ordered("zombie", List.of("zombie")), ordered()));
+        root.put("relics", ordered("cleaver", ordered("family", "zombie", "kills", 400, "item", "iron_axe",
+                "enchants", ordered("sharpness", 2, "excellentenchants:vampire", 1, "excellentenchants:rage", 1))));
+        BannerSet set = BannerConfigParser.parse(root, noPlugin);
+        assertEquals(List.of(), set.problems());
+        assertEquals(List.of("excellentenchants:rage", "excellentenchants:vampire"), set.missingOptionalEnchants());
+        assertEquals(Map.of("minecraft:sharpness", 2), set.findRelic("cleaver").orElseThrow().enchants());
     }
 }

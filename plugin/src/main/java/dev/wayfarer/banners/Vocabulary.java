@@ -27,6 +27,11 @@ public interface Vocabulary {
         return 10;
     }
 
+    /** Whether the optional ExcellentEnchants plugin is installed. */
+    default boolean hasExcellentEnchants() {
+        return true;
+    }
+
     default boolean isTrimPattern(String name) {
         return true;
     }

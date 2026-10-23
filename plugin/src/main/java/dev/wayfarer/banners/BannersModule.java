@@ -95,6 +95,9 @@ public final class BannersModule implements Module {
         setTask = new WayfarerSetTask(plugin, relics, () -> setSettings);
         setTimer = plugin.getServer().getScheduler().runTaskTimer(plugin, setTask::run,
                 WayfarerSetTask.PERIOD_TICKS, WayfarerSetTask.PERIOD_TICKS);
+        // After every plugin has enabled, so ExcellentEnchants can answer.
+        plugin.getServer().getScheduler().runTask(plugin,
+                () -> ExcellentEnchantsCheck.run(plugin.getServer(), loaded, core.logger()));
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
@@ -339,6 +342,7 @@ public final class BannersModule implements Module {
         try {
             load();
             warnInert();
+            ExcellentEnchantsCheck.run(plugin.getServer(), loaded, core.logger());
             core.logger().info("Banner labels refreshed: " + placed.labels().refresh(placed.registry()));
             sender.sendMessage("Banners reloaded: " + loaded.banners().size() + " banners, "
                     + loaded.problems().size() + " problems (see log)");

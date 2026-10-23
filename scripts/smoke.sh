@@ -55,15 +55,18 @@ check() { # log file, pattern
 }
 
 fail=0
+LOGS=build/smoke-logs
+rm -rf "$LOGS" && mkdir -p "$LOGS"
 rm -f "$CFG"
 rm -rf "$DATA"
-LOG1=$(mktemp); boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 400" "mobbanners setkills $PLAYER all 250" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world" "mobbanners placehead $PLAYER zombie 2 100 0" "mobbanners forcedrop $PLAYER2 skeleton" "mobbanners forcedrop $PLAYER2 relic:zombie_weapon_2" "mobbanners progress $PLAYER2"
+LOG1=$LOGS/log1.log; boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 400" "mobbanners setkills $PLAYER all 250" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world" "mobbanners placehead $PLAYER zombie 2 100 0" "mobbanners forcedrop $PLAYER2 skeleton" "mobbanners forcedrop $PLAYER2 relic:zombie_weapon_2" "mobbanners progress $PLAYER2"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Wayfarer enabled"
 check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
 check "$LOG1" "Banner items built: 5 of 5"
 check "$LOG1" "Ladder loaded: 5 trophy heads, 21 relics"
 check "$LOG1" "Relic items built: 21 of 21"
+check "$LOG1" "relic enchants can still be found outside Wayfarer"
 check "$LOG1" "Banner feedback: action bar on, damage numbers on (max 40), edge particles off, marker effect off (luck)"
 check "$LOG1" "Banners reloaded: 5 banners, 0 problems"
 check "$LOG1" "Unknown banner 'nope'"
@@ -83,7 +86,7 @@ check "$LOG1" "$PLAYER2 earned relic zombie_weapon_2 by forced drop"
 check "$LOG1" "✔  Skeleton Banner"
 grep -q '"version":3' "$DATA/banners/$PLAYER.json" && echo "PASS: player file written with version" || { echo "FAIL: player file"; fail=1; }
 
-LOG1B=$(mktemp); boot "$LOG1B" "mobbanners progress $PLAYER" "mobbanners progress $PLAYER2" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"
+LOG1B=$LOGS/log1b.log; boot "$LOG1B" "mobbanners progress $PLAYER" "mobbanners progress $PLAYER2" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"
 check "$LOG1B" "✔  Zombie Banner"
 check "$LOG1B" "✔  Zombie Trophy"
 check "$LOG1B" "✔  Zombie Cleaver"
@@ -96,7 +99,7 @@ check "$LOG1B" "2 label(s) shown in chunk 0,0"
 check "$LOG1B" "Banner labels refreshed: 2"
 
 printf 'version: 1\nenabled: false\n' >"$CFG"
-LOG2=$(mktemp); boot "$LOG2"
+LOG2=$LOGS/log2.log; boot "$LOG2"
 check "$LOG2" "Module banners skipped (disabled in config)"
 
 # Boot 4: without ExcellentEnchants, relics still build and only lose those enchants.
@@ -106,9 +109,9 @@ if [ -n "$EE" ]; then
   mkdir -p "$RUN/plugins-off"
   mv "$EE" "$RUN/plugins-off/"
   trap 'rm -f "$CFG"; mv "$RUN"/plugins-off/*.jar "$RUN/plugins/" 2>/dev/null || true' EXIT
-  LOG4=$(mktemp); boot "$LOG4"
+  LOG4=$LOGS/log4.log; boot "$LOG4"
   check "$LOG4" "Relic items built: 21 of 21"
-  check "$LOG4" "(is ExcellentEnchants installed?)"
+  check "$LOG4" "ExcellentEnchants is not installed; relics are given without its enchants"
   check "$LOG4" "Wayfarer enabled"
   mv "$RUN"/plugins-off/*.jar "$RUN/plugins/"
 else
@@ -116,7 +119,7 @@ else
 fi
 
 printf 'banners: [unclosed\n' >"$CFG"
-LOG3=$(mktemp); boot "$LOG3"
+LOG3=$LOGS/log3.log; boot "$LOG3"
 check "$LOG3" "Module banners failed to start, skipped"
 check "$LOG3" "Wayfarer enabled"
 traces=0

@@ -81,4 +81,9 @@ final class PaperVocabulary implements Vocabulary {
         NamespacedKey k = NamespacedKey.fromString(name);
         return k != null && Registry.TRIM_MATERIAL.get(k) != null;
     }
+
+    @Override
+    public boolean hasExcellentEnchants() {
+        return org.bukkit.Bukkit.getPluginManager().getPlugin("ExcellentEnchants") != null;
+    }
 }

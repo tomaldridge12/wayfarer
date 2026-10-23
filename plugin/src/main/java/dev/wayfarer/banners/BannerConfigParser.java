@@ -21,6 +21,7 @@ public final class BannerConfigParser {
 
     private final Vocabulary vocabulary;
     private final List<String> problems = new ArrayList<>();
+    private final java.util.Set<String> missingOptional = new java.util.TreeSet<>();
 
     private BannerConfigParser(Vocabulary vocabulary) {
         this.vocabulary = vocabulary;
@@ -57,7 +58,8 @@ public final class BannerConfigParser {
             }
         });
         CountingSettings counting = CountingSettings.parse(root.get("counting"), vocabulary, problems);
-        return new BannerSet(families, banners, heads, relics, counting, drops, List.copyOf(problems));
+        return new BannerSet(families, banners, heads, relics, counting, drops, List.copyOf(problems),
+                List.copyOf(missingOptional));
     }
 
     /** The fields every ladder reward shares. */
@@ -160,9 +162,11 @@ public final class BannerConfigParser {
                 key = "minecraft:" + key;
             }
             int max = vocabulary.enchantMax(key);
-            if (max < 0) {
+            if (max < 0 && key.startsWith("excellentenchants:") && !vocabulary.hasExcellentEnchants()) {
+                missingOptional.add(key); // the optional plugin is absent: one summary warning, not a problem each
+            } else if (max < 0) {
                 problems.add("Relic " + relicId + ": enchant " + key + " not found"
-                        + (key.startsWith("excellentenchants:") ? " (is ExcellentEnchants installed?)" : "") + "; left out");
+                        + (key.startsWith("excellentenchants:") ? " (check the name in ExcellentEnchants)" : "") + "; left out");
             } else if (!(v instanceof Number n) || n.intValue() < 1) {
                 problems.add("Relic " + relicId + ": enchant " + key + " needs a level of 1 or more; left out");
             } else {

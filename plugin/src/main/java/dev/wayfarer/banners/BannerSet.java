@@ -6,7 +6,15 @@ import java.util.Map;
 /** The valid families and banners from one load, plus a clear message for everything rejected. */
 public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
         Map<String, HeadDefinition> heads, Map<String, RelicDefinition> relics,
-        CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems) {
+        CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems,
+        List<String> missingOptionalEnchants) {
+
+    /** Without the optional ExcellentEnchants plugin its enchants are left out of relics, listed here (not a problem). */
+    public BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
+            Map<String, HeadDefinition> heads, Map<String, RelicDefinition> relics,
+            CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems) {
+        this(families, banners, heads, relics, counting, drops, problems, List.of());
+    }
 
     /** A chance (0 to 1) that killing this mob type awards the banner. */
     public record Drop(String bannerId, double chance) {
