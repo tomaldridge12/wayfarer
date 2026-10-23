@@ -102,6 +102,77 @@ public final class BannerText {
                 .append(plain(" +" + DamageNumbers.format(split.extra()), EXTRA).decorate(TextDecoration.BOLD));
     }
 
+    private static final int BAR_WIDTH = 25;
+    static final TextColor EARNED = TextColor.color(0xFFC94A);
+
+    /**
+     * The /mobbanners progress card: a header, the all-mobs count, then each family with its rewards as
+     * fixed-width bars (chat is not monospaced, so bars go first to line up). Hovering a reward shows its item
+     * tooltip; with {@code claimButtons}, earned rewards get a clickable claim.
+     */
+    public static List<Component> progress(String who, PlayerData data, BannerSet set, boolean claimButtons) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(plain("⚔ ", NamedTextColor.WHITE).append(gradient("Kill progress", 0xFFE7A0, 0xFF9F1C)
+                .decorate(TextDecoration.BOLD)).append(plain(" · " + who, NamedTextColor.GRAY)));
+        lines.add(plain("All mobs", NamedTextColor.WHITE).append(plain(" · ", NamedTextColor.DARK_GRAY))
+                .append(plain(count(data.kills(MobFamily.ALL)), NamedTextColor.GRAY)));
+        java.util.Map<String, List<Reward>> byFamily = new java.util.LinkedHashMap<>();
+        set.rewards().forEach(r -> byFamily.computeIfAbsent(r.family(), f -> new ArrayList<>()).add(r));
+        byFamily.forEach((family, rewards) -> {
+            lines.add(plain(title(family), NamedTextColor.WHITE).append(plain(" · ", NamedTextColor.DARK_GRAY))
+                    .append(plain(count(data.kills(family)), NamedTextColor.GRAY)));
+            for (Reward reward : rewards) {
+                lines.add(rewardLine(reward, data, set, claimButtons));
+            }
+        });
+        if (byFamily.isEmpty()) {
+            lines.add(plain("No rewards are set up yet.", NamedTextColor.DARK_GRAY));
+        }
+        return lines;
+    }
+
+    private static Component rewardLine(Reward reward, PlayerData data, BannerSet set, boolean claimButtons) {
+        int kills = data.kills(reward.family());
+        boolean earned = data.isEarned(reward.rewardKey());
+        int filled = earned ? BAR_WIDTH : (int) Math.min(BAR_WIDTH, (long) kills * BAR_WIDTH / Math.max(1, reward.kills()));
+        Component bar = plain("|".repeat(filled), earned ? EARNED : DAMAGE_UP)
+                .append(plain("|".repeat(BAR_WIDTH - filled), NamedTextColor.DARK_GRAY));
+        Component status = earned ? plain(" ✔", EARNED)
+                : plain(" " + Math.min(kills, reward.kills()) + "/" + reward.kills(), NamedTextColor.GRAY);
+        Component name = rewardName(reward, set);
+        Component line = plain("  ", NamedTextColor.GRAY).append(bar).append(status)
+                .append(plain("  ", NamedTextColor.GRAY)).append(name);
+        if (earned && claimButtons) {
+            line = line.append(plain("  ", NamedTextColor.GRAY)).append(plain("[Claim copy]", GUARD)
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(
+                            plain("Get another " + reward.name() + " if you lost yours", NamedTextColor.GRAY)))
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand(
+                            "/mobbanners claim " + reward.rewardKey())));
+        }
+        return line;
+    }
+
+    /** The reward's themed name; hovering it shows the same tooltip as the item. */
+    private static Component rewardName(Reward reward, BannerSet set) {
+        if (RewardKey.BANNER.equals(reward.rewardKey().type())) {
+            var def = set.find(reward.rewardKey().id());
+            if (def.isPresent()) {
+                MobFamily family = set.families().get(def.get().family());
+                Component tooltip = name(def.get());
+                for (Component line : lore(def.get(), family == null ? List.of() : family.mobs())) {
+                    tooltip = tooltip.append(Component.newline()).append(line);
+                }
+                return name(def.get()).hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(tooltip));
+            }
+        }
+        return plain(reward.name(), NamedTextColor.WHITE);
+    }
+
+    /** "1 kill", "1,342 kills". */
+    static String count(int kills) {
+        return String.format(Locale.ROOT, "%,d", kills) + (kills == 1 ? " kill" : " kills");
+    }
+
     private static Component effects(BannerDefinition def) {
         Component out = Component.empty();
         boolean any = false;

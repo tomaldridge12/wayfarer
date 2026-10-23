@@ -81,4 +81,48 @@ class BannerTextTest {
         assertEquals("Cave Spider and Spider", BannerText.mobList(Set.of("spider", "cave_spider")));
         assertEquals("Enderman", BannerText.mobList(Set.of("enderman")));
     }
+
+    @Test
+    void progressCardShowsBarsCountsAndEarnedRewards() {
+        BannerDefinition skeleton = new BannerDefinition("skeleton", "Skeleton Banner", "white", List.of(), "skeleton", 100, 10, 10, 16);
+        java.util.Map<String, BannerDefinition> banners = new java.util.LinkedHashMap<>();
+        banners.put("zombie", ZOMBIE);
+        banners.put("skeleton", skeleton);
+        BannerSet set = new BannerSet(java.util.Map.of(
+                "zombie", new MobFamily("zombie", Set.of("zombie")),
+                "skeleton", new MobFamily("skeleton", Set.of("skeleton"))),
+                banners, CountingSettings.defaults(), List.of());
+        PlayerData data = new PlayerData();
+        data.setKills(MobFamily.ALL, 1342);
+        data.setKills("zombie", 52);
+        data.setKills("skeleton", 130);
+        data.markEarned(RewardKey.banner("skeleton"));
+
+        List<String> lines = BannerText.progress("Tom", data, set, true).stream().map(BannerTextTest::plain).toList();
+        assertEquals(List.of(
+                "⚔ Kill progress · Tom",
+                "All mobs · 1,342 kills",
+                "Zombie · 52 kills",
+                "  " + "|".repeat(25) + " 52/100  Zombie Banner",
+                "Skeleton · 130 kills",
+                "  " + "|".repeat(25) + " ✔  Skeleton Banner  [Claim copy]"), lines);
+        assertEquals(BannerText.EARNED, colourOf(BannerText.progress("Tom", data, set, true).getLast(), "|".repeat(25)));
+        // Viewing someone else's card shows no claim button.
+        assertTrue(plain(BannerText.progress("Tom", data, set, false).getLast()).endsWith("Skeleton Banner"));
+        assertEquals("1 kill", BannerText.count(1));
+    }
+
+    /** The colour of the first text piece exactly equal to {@code content}, searching the whole component tree. */
+    private static TextColor colourOf(Component c, String content) {
+        if (c instanceof net.kyori.adventure.text.TextComponent t && t.content().equals(content)) {
+            return t.color();
+        }
+        for (Component child : c.children()) {
+            TextColor found = colourOf(child, content);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
 }

@@ -304,13 +304,10 @@ public final class BannersModule implements Module {
             return;
         }
         BannerSet set = loaded;
-        withData(sender, target, data -> {
-            sender.sendMessage("Progress for " + target + ":");
-            sender.sendMessage("all mobs: " + data.kills(MobFamily.ALL) + " kills");
-            set.rewards().forEach(reward -> sender.sendMessage(describe(reward) + ": "
-                    + Math.min(data.kills(reward.family()), reward.kills()) + "/" + reward.kills()
-                    + (data.isEarned(reward.rewardKey()) ? " (earned)" : "")));
-        });
+        String name = java.util.Optional.ofNullable(plugin.getServer().getOfflinePlayer(target).getName())
+                .orElse(target.toString());
+        boolean own = sender instanceof Player p && p.getUniqueId().equals(target);
+        withData(sender, target, data -> BannerText.progress(name, data, set, own).forEach(sender::sendMessage));
     }
 
     void setKills(CommandSender sender, String targetName, String familyOrBanner, int kills) {
