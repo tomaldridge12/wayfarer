@@ -8,8 +8,13 @@ Kill enough of a mob family (zombies, skeletons, spiders, creepers, endermen) an
 - **Trophy heads** that show your live kill count when placed.
 - **Relics**: a themed weapon and armour piece per family in two tiers, with a family edge, perks and exclusive enchants. Wear relic armour from four families for the Wayfarer set bonus. Relics are meant as a trade-off against netherite, not an upgrade.
 - An all-mobs ladder topped by the Wayfarer's Blade.
+- **Bosses**: nine bosses (23 variants) rated 1 to 5 stars, built only on the Paper API. They appear as rare biome spawns and
+  as guardians of structures (pyramids, monuments, bastions, strongholds and more), fight with abilities and a second phase,
+  and give everyone who helped their own loot: boss heads, materials, a boss ladder (banner, head, regalia), and rare
+  Ascended relics and Legendaries.
 
-Everything is tunable in `plugins/Wayfarer/banners.yml`. Commands live under `/mobbanners` (`progress`, `claim`, and operator tools).
+Everything is tunable in `plugins/Wayfarer/banners.yml` and `plugins/Wayfarer/bosses.yml`. Commands live under `/mobbanners`
+(`progress`, `claim`, and operator tools) and `/wayfarer boss` (operator tools: `spawn`, `spawnall`, `list`, `killall`, `defeat`).
 
 ## Optional plugins
 
