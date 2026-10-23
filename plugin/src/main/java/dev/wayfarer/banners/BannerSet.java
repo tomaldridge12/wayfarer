@@ -11,6 +11,18 @@ public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefin
         return java.util.Optional.ofNullable(banners.get(id));
     }
 
+    /** The family a mob type belongs to, or null. */
+    public String familyOf(String mobType) {
+        String mob = mobType.toLowerCase(java.util.Locale.ROOT);
+        return families.values().stream().filter(f -> f.mobs().contains(mob)).map(MobFamily::id)
+                .findFirst().orElse(null);
+    }
+
+    /** The largest boost zone radius of any banner, 0 when there are none. */
+    public int maxRadius() {
+        return banners.values().stream().mapToInt(BannerDefinition::radius).max().orElse(0);
+    }
+
     public static BannerSet empty() {
         return new BannerSet(Map.of(), Map.of(), CountingSettings.defaults(), List.of());
     }

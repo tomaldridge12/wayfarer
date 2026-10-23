@@ -77,6 +77,24 @@ public final class PlacedBannerRegistry {
                 .map(b -> new Placed(c.getKey().world(), b.getKey(), b.getValue())));
     }
 
+    /** Placed banners in loaded chunks overlapping the square of this radius around (x, z). */
+    public Stream<Placed> within(UUID world, double x, double z, int radius) {
+        int minX = (int) Math.floor(x - radius) >> 4;
+        int maxX = (int) Math.floor(x + radius) >> 4;
+        int minZ = (int) Math.floor(z - radius) >> 4;
+        int maxZ = (int) Math.floor(z + radius) >> 4;
+        Stream.Builder<Placed> out = Stream.builder();
+        for (int cx = minX; cx <= maxX; cx++) {
+            for (int cz = minZ; cz <= maxZ; cz++) {
+                Map<BlockPos, String> inChunk = chunks.get(new ChunkRef(world, cx, cz));
+                if (inChunk != null) {
+                    inChunk.forEach((pos, id) -> out.add(new Placed(world, pos, id)));
+                }
+            }
+        }
+        return out.build();
+    }
+
     public int chunkCount() {
         return chunks.size();
     }

@@ -34,6 +34,7 @@ public final class BannersModule implements Module {
     private BannerListener listener;
     private PlacedBanners placed;
     private PlacedBannerListener placedListener;
+    private BoostListener boostListener;
     private BukkitTask saveTask;
     private volatile BannerSet loaded = BannerSet.empty();
 
@@ -61,6 +62,8 @@ public final class BannersModule implements Module {
         placed = new PlacedBanners(core.chunkData(), items, core.logger());
         placedListener = new PlacedBannerListener(placed, items, this::banners);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
+        boostListener = new BoostListener(new BoostGlue(placed, this::banners));
+        plugin.getServer().getPluginManager().registerEvents(boostListener, plugin);
         placed.loadAll(plugin.getServer());
         core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "
                 + placed.registry().all().count() + " banners");
@@ -81,6 +84,9 @@ public final class BannersModule implements Module {
         }
         if (placedListener != null) {
             HandlerList.unregisterAll(placedListener);
+        }
+        if (boostListener != null) {
+            HandlerList.unregisterAll(boostListener);
         }
         if (placed != null) {
             long count = placed.registry().all().count();

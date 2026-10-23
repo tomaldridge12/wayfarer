@@ -26,8 +26,7 @@ public final class BannerRules {
                 || kill.ageTicks() < s.minLifetimeTicks()) {
             return Optional.empty();
         }
-        String mob = kill.mobType().toLowerCase(Locale.ROOT);
-        return set.families().values().stream().filter(f -> f.mobs().contains(mob)).map(MobFamily::id).findFirst();
+        return Optional.ofNullable(set.familyOf(kill.mobType()));
     }
 
     /** Counts a kill for the player and returns any banners that kill newly earned. */
