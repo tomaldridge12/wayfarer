@@ -95,6 +95,14 @@ public final class BannerText {
         return lines;
     }
 
+    /** Action bar when the Wayfarer set completes or breaks. */
+    public static Component setActive(boolean on, WayfarerSet.Settings s) {
+        return on ? gradient("✦ Wayfarer set ✦", 0xFFE7A0, 0xFF9F1C).decorate(TextDecoration.BOLD)
+                .append(plain("  −" + s.reductionPercent() + "% damage from hostile mobs, +" + s.hearts() + " ❤",
+                        NamedTextColor.GRAY))
+                : plain("Wayfarer set broken", NamedTextColor.DARK_GRAY);
+    }
+
     /** The lore of a relic whose id config no longer defines. */
     public static Component inertRelic() {
         return plain("Inactive: this relic is not in config", NamedTextColor.DARK_GRAY);

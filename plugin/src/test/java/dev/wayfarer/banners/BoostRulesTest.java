@@ -202,4 +202,13 @@ class BoostRulesTest {
         Party cow = new Party(false, "cow", new Point(WORLD, 90, 64, 90), false, List.of());
         assertTrue(hit(armed(90, 90, blade), null, cow, set).isEmpty());
     }
+
+    @Test
+    void wayfarerSetAddsToFamilyArmourAgainstHostileMobs() {
+        BannerSet set = set(banner("z", "zombie", 10, 10, 16));
+        Party wearing = armed(90, 90, new BoostRules.Edge("zombie_armour", "zombie", 25),
+                WayfarerSet.edge(WayfarerSet.Settings.defaults()));
+        assertEquals(35, hit(mob("zombie", 90, 90), null, wearing, set).orElseThrow().boost().percent());
+        assertEquals(10, hit(mob("witch", 90, 90), null, wearing, set).orElseThrow().boost().percent());
+    }
 }

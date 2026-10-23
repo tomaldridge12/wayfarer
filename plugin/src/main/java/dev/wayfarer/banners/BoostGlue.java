@@ -18,11 +18,14 @@ final class BoostGlue {
     private final PlacedBanners placed;
     private final Supplier<BannerSet> banners;
     private final RelicItems relics;
+    private final Supplier<WayfarerSet.Settings> setSettings;
 
-    BoostGlue(PlacedBanners placed, Supplier<BannerSet> banners, RelicItems relics) {
+    BoostGlue(PlacedBanners placed, Supplier<BannerSet> banners, RelicItems relics,
+            Supplier<WayfarerSet.Settings> setSettings) {
         this.placed = placed;
         this.banners = banners;
         this.relics = relics;
+        this.setSettings = setSettings;
     }
 
     Optional<Applied> apply(EntityDamageByEntityEvent event) {
@@ -37,6 +40,9 @@ final class BoostGlue {
         java.util.List<BoostRules.Edge> guard = new java.util.ArrayList<>();
         if (hit instanceof Player pl) {
             guard.addAll(relics.armourEdges(pl));
+            if (WayfarerSet.complete(relics.wornArmour(pl), setSettings.get())) {
+                guard.add(WayfarerSet.edge(setSettings.get()));
+            }
             if (projectile) {
                 // Projectile-ward perks act like an armour edge against that family's arrows.
                 relics.activePerks(pl).stream().filter(p -> p.type() == Perk.Type.PROJECTILE_WARD)

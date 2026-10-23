@@ -90,6 +90,13 @@ banners:
     damage-reduction: 10
     radius: 16
 
+# The Wayfarer set: relic armour from this many different families worn at once (head, chest, legs, feet, off-hand
+# charm; any tier) gives less damage from all hostile mobs and extra hearts.
+wayfarer-set:
+  families: 4
+  damage-reduction: 10
+  hearts: 1
+
 # Trophy heads on each family's ladder. Placed, a head shows its earner's live kill count.
 heads:
   zombie:

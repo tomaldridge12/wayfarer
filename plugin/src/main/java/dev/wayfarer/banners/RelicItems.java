@@ -95,6 +95,18 @@ final class RelicItems {
         return relicId(item).flatMap(id -> banners.get().findRelic(id)).filter(def -> def.slot() == usedAs);
     }
 
+    /** Relic armour a player has on, each in the slot it is meant for (head, chest, legs, feet, off-hand). */
+    List<RelicDefinition> wornArmour(org.bukkit.entity.Player player) {
+        var inv = player.getInventory();
+        List<RelicDefinition> worn = new java.util.ArrayList<>();
+        relicUsedAs(inv.getHelmet(), RelicDefinition.Slot.HEAD).ifPresent(worn::add);
+        relicUsedAs(inv.getChestplate(), RelicDefinition.Slot.CHEST).ifPresent(worn::add);
+        relicUsedAs(inv.getLeggings(), RelicDefinition.Slot.LEGS).ifPresent(worn::add);
+        relicUsedAs(inv.getBoots(), RelicDefinition.Slot.FEET).ifPresent(worn::add);
+        relicUsedAs(inv.getItemInOffHand(), RelicDefinition.Slot.OFFHAND).ifPresent(worn::add);
+        return worn;
+    }
+
     /** Marks an arrow with the relic bow that fired it. */
     void tagProjectile(org.bukkit.entity.Entity projectile, String relicId) {
         tags.write(projectile, MODULE + "_shot", relicId);

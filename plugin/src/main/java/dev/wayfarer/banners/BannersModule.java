@@ -44,6 +44,9 @@ public final class BannersModule implements Module {
     private RelicItems relics;
     private RelicListener relicListener;
     private PerkListener perkListener;
+    private WayfarerSetTask setTask;
+    private BukkitTask setTimer;
+    private volatile WayfarerSet.Settings setSettings = WayfarerSet.Settings.defaults();
     private PlayerStore<PlayerData> store;
     private BannerListener listener;
     private PlacedBanners placed;
@@ -87,13 +90,16 @@ public final class BannersModule implements Module {
         plugin.getServer().getPluginManager().registerEvents(relicListener, plugin);
         perkListener = new PerkListener(plugin, relics, this::banners);
         plugin.getServer().getPluginManager().registerEvents(perkListener, plugin);
+        setTask = new WayfarerSetTask(plugin, relics, () -> setSettings);
+        setTimer = plugin.getServer().getScheduler().runTaskTimer(plugin, setTask::run,
+                WayfarerSetTask.PERIOD_TICKS, WayfarerSetTask.PERIOD_TICKS);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
                 BannerFeedback.UPDATE_TICKS, BannerFeedback.UPDATE_TICKS);
         dropListener = new DropListener(this);
         plugin.getServer().getPluginManager().registerEvents(dropListener, plugin);
-        boostListener = new BoostListener(new BoostGlue(placed, this::banners, relics), feedback, this::banners);
+        boostListener = new BoostListener(new BoostGlue(placed, this::banners, relics, () -> setSettings), feedback, this::banners);
         plugin.getServer().getPluginManager().registerEvents(boostListener, plugin);
         placed.loadAll(plugin.getServer());
         core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "
@@ -114,6 +120,12 @@ public final class BannersModule implements Module {
         }
         if (feedbackTask != null) {
             feedbackTask.cancel();
+        }
+        if (setTimer != null) {
+            setTimer.cancel();
+        }
+        if (setTask != null) {
+            setTask.clear();
         }
         if (feedback != null) {
             feedback.clear();
@@ -509,8 +521,12 @@ public final class BannersModule implements Module {
         List<String> feedbackProblems = new ArrayList<>();
         FeedbackSettings feedbackNow = FeedbackSettings.parse(raw.get("feedback"), vocabulary, feedbackProblems);
         feedbackProblems.forEach(p -> core.logger().warning("[banners] " + p));
+        WayfarerSet.Settings setNow = WayfarerSet.Settings.parse(raw.get("wayfarer-set"), feedbackProblems);
+        feedbackProblems.stream().filter(p -> p.startsWith("wayfarer-set"))
+                .forEach(p -> core.logger().warning("[banners] " + p));
         loaded = set;
         feedbackSettings = feedbackNow;
+        setSettings = setNow;
         core.logger().info("Banner feedback: action bar " + onOff(feedbackNow.actionBar()) + ", damage numbers "
                 + onOff(feedbackNow.damageNumbers()) + " (max " + feedbackNow.numbersMax() + "), edge particles "
                 + onOff(feedbackNow.edgeParticles()) + ", marker effect " + onOff(feedbackNow.markerEffect())
