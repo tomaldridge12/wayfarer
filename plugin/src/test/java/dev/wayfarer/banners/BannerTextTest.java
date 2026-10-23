@@ -143,4 +143,22 @@ class BannerTextTest {
                 BannerText.headLore(head, "Tom", "23 Oct 2026").stream().map(BannerTextTest::plain).toList());
         assertEquals("Earned at 250 zombie kills", BannerText.earned(null, 250, "zombie"));
     }
+
+    @Test
+    void relicLoreShowsRarityEdgeAndEarned() {
+        RelicDefinition cleaver = new RelicDefinition("zombie_weapon", "Zombie Cleaver", "zombie", 400, 1,
+                RelicDefinition.Slot.WEAPON);
+        assertEquals(List.of("✦ Rare Relic · Zombie family", "", " ⚔ +30% damage to Husk and Zombie", "",
+                        "Earned 23 Oct 2026 at 400 zombie kills"),
+                BannerText.relicLore(cleaver, Set.of("zombie", "husk"), "23 Oct 2026").stream().map(BannerTextTest::plain).toList());
+        RelicDefinition chest = new RelicDefinition("zombie_armour_2", "Rotguard II", "zombie", 1800, 2,
+                RelicDefinition.Slot.CHEST);
+        List<String> lore = BannerText.relicLore(chest, Set.of("zombie"), null).stream().map(BannerTextTest::plain).toList();
+        assertEquals("✦ Epic Relic · Zombie family", lore.getFirst());
+        assertEquals(" ✚ −30% damage taken from Zombie", lore.get(2));
+        RelicDefinition blade = new RelicDefinition("wayfarers_blade", "Wayfarer's Blade", MobFamily.ALL, 5000, 2,
+                RelicDefinition.Slot.WEAPON);
+        assertEquals(List.of("✦ Epic Relic · All mobs", "", " ⚔ +10% damage to every hostile mob", "",
+                "Earned at 5,000 mob kills"), BannerText.relicLore(blade, Set.of(), null).stream().map(BannerTextTest::plain).toList());
+    }
 }

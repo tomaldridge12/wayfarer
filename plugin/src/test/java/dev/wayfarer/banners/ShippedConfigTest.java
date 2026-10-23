@@ -64,6 +64,15 @@ class ShippedConfigTest {
         assertEquals(240, set.findRelic("creeper_weapon").orElseThrow().kills());
         assertEquals(MobFamily.ALL, set.findRelic("wayfarers_blade").orElseThrow().family());
         assertEquals(RelicDefinition.Slot.OFFHAND, set.findRelic("enderman_armour").orElseThrow().slot());
+        set.relics().values().forEach(r -> {
+            assertFalse(r.item().startsWith("netherite"), r.id() + " must not be netherite");
+            assertFalse(r.enchants().containsKey("minecraft:mending"), r.id() + " must not ship with Mending");
+        });
+        assertEquals(Map.of("minecraft:sharpness", 2, "minecraft:unbreaking", 2, "excellentenchants:vampire", 1,
+                "excellentenchants:rage", 1), set.findRelic("zombie_weapon").orElseThrow().enchants());
+        assertEquals("wild", set.findRelic("zombie_armour").orElseThrow().trimPattern());
+        assertEquals(40, set.findRelic("zombie_weapon_2").orElseThrow().edgePercent());
+        assertEquals(10, set.findRelic("wayfarers_blade").orElseThrow().edgePercent());
         List<String> problems = new java.util.ArrayList<>();
         FeedbackSettings feedback = FeedbackSettings.parse(root.get("feedback"), ANY, problems);
         assertEquals(List.of(), problems);

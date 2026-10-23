@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Boot Paper twice and assert log lines. Exit 0 = pass.
-# Boot 1: default config, commands, awards. Boot 1b: restart, player data and the placed banner (label) persisted. Boot 2: banners module switched off. Boot 3: unreadable banners config.
+# Boot a throwaway Paper server several times and assert log lines. Exit 0 = pass.
+# Boot 1: default config, commands, awards. Boot 1b: restart, player data, placed banner and head persisted.
+# Boot 2: banners module switched off. Boot 4: without ExcellentEnchants. Boot 3: unreadable banners config.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # A throwaway server of its own (port 25566), so the smoke test never touches server/, the world you play in.
@@ -13,9 +14,30 @@ PLAYER=00000000-0000-0000-0000-000000000001
 PLAYER2=00000000-0000-0000-0000-000000000002
 trap 'rm -f "$CFG"' EXIT
 
-boot() { # log file, then console commands to run after boot
+# Starts the server, waits for its "Done" line (not a fixed sleep), sends each console command a second apart,
+# then stops it. Boots take about 15 seconds instead of a minute.
+boot() { # log file, then console commands to run once the server is up
   local log=$1; shift
-  (sleep "${BOOT_WAIT:-45}"; for c in "$@"; do echo "$c"; sleep 3; done; echo stop) | scripts/dev.sh -PrunDir="$RUN" >"$log" 2>&1 || true
+  local fifo
+  fifo=$(mktemp -u)
+  mkfifo "$fifo"
+  scripts/dev.sh -PrunDir="$RUN" <"$fifo" >"$log" 2>&1 &
+  local pid=$!
+  exec 3>"$fifo"
+  local ticks=0
+  until grep -q 'Done (' "$log" 2>/dev/null; do
+    sleep 0.5
+    ticks=$((ticks + 1))
+    if ! kill -0 "$pid" 2>/dev/null || [ "$ticks" -gt 360 ]; then break; fi
+  done
+  for c in "$@"; do echo "$c" >&3; sleep "${CMD_WAIT:-1}"; done
+  echo stop >&3
+  exec 3>&-
+  wait "$pid" || true
+  rm -f "$fifo"
+  # Gradle returns a moment before the server process lets go of the world; wait so the next boot can start.
+  local lock="$RUN/world/session.lock" n=0
+  while [ -f "$lock" ] && lsof -t "$lock" >/dev/null 2>&1 && [ "$n" -lt 60 ]; do sleep 0.5; n=$((n + 1)); done
 }
 check() { # log file, pattern
   grep -qF "$2" "$1" && echo "PASS: $2" || { echo "FAIL: $2 (log: $1)"; fail=1; }
@@ -30,6 +52,7 @@ check "$LOG1" "Wayfarer enabled"
 check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
 check "$LOG1" "Banner items built: 5 of 5"
 check "$LOG1" "Ladder loaded: 5 trophy heads, 21 relics"
+check "$LOG1" "Relic items built: 21 of 21"
 check "$LOG1" "Banner feedback: action bar on, damage numbers on (max 40), edge particles off, marker effect off (luck)"
 check "$LOG1" "Banners reloaded: 5 banners, 0 problems"
 check "$LOG1" "Unknown banner 'nope'"
@@ -63,6 +86,22 @@ check "$LOG1B" "Banner labels refreshed: 2"
 printf 'version: 1\nenabled: false\n' >"$CFG"
 LOG2=$(mktemp); boot "$LOG2"
 check "$LOG2" "Module banners skipped (disabled in config)"
+
+# Boot 4: without ExcellentEnchants, relics still build and only lose those enchants.
+rm -f "$CFG"
+EE=$(ls "$RUN"/plugins/ExcellentEnchants-*.jar 2>/dev/null | head -1)
+if [ -n "$EE" ]; then
+  mkdir -p "$RUN/plugins-off"
+  mv "$EE" "$RUN/plugins-off/"
+  trap 'rm -f "$CFG"; mv "$RUN"/plugins-off/*.jar "$RUN/plugins/" 2>/dev/null || true' EXIT
+  LOG4=$(mktemp); boot "$LOG4"
+  check "$LOG4" "Relic items built: 21 of 21"
+  check "$LOG4" "(is ExcellentEnchants installed?)"
+  check "$LOG4" "Wayfarer enabled"
+  mv "$RUN"/plugins-off/*.jar "$RUN/plugins/"
+else
+  echo "SKIP: ExcellentEnchants is not in $RUN/plugins, so the without-it boot proves nothing"
+fi
 
 printf 'banners: [unclosed\n' >"$CFG"
 LOG3=$(mktemp); boot "$LOG3"

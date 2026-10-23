@@ -107,7 +107,62 @@ public final class BannerConfigParser {
             problems.add(where + "slot must be weapon, head, chest, legs, feet or offhand");
             return null;
         }
-        return tier == null ? null : new RelicDefinition(id, l.name(id), l.family(), l.kills(), tier, slot);
+        if (tier == null) {
+            return null;
+        }
+        String item = l.raw().get("item") == null ? null : String.valueOf(l.raw().get("item")).toLowerCase(Locale.ROOT);
+        if (item == null || !vocabulary.isItem(item)) {
+            problems.add(where + (item == null ? "missing item" : "unknown item '" + item + "'"));
+            return null;
+        }
+        Integer edge = number(l.raw(), "edge", RelicDefinition.defaultEdge(slot, tier, l.family()), 0, 100, where);
+        if (edge == null) {
+            return null;
+        }
+        String trimPattern = null;
+        String trimMaterial = null;
+        Object trim = l.raw().get("trim");
+        if (trim != null) {
+            String[] parts = String.valueOf(trim).toLowerCase(Locale.ROOT).split(":");
+            if (parts.length == 2 && vocabulary.isTrimPattern(parts[0]) && vocabulary.isTrimMaterial(parts[1])) {
+                trimPattern = parts[0];
+                trimMaterial = parts[1];
+            } else {
+                problems.add("Relic " + id + ": trim '" + trim + "' ignored (use pattern:material, e.g. wild:emerald)");
+            }
+        }
+        return new RelicDefinition(id, l.name(id), l.family(), l.kills(), tier, slot, item,
+                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge);
+    }
+
+    /**
+     * Preset enchants, `{sharpness: 2, excellentenchants:vampire: 1}`. Unknown enchants (often because
+     * ExcellentEnchants is not installed) are left out with a problem; levels above the maximum are lowered.
+     */
+    private Map<String, Integer> parseEnchants(String relicId, Object value) {
+        Map<String, Integer> out = new LinkedHashMap<>();
+        if (!(value instanceof Map<?, ?> map)) {
+            return out;
+        }
+        map.forEach((k, v) -> {
+            String key = String.valueOf(k).toLowerCase(Locale.ROOT);
+            if (key.indexOf(':') < 0) {
+                key = "minecraft:" + key;
+            }
+            int max = vocabulary.enchantMax(key);
+            if (max < 0) {
+                problems.add("Relic " + relicId + ": enchant " + key + " not found"
+                        + (key.startsWith("excellentenchants:") ? " (is ExcellentEnchants installed?)" : "") + "; left out");
+            } else if (!(v instanceof Number n) || n.intValue() < 1) {
+                problems.add("Relic " + relicId + ": enchant " + key + " needs a level of 1 or more; left out");
+            } else {
+                if (n.intValue() > max) {
+                    problems.add("Relic " + relicId + ": " + key + " " + n.intValue() + " lowered to its maximum " + max);
+                }
+                out.put(key, Math.min(n.intValue(), max));
+            }
+        });
+        return out;
     }
 
     /** `drops: {wither: 0.5}` gives a 50% chance per kill of that mob type. Bad entries are skipped alone. */

@@ -66,6 +66,36 @@ public final class BannerText {
         return lines;
     }
 
+    /** ✦ Rare Relic (cool blue) for tier I, ✦ Epic Relic (purple to gold) for tier II. */
+    public static Component rarity(int tier) {
+        return tier >= 2 ? gradient("✦ Epic Relic", 0xC77DFF, 0xFFB000).decorate(TextDecoration.BOLD)
+                : gradient("✦ Rare Relic", 0x8FD3FF, 0x2E86C1).decorate(TextDecoration.BOLD);
+    }
+
+    public static List<Component> relicLore(RelicDefinition def, Collection<String> mobs, String earnedOn) {
+        List<Component> lines = new ArrayList<>();
+        Component family = MobFamily.ALL.equals(def.family()) ? plain(" · All mobs", NamedTextColor.DARK_GRAY)
+                : plain(" · " + title(def.family()) + " family", NamedTextColor.DARK_GRAY);
+        lines.add(rarity(def.tier()).append(family));
+        lines.add(Component.empty());
+        String who = MobFamily.ALL.equals(def.family()) ? "every hostile mob"
+                : mobs.isEmpty() ? "the " + def.family() + " family" : mobList(mobs);
+        if (def.slot().armour()) {
+            lines.add(plain(" ✚ −" + def.edgePercent() + "%", GUARD).append(plain(" damage taken from " + who, NamedTextColor.GRAY)));
+        } else {
+            lines.add(plain(" ⚔ +" + def.edgePercent() + "%", DAMAGE_UP).append(plain(" damage to " + who, NamedTextColor.GRAY)));
+        }
+        lines.add(Component.empty());
+        lines.add(plain(earned(earnedOn, def.kills(), def.family()), NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, true));
+        return lines;
+    }
+
+    /** The lore of a relic whose id config no longer defines. */
+    public static Component inertRelic() {
+        return plain("Inactive: this relic is not in config", NamedTextColor.DARK_GRAY);
+    }
+
     /** "Earned 23 Oct 2026 at 250 zombie kills", or without the date when it is unknown. */
     static String earned(String earnedOn, int kills, String family) {
         String at = "at " + String.format(Locale.ROOT, "%,d", kills) + " "
@@ -211,6 +241,18 @@ public final class BannerText {
                     tooltip = tooltip.append(Component.newline()).append(line);
                 }
                 return name(def.get()).hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(tooltip));
+            }
+        }
+        if (RewardKey.RELIC.equals(reward.rewardKey().type())) {
+            var def = set.findRelic(reward.rewardKey().id());
+            if (def.isPresent()) {
+                MobFamily family = set.families().get(def.get().family());
+                Component tooltip = themed(def.get().name(), familyColour(set, def.get().family()));
+                for (Component line : relicLore(def.get(), family == null ? List.of() : family.mobs(), null)) {
+                    tooltip = tooltip.append(Component.newline()).append(line);
+                }
+                return themed(def.get().name(), familyColour(set, def.get().family()))
+                        .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(tooltip));
             }
         }
         if (RewardKey.HEAD.equals(reward.rewardKey().type())) {

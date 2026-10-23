@@ -151,8 +151,8 @@ class BannerConfigParserTest {
                 "everyone", ordered("family", "all", "kills", 10),
                 "nokills", ordered("family", "zombie")));
         root.put("relics", ordered(
-                "cleaver", ordered("family", "zombie", "kills", 400, "tier", 1, "slot", "weapon"),
-                "blade", ordered("family", "all", "kills", 5000, "tier", 2),
+                "cleaver", ordered("family", "zombie", "kills", 400, "tier", 1, "slot", "weapon", "item", "iron_axe"),
+                "blade", ordered("family", "all", "kills", 5000, "tier", 2, "item", "diamond_sword"),
                 "badslot", ordered("family", "zombie", "kills", 1, "slot", "tail"),
                 "badtier", ordered("family", "zombie", "kills", 1, "tier", 3)));
         BannerSet set = BannerConfigParser.parse(root, VOCAB);
@@ -160,5 +160,36 @@ class BannerConfigParserTest {
         assertEquals(Set.of("cleaver", "blade"), set.relics().keySet());
         assertEquals(RelicDefinition.Slot.WEAPON, set.findRelic("blade").orElseThrow().slot());
         assertEquals(4, set.problems().size());
+    }
+
+    @Test
+    void relicEnchantsAreCheckedAgainstTheServer() {
+        Vocabulary vocab = new Vocabulary() {
+            public boolean isMob(String n) { return n.equals("zombie"); }
+            public boolean isPattern(String n) { return true; }
+            public boolean isColour(String n) { return true; }
+            public boolean isSpawnReason(String n) { return true; }
+            public boolean isParticle(String n) { return true; }
+            public boolean isEffect(String n) { return true; }
+            @Override public boolean isItem(String n) { return n.equals("iron_axe"); }
+            @Override public int enchantMax(String k) { return k.equals("minecraft:sharpness") ? 5 : k.equals("minecraft:unbreaking") ? 3 : -1; }
+            @Override public boolean isTrimPattern(String n) { return n.equals("wild"); }
+            @Override public boolean isTrimMaterial(String n) { return n.equals("emerald"); }
+        };
+        Map<String, Object> root = new LinkedHashMap<>(root(ordered("zombie", List.of("zombie")), ordered()));
+        root.put("relics", ordered(
+                "cleaver", ordered("family", "zombie", "kills", 400, "item", "iron_axe", "trim", "wild:gold",
+                        "enchants", ordered("sharpness", 2, "unbreaking", 9, "excellentenchants:vampire", 1)),
+                "netherite", ordered("family", "zombie", "kills", 400, "item", "netherite_axe")));
+        BannerSet set = BannerConfigParser.parse(root, vocab);
+        RelicDefinition cleaver = set.findRelic("cleaver").orElseThrow();
+        assertEquals(Map.of("minecraft:sharpness", 2, "minecraft:unbreaking", 3), cleaver.enchants());
+        assertEquals(30, cleaver.edgePercent());
+        assertEquals(null, cleaver.trimPattern());
+        assertFalse(set.relics().containsKey("netherite"));
+        assertTrue(set.problems().stream().anyMatch(p -> p.contains("is ExcellentEnchants installed?")));
+        assertTrue(set.problems().stream().anyMatch(p -> p.contains("lowered to its maximum 3")));
+        assertTrue(set.problems().stream().anyMatch(p -> p.contains("trim 'wild:gold' ignored")));
+        assertTrue(set.problems().stream().anyMatch(p -> p.contains("unknown item 'netherite_axe'")));
     }
 }

@@ -114,7 +114,11 @@ heads:
     kills: 150
 
 # Relics: a themed weapon and one armour piece per family, in two tiers (I iron-level, II diamond-level).
-# kills is the family's kill count needed; the all-mobs family is written 'all'.
+# kills: the family's kill count needed ('all' is the all-mobs count). item: the base item (never netherite).
+# edge: the family edge in percent (weapons: extra damage to the family; armour: less damage from it); omitted
+# means weapons 30 / 40 and armour 25 / 30 by tier. trim: pattern:material for armour. enchants: preset levels,
+# kept at or below each enchant's maximum; excellentenchants: entries need the ExcellentEnchants plugin and
+# work only on the items that plugin allows (e.g. Thunder lists swords and axes).
 relics:
   zombie_weapon:
     name: "Zombie Cleaver"
@@ -122,123 +126,249 @@ relics:
     kills: 400
     tier: 1
     slot: weapon
+    item: iron_axe
+    enchants:
+      sharpness: 2
+      unbreaking: 2
+      excellentenchants:vampire: 1
+      excellentenchants:rage: 1
   zombie_armour:
     name: "Rotguard Chestplate"
     family: zombie
     kills: 600
     tier: 1
     slot: chest
+    item: iron_chestplate
+    trim: wild:emerald
+    enchants:
+      protection: 2
+      unbreaking: 2
+      excellentenchants:hardened: 1
+      excellentenchants:regrowth: 1
   zombie_weapon_2:
     name: "Zombie Cleaver II"
     family: zombie
     kills: 1200
     tier: 2
     slot: weapon
+    item: diamond_axe
+    enchants:
+      sharpness: 3
+      unbreaking: 3
+      excellentenchants:vampire: 2
+      excellentenchants:rage: 2
   zombie_armour_2:
     name: "Rotguard Chestplate II"
     family: zombie
     kills: 1800
     tier: 2
     slot: chest
+    item: diamond_chestplate
+    trim: wild:emerald
+    enchants:
+      protection: 3
+      unbreaking: 3
+      excellentenchants:hardened: 2
+      excellentenchants:regrowth: 2
   skeleton_weapon:
     name: "Bonebow"
     family: skeleton
     kills: 400
     tier: 1
     slot: weapon
+    item: bow
+    enchants:
+      power: 2
+      unbreaking: 2
+      excellentenchants:sniper: 1
+      excellentenchants:withered_arrows: 1
   skeleton_armour:
     name: "Bonecrown Helm"
     family: skeleton
     kills: 600
     tier: 1
     slot: head
+    item: iron_helmet
+    trim: rib:quartz
+    enchants:
+      protection: 2
+      unbreaking: 2
+      excellentenchants:night_vision: 1
+      excellentenchants:saturation: 1
   skeleton_weapon_2:
     name: "Bonebow II"
     family: skeleton
     kills: 1200
     tier: 2
     slot: weapon
+    item: bow
+    enchants:
+      power: 3
+      unbreaking: 3
+      excellentenchants:sniper: 2
+      excellentenchants:withered_arrows: 2
   skeleton_armour_2:
     name: "Bonecrown Helm II"
     family: skeleton
     kills: 1800
     tier: 2
     slot: head
+    item: diamond_helmet
+    trim: rib:quartz
+    enchants:
+      protection: 3
+      unbreaking: 3
+      excellentenchants:night_vision: 1
+      excellentenchants:saturation: 2
   spider_weapon:
     name: "Spider Fang"
     family: spider
     kills: 400
     tier: 1
     slot: weapon
+    item: iron_sword
+    enchants:
+      sharpness: 2
+      unbreaking: 2
+      excellentenchants:venom: 1
+      excellentenchants:paralyze: 1
   spider_armour:
     name: "Silkstep Boots"
     family: spider
     kills: 600
     tier: 1
     slot: feet
+    item: iron_boots
+    trim: eye:redstone
+    enchants:
+      protection: 2
+      unbreaking: 2
+      excellentenchants:speed: 1
+      excellentenchants:jumping: 1
   spider_weapon_2:
     name: "Spider Fang II"
     family: spider
     kills: 1200
     tier: 2
     slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 3
+      unbreaking: 3
+      excellentenchants:venom: 2
+      excellentenchants:paralyze: 2
   spider_armour_2:
     name: "Silkstep Boots II"
     family: spider
     kills: 1800
     tier: 2
     slot: feet
+    item: diamond_boots
+    trim: eye:redstone
+    enchants:
+      protection: 3
+      unbreaking: 3
+      excellentenchants:speed: 2
+      excellentenchants:jumping: 2
   creeper_weapon:
     name: "Blast Maul"
     family: creeper
     kills: 240
     tier: 1
     slot: weapon
+    item: mace
+    enchants:
+      density: 2
+      unbreaking: 2
+      excellentenchants:thunder: 1
   creeper_armour:
     name: "Blastproof Greaves"
     family: creeper
     kills: 360
     tier: 1
     slot: legs
+    item: iron_leggings
+    trim: bolt:copper
+    enchants:
+      blast_protection: 2
+      unbreaking: 2
+      excellentenchants:elemental_protection: 1
+      excellentenchants:stopping_force: 1
   creeper_weapon_2:
     name: "Blast Maul II"
     family: creeper
     kills: 720
     tier: 2
     slot: weapon
+    item: mace
+    enchants:
+      density: 3
+      unbreaking: 3
+      excellentenchants:thunder: 2
   creeper_armour_2:
     name: "Blastproof Greaves II"
     family: creeper
     kills: 1080
     tier: 2
     slot: legs
+    item: diamond_leggings
+    trim: bolt:copper
+    enchants:
+      blast_protection: 3
+      unbreaking: 3
+      excellentenchants:elemental_protection: 2
+      excellentenchants:stopping_force: 2
   enderman_weapon:
     name: "Void Edge"
     family: enderman
     kills: 240
     tier: 1
     slot: weapon
+    item: iron_sword
+    enchants:
+      sharpness: 2
+      unbreaking: 2
+      excellentenchants:blindness: 1
+      excellentenchants:double_strike: 1
   enderman_armour:
     name: "Pearl Charm"
     family: enderman
     kills: 360
     tier: 1
     slot: offhand
+    item: shield
+    enchants:
+      unbreaking: 2
   enderman_weapon_2:
     name: "Void Edge II"
     family: enderman
     kills: 720
     tier: 2
     slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 3
+      unbreaking: 3
+      excellentenchants:blindness: 2
+      excellentenchants:double_strike: 2
   enderman_armour_2:
     name: "Pearl Charm II"
     family: enderman
     kills: 1080
     tier: 2
     slot: offhand
+    item: shield
+    enchants:
+      unbreaking: 3
   wayfarers_blade:
     name: "Wayfarer's Blade"
     family: all
     kills: 5000
     tier: 2
     slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 3
+      unbreaking: 3
+      excellentenchants:double_strike: 2
+      excellentenchants:vampire: 2

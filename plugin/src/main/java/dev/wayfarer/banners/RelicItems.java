@@ -1,0 +1,101 @@
+package dev.wayfarer.banners;
+
+import dev.wayfarer.core.ItemTagService;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Supplier;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ArmorMeta;
+import org.bukkit.inventory.meta.trim.ArmorTrim;
+import org.bukkit.inventory.meta.trim.TrimMaterial;
+import org.bukkit.inventory.meta.trim.TrimPattern;
+
+/**
+ * Builds relic items and keeps their text in step with config (ADR 0002): an item stores only its reward and
+ * earned date; enchants are set once, when it is earned or claimed.
+ */
+final class RelicItems {
+    private static final String MODULE = "banners";
+    private static final String EARNED = "earned";
+
+    private final ItemTagService tags;
+    private final Supplier<BannerSet> banners;
+
+    RelicItems(ItemTagService tags, Supplier<BannerSet> banners) {
+        this.tags = tags;
+        this.banners = banners;
+    }
+
+    ItemStack create(RelicDefinition def, long earnedAtMillis) {
+        ItemStack item = new ItemStack(Material.matchMaterial(def.item()));
+        item.editMeta(meta -> {
+            def.enchants().forEach((key, level) -> {
+                Enchantment e = Registry.ENCHANTMENT.get(NamespacedKey.fromString(key));
+                if (e != null) {
+                    meta.addEnchant(e, level, true); // presets may sit on items vanilla tables would not offer
+                }
+            });
+            if (meta instanceof ArmorMeta armour && def.trimPattern() != null) {
+                TrimPattern pattern = Registry.TRIM_PATTERN.get(NamespacedKey.fromString(def.trimPattern()));
+                TrimMaterial material = Registry.TRIM_MATERIAL.get(NamespacedKey.fromString(def.trimMaterial()));
+                if (pattern != null && material != null) {
+                    armour.setTrim(new ArmorTrim(material, pattern));
+                }
+            }
+            meta.setEnchantmentGlintOverride(true);
+        });
+        tags.write(item, MODULE, new RewardKey(RewardKey.RELIC, def.id()).toString());
+        tags.write(item, MODULE, EARNED, Long.toString(earnedAtMillis));
+        render(item, def, earnedAtMillis);
+        return item;
+    }
+
+    /** The relic id on an item, or empty for anything else. */
+    Optional<String> relicId(ItemStack item) {
+        return tags.read(item, MODULE).map(text -> RewardKey.parse(text, RewardKey.BANNER))
+                .filter(k -> RewardKey.RELIC.equals(k.type())).map(RewardKey::id);
+    }
+
+    /** Redraws a relic's name and lore from the current config; true if the item is a relic. */
+    boolean refresh(ItemStack item) {
+        Optional<String> id = relicId(item);
+        if (id.isEmpty()) {
+            return false;
+        }
+        long earnedAt = tags.read(item, MODULE, EARNED).map(RelicItems::parseLong).orElse(0L);
+        Optional<RelicDefinition> def = banners.get().findRelic(id.get());
+        if (def.isPresent()) {
+            render(item, def.get(), earnedAt);
+        } else {
+            item.editMeta(meta -> meta.lore(List.of(BannerText.inertRelic())));
+        }
+        return true;
+    }
+
+    private void render(ItemStack item, RelicDefinition def, long earnedAtMillis) {
+        BannerSet set = banners.get();
+        MobFamily family = set.families().get(def.family());
+        item.editMeta(meta -> {
+            meta.displayName(BannerText.themed(def.name(), BannerText.familyColour(set, def.family())));
+            meta.lore(BannerText.relicLore(def, family == null ? List.of() : family.mobs(),
+                    earnedAtMillis > 0 ? TrophyHeads.date(earnedAtMillis) : null));
+        });
+    }
+
+    static boolean isNetheriteUpgrade(ItemStack template) {
+        return template != null && template.getType().name().toLowerCase(Locale.ROOT).startsWith("netherite_upgrade");
+    }
+
+    private static long parseLong(String text) {
+        try {
+            return Long.parseLong(text);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+}

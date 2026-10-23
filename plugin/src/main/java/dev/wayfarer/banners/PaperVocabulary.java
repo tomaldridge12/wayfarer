@@ -56,4 +56,29 @@ final class PaperVocabulary implements Vocabulary {
         NamespacedKey key = NamespacedKey.fromString(name);
         return key != null && Registry.MOB_EFFECT.get(key) != null;
     }
+
+    @Override
+    public boolean isItem(String name) {
+        org.bukkit.Material m = org.bukkit.Material.matchMaterial(name);
+        return m != null && m.isItem();
+    }
+
+    @Override
+    public int enchantMax(String key) {
+        NamespacedKey k = NamespacedKey.fromString(key);
+        org.bukkit.enchantments.Enchantment e = k == null ? null : Registry.ENCHANTMENT.get(k);
+        return e == null ? -1 : e.getMaxLevel();
+    }
+
+    @Override
+    public boolean isTrimPattern(String name) {
+        NamespacedKey k = NamespacedKey.fromString(name);
+        return k != null && Registry.TRIM_PATTERN.get(k) != null;
+    }
+
+    @Override
+    public boolean isTrimMaterial(String name) {
+        NamespacedKey k = NamespacedKey.fromString(name);
+        return k != null && Registry.TRIM_MATERIAL.get(k) != null;
+    }
 }

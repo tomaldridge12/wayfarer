@@ -41,6 +41,8 @@ public final class BannersModule implements Module {
     private Core core;
     private BannerItems items;
     private TrophyHeads heads;
+    private RelicItems relics;
+    private RelicListener relicListener;
     private PlayerStore<PlayerData> store;
     private BannerListener listener;
     private PlacedBanners placed;
@@ -68,6 +70,7 @@ public final class BannersModule implements Module {
     public void enable(Core core) throws Exception {
         this.core = core;
         this.items = new BannerItems(core.itemTags(), this::banners);
+        this.relics = new RelicItems(core.itemTags(), this::banners);
         load(); // throws if the file is unreadable, which skips only this module
         store = new PlayerStore<>(plugin.getDataFolder().toPath().resolve("data").resolve(id()),
                 PlayerDataCodec.VERSION, new PlayerDataCodec(), core.logger(),
@@ -79,6 +82,8 @@ public final class BannersModule implements Module {
         placed = new PlacedBanners(core.chunkData(), items, core.logger(), new BannerLabels(this::labelFor),
                 mainThread::execute, heads, this::nameOf);
         placedListener = new PlacedBannerListener(placed, items, heads, this::banners);
+        relicListener = new RelicListener(relics);
+        plugin.getServer().getPluginManager().registerEvents(relicListener, plugin);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
@@ -115,6 +120,9 @@ public final class BannersModule implements Module {
         }
         if (placedListener != null) {
             HandlerList.unregisterAll(placedListener);
+        }
+        if (relicListener != null) {
+            HandlerList.unregisterAll(relicListener);
         }
         if (boostListener != null) {
             HandlerList.unregisterAll(boostListener);
@@ -231,7 +239,11 @@ public final class BannersModule implements Module {
                 long earnedAt = data == null ? 0 : data.earnedAt(reward.rewardKey());
                 give(player, heads.create(def, player.getUniqueId(), player.getName(), earnedAt));
             });
-            default -> player.sendMessage("Your " + reward.name() + " is recorded; its item arrives in a later update.");
+            case RewardKey.RELIC -> loaded.findRelic(reward.rewardKey().id()).ifPresent(def -> {
+                PlayerData data = store.cached(player.getUniqueId());
+                give(player, relics.create(def, data == null ? 0 : data.earnedAt(reward.rewardKey())));
+            });
+            default -> core.logger().warning("[banners] No delivery for reward type " + reward.rewardKey().type());
         }
     }
 
@@ -510,5 +522,15 @@ public final class BannersModule implements Module {
         core.logger().info("Banners loaded: " + set.banners().size() + " banners, "
                 + set.families().size() + " families, " + set.problems().size() + " problems");
         core.logger().info("Ladder loaded: " + set.heads().size() + " trophy heads, " + set.relics().size() + " relics");
+        int relicsBuilt = 0;
+        for (RelicDefinition def : set.relics().values()) {
+            try {
+                relics.create(def, 0); // proves the item, enchants and trim exist on this server
+                relicsBuilt++;
+            } catch (RuntimeException e) {
+                core.logger().warning("[banners] Relic " + def.id() + " item could not be built: " + e);
+            }
+        }
+        core.logger().info("Relic items built: " + relicsBuilt + " of " + set.relics().size());
     }
 }
