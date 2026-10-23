@@ -16,6 +16,8 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
     testImplementation("com.google.code.gson:gson:2.11.0")
     testImplementation("org.yaml:snakeyaml:2.2")
+    // Adventure text (no server) for testing player-facing wording.
+    testImplementation("io.papermc.paper:paper-api:$paperVersion")
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -36,8 +38,9 @@ tasks {
     }
     runServer {
         minecraftVersion("26.3")
-        // Server working dir is gitignored; delete server/ to reset the world.
-        runDirectory = rootProject.layout.projectDirectory.dir("server")
+        // Server working dir is gitignored; delete server/ to reset the world. The smoke test passes
+        // -PrunDir=build/smoke-server so it never touches the world you play in.
+        runDirectory = rootProject.layout.projectDirectory.dir(providers.gradleProperty("runDir").getOrElse("server"))
         jvmArgs("-Dcom.mojang.eula.agree=true")
     }
 }

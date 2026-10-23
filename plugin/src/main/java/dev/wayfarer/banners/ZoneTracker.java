@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -71,14 +70,5 @@ public final class ZoneTracker {
 
     public void forget(UUID player) {
         current.remove(player);
-    }
-
-    /** The action bar text for a transition. */
-    public static String message(Transition t) {
-        BannerDefinition d = t.banner();
-        if (t.change() == Change.LEAVE) {
-            return "Left the " + d.name() + " zone";
-        }
-        return "Entered the " + d.name() + " zone: " + LabelText.lines(d.id(), Optional.of(d)).get(1);
     }
 }

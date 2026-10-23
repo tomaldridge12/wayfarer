@@ -7,18 +7,19 @@ import java.util.Map;
 /** How players are told a boost is active. Edge particles and the marker effect are off unless switched on. */
 public record FeedbackSettings(
         boolean actionBar,
-        boolean indicator, int indicatorMax, int indicatorLifetimeTicks, int indicatorViewDistance,
+        boolean damageNumbers, int numbersMax, int numbersLifetimeTicks, int numbersViewDistance,
+        boolean showBlocked,
         boolean edgeParticles, String particle, int particlesPerUpdate,
         boolean markerEffect, String effect) {
 
     public static FeedbackSettings defaults() {
-        return new FeedbackSettings(true, true, 25, 20, 16, false, "HAPPY_VILLAGER", 64, false, "luck");
+        return new FeedbackSettings(true, true, 40, 20, 16, true, false, "HAPPY_VILLAGER", 64, false, "luck");
     }
 
     static FeedbackSettings parse(Object raw, Vocabulary vocabulary, List<String> problems) {
         FeedbackSettings d = defaults();
         Map<?, ?> root = raw instanceof Map<?, ?> m ? m : Map.of();
-        Map<?, ?> ind = section(root, "indicator");
+        Map<?, ?> numbers = section(root, "damage-numbers");
         Map<?, ?> edge = section(root, "edge-particles");
         Map<?, ?> marker = section(root, "marker-effect");
 
@@ -36,10 +37,11 @@ public record FeedbackSettings(
         }
         return new FeedbackSettings(
                 bool(root, "action-bar", d.actionBar()),
-                bool(ind, "enabled", d.indicator()),
-                positive(ind, "max-active", d.indicatorMax(), "feedback.indicator.max-active", problems),
-                positive(ind, "lifetime-ticks", d.indicatorLifetimeTicks(), "feedback.indicator.lifetime-ticks", problems),
-                positive(ind, "view-distance", d.indicatorViewDistance(), "feedback.indicator.view-distance", problems),
+                bool(numbers, "enabled", d.damageNumbers()),
+                positive(numbers, "max-active", d.numbersMax(), "feedback.damage-numbers.max-active", problems),
+                positive(numbers, "lifetime-ticks", d.numbersLifetimeTicks(), "feedback.damage-numbers.lifetime-ticks", problems),
+                positive(numbers, "view-distance", d.numbersViewDistance(), "feedback.damage-numbers.view-distance", problems),
+                bool(root, "show-blocked", d.showBlocked()),
                 bool(edge, "enabled", d.edgeParticles()),
                 particle,
                 positive(edge, "max-per-update", d.particlesPerUpdate(), "feedback.edge-particles.max-per-update", problems),

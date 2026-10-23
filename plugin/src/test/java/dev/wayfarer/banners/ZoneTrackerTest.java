@@ -75,11 +75,4 @@ class ZoneTrackerTest {
         assertEquals(List.of(new Transition(Change.ENTER, SKELETON)), standAt(10, 0));
         assertEquals(List.of(new Transition(Change.LEAVE, ZOMBIE)), standAt(30, 0));
     }
-
-    @Test
-    void messagesNameTheBannerAndItsEffect() {
-        assertEquals("Entered the Zombie Banner zone: +10% damage, -10% taken vs zombie family, 16 blocks",
-                ZoneTracker.message(new Transition(Change.ENTER, ZOMBIE)));
-        assertEquals("Left the Zombie Banner zone", ZoneTracker.message(new Transition(Change.LEAVE, ZOMBIE)));
-    }
 }

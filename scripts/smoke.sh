@@ -3,15 +3,19 @@
 # Boot 1: default config, commands, awards. Boot 1b: restart, player data and the placed banner (label) persisted. Boot 2: banners module switched off. Boot 3: unreadable banners config.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-CFG=server/plugins/Wayfarer/banners.yml
-DATA=server/plugins/Wayfarer/data
+# A throwaway server of its own (port 25566), so the smoke test never touches server/, the world you play in.
+RUN=build/smoke-server
+mkdir -p "$RUN"
+[ -f "$RUN/server.properties" ] || printf 'server-port=25566\nonline-mode=false\n' >"$RUN/server.properties"
+CFG=$RUN/plugins/Wayfarer/banners.yml
+DATA=$RUN/plugins/Wayfarer/data
 PLAYER=00000000-0000-0000-0000-000000000001
 PLAYER2=00000000-0000-0000-0000-000000000002
 trap 'rm -f "$CFG"' EXIT
 
 boot() { # log file, then console commands to run after boot
   local log=$1; shift
-  (sleep "${BOOT_WAIT:-45}"; for c in "$@"; do echo "$c"; sleep 3; done; echo stop) | scripts/dev.sh >"$log" 2>&1 || true
+  (sleep "${BOOT_WAIT:-45}"; for c in "$@"; do echo "$c"; sleep 3; done; echo stop) | scripts/dev.sh -PrunDir="$RUN" >"$log" 2>&1 || true
 }
 check() { # log file, pattern
   grep -qF "$2" "$1" && echo "PASS: $2" || { echo "FAIL: $2 (log: $1)"; fail=1; }
@@ -25,7 +29,7 @@ check "$LOG1" "Module banners enabled"
 check "$LOG1" "Wayfarer enabled"
 check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
 check "$LOG1" "Banner items built: 5 of 5"
-check "$LOG1" "Banner feedback: action bar on, indicator on (max 25), edge particles off, marker effect off (luck)"
+check "$LOG1" "Banner feedback: action bar on, damage numbers on (max 40), edge particles off, marker effect off (luck)"
 check "$LOG1" "Banners reloaded: 5 banners, 0 problems"
 check "$LOG1" "Unknown banner 'nope'"
 check "$LOG1" "No online player named 'nobody'"

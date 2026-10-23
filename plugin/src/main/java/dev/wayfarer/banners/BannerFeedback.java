@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -18,6 +16,7 @@ import org.bukkit.Particle;
 import org.bukkit.Registry;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,7 +26,7 @@ import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
-/** Tells players a boost is active: action bar on zone changes, the ▲ on boosted hits, optional particles and effect. */
+/** Tells players about boosts: zone action bar, damage numbers, blocked damage, optional particles and effect. */
 final class BannerFeedback {
     static final long UPDATE_TICKS = 10;
     private static final double RING_SPACING = 1.5;
@@ -37,7 +36,7 @@ final class BannerFeedback {
     private final Supplier<BannerSet> banners;
     private final Supplier<FeedbackSettings> settings;
     private final ZoneTracker tracker = new ZoneTracker();
-    private final Set<TextDisplay> indicators = new HashSet<>();
+    private final Set<TextDisplay> numbers = new HashSet<>();
     private FeedbackSettings budgetSettings;
     private IndicatorBudget budget;
 
@@ -60,10 +59,12 @@ final class BannerFeedback {
                     placed.registry().within(at.world(), at.x(), at.z(), set.maxRadius()), set);
             List<ZoneTracker.Transition> changes = tracker.update(player.getUniqueId(), zones);
             if (s.actionBar() && !changes.isEmpty()) {
-                List<String> parts = changes.stream().map(ZoneTracker::message).toList();
-                boolean entered = changes.getLast().change() == ZoneTracker.Change.ENTER;
-                player.sendActionBar(Component.text(String.join("  |  ", parts),
-                        entered ? NamedTextColor.GREEN : NamedTextColor.GRAY));
+                // An entry matters more than an exit, so it wins when both happen in one update.
+                ZoneTracker.Transition shown = changes.stream()
+                        .filter(t -> t.change() == ZoneTracker.Change.ENTER).reduce((a, b) -> b)
+                        .orElse(changes.getLast());
+                player.sendActionBar(shown.change() == ZoneTracker.Change.ENTER
+                        ? BannerText.entered(shown.banner()) : BannerText.left(shown.banner()));
             }
             if (s.markerEffect() && !zones.isEmpty()) {
                 PotionEffectType type = Registry.MOB_EFFECT.get(NamespacedKey.minecraft(s.effect()));
@@ -107,18 +108,36 @@ final class BannerFeedback {
         return budgetLeft;
     }
 
-    /** A small bold green ▲ that floats up off the mob for about a second; skipped when the cap is reached. */
-    void onBoostedHit(Entity victim) {
+    /** A boost softened a hit on this player: flash how much on their action bar. */
+    void onBlocked(Player player, BoostGlue.Applied applied, BannerSet set) {
         FeedbackSettings s = settings.get();
-        if (!s.indicator() || !budget(s).tryStart(plugin.getServer().getCurrentTick())) {
+        double blocked = applied.before() - applied.after();
+        if (s.showBlocked() && blocked > 0) {
+            set.find(applied.resolved().boost().bannerId())
+                    .ifPresent(def -> player.sendActionBar(BannerText.blocked(def, blocked)));
+        }
+    }
+
+    /**
+     * A floating damage number over a mob a player hit: white, yellow on a critical, and on a boosted hit
+     * ▲ plus the extra in red. About a second each; skipped when the cap is reached.
+     */
+    void onPlayerHit(LivingEntity victim, DamageNumbers.Split split, boolean critical) {
+        FeedbackSettings s = settings.get();
+        if (!s.damageNumbers() || split.total() <= 0
+                || !budget(s).tryStart(plugin.getServer().getCurrentTick())) {
             return;
         }
-        int lifetime = Math.min(s.indicatorLifetimeTicks(), 59); // the longest smooth teleport the client allows
-        Location start = victim.getLocation().add(0, victim.getHeight() + 0.2, 0);
+        int lifetime = Math.min(s.numbersLifetimeTicks(), 59); // the longest smooth teleport the client allows
+        java.util.concurrent.ThreadLocalRandom random = java.util.concurrent.ThreadLocalRandom.current();
+        // A little sideways jitter so rapid hits do not stack on top of each other.
+        Location start = victim.getLocation().add(random.nextDouble(-0.35, 0.35), victim.getHeight() + 0.25,
+                random.nextDouble(-0.35, 0.35));
+        Component text = BannerText.popup(split, critical);
         TextDisplay mark = victim.getWorld().spawn(start, TextDisplay.class, d -> {
             d.setPersistent(false);
             d.setVisibleByDefault(false); // shown only to players nearby
-            d.text(Component.text("▲", NamedTextColor.GREEN, TextDecoration.BOLD));
+            d.text(text);
             d.setBillboard(Display.Billboard.CENTER);
             d.setDefaultBackground(false);
             d.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
@@ -127,18 +146,18 @@ final class BannerFeedback {
             d.setTransformation(new Transformation(new Vector3f(), new AxisAngle4f(),
                     new Vector3f(0.7f, 0.7f, 0.7f), new AxisAngle4f()));
         });
-        double range2 = (double) s.indicatorViewDistance() * s.indicatorViewDistance();
+        double range2 = (double) s.numbersViewDistance() * s.numbersViewDistance();
         for (Player player : victim.getWorld().getPlayers()) {
             if (player.getLocation().distanceSquared(start) <= range2) {
                 player.showEntity(plugin, mark);
             }
         }
-        indicators.add(mark);
+        numbers.add(mark);
         var scheduler = plugin.getServer().getScheduler();
         scheduler.runTaskLater(plugin, () -> mark.teleport(start.clone().add(0, 0.8, 0)), 1);
         scheduler.runTaskLater(plugin, () -> {
             mark.remove();
-            indicators.remove(mark);
+            numbers.remove(mark);
         }, lifetime);
     }
 
@@ -146,16 +165,16 @@ final class BannerFeedback {
         tracker.forget(player);
     }
 
-    /** Removes any ▲ still showing; for module disable. */
+    /** Removes any damage numbers still showing; for module disable. */
     void clear() {
-        indicators.forEach(Entity::remove);
-        indicators.clear();
+        numbers.forEach(Entity::remove);
+        numbers.clear();
     }
 
     private IndicatorBudget budget(FeedbackSettings s) {
-        if (budget == null || s.indicatorMax() != budgetSettings.indicatorMax()
-                || s.indicatorLifetimeTicks() != budgetSettings.indicatorLifetimeTicks()) {
-            budget = new IndicatorBudget(s.indicatorMax(), Math.min(s.indicatorLifetimeTicks(), 59));
+        if (budget == null || s.numbersMax() != budgetSettings.numbersMax()
+                || s.numbersLifetimeTicks() != budgetSettings.numbersLifetimeTicks()) {
+            budget = new IndicatorBudget(s.numbersMax(), Math.min(s.numbersLifetimeTicks(), 59));
             budgetSettings = s;
         }
         return budget;

@@ -66,7 +66,7 @@ public final class BannersModule implements Module {
     @Override
     public void enable(Core core) throws Exception {
         this.core = core;
-        this.items = new BannerItems(core.itemTags());
+        this.items = new BannerItems(core.itemTags(), this::banners);
         load(); // throws if the file is unreadable, which skips only this module
         store = new PlayerStore<>(plugin.getDataFolder().toPath().resolve("data").resolve(id()),
                 PlayerDataCodec.VERSION, new PlayerDataCodec(), core.logger(),
@@ -83,7 +83,7 @@ public final class BannersModule implements Module {
                 BannerFeedback.UPDATE_TICKS, BannerFeedback.UPDATE_TICKS);
         dropListener = new DropListener(this);
         plugin.getServer().getPluginManager().registerEvents(dropListener, plugin);
-        boostListener = new BoostListener(new BoostGlue(placed, this::banners), feedback);
+        boostListener = new BoostListener(new BoostGlue(placed, this::banners), feedback, this::banners);
         plugin.getServer().getPluginManager().registerEvents(boostListener, plugin);
         placed.loadAll(plugin.getServer());
         core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "
@@ -395,8 +395,8 @@ public final class BannersModule implements Module {
         feedbackProblems.forEach(p -> core.logger().warning("[banners] " + p));
         loaded = set;
         feedbackSettings = feedbackNow;
-        core.logger().info("Banner feedback: action bar " + onOff(feedbackNow.actionBar()) + ", indicator "
-                + onOff(feedbackNow.indicator()) + " (max " + feedbackNow.indicatorMax() + "), edge particles "
+        core.logger().info("Banner feedback: action bar " + onOff(feedbackNow.actionBar()) + ", damage numbers "
+                + onOff(feedbackNow.damageNumbers()) + " (max " + feedbackNow.numbersMax() + "), edge particles "
                 + onOff(feedbackNow.edgeParticles()) + ", marker effect " + onOff(feedbackNow.markerEffect())
                 + " (" + feedbackNow.effect() + ")");
         int built = 0;

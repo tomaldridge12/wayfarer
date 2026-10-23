@@ -18,14 +18,15 @@ counting:
   exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
 
-# How players are told a boost is active. There is deliberately no sound.
+# How players are told about boosts. There is deliberately no sound.
 feedback:
-  action-bar: true            # message on entering and leaving a boost zone
-  indicator:                  # small bold green ▲ floating off a mob on a boosted hit
+  action-bar: true            # styled message on entering and leaving a boost zone
+  show-blocked: true          # action bar flash when a banner softens a hit on you
+  damage-numbers:             # a floating number over every mob a player hits; boosted hits add ▲ and the extra in red
     enabled: true
-    max-active: 25            # new ones are skipped while this many exist
+    max-active: 40            # new ones are skipped while this many exist
     lifetime-ticks: 20        # about one second (at most 59)
-    view-distance: 16         # only players this close see it
+    view-distance: 16         # only players this close see them
   edge-particles:             # rings marking each zone's edge, drawn every half second
     enabled: false
     particle: happy_villager

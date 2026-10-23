@@ -1,12 +1,12 @@
 package dev.wayfarer.banners;
 
 import dev.wayfarer.core.ItemTagService;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.TooltipDisplay;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import java.util.function.Supplier;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -21,9 +21,11 @@ final class BannerItems {
     private static final String MODULE = "banners";
 
     private final ItemTagService tags;
+    private final Supplier<BannerSet> banners;
 
-    BannerItems(ItemTagService tags) {
+    BannerItems(ItemTagService tags, Supplier<BannerSet> banners) {
         this.tags = tags;
+        this.banners = banners;
     }
 
     ItemStack create(BannerDefinition def) {
@@ -34,13 +36,14 @@ final class BannerItems {
                         DyeColor.valueOf(layer.colour().toUpperCase(Locale.ROOT)),
                         Registry.BANNER_PATTERN.getOrThrow(NamespacedKey.minecraft(layer.pattern()))));
             }
-            meta.displayName(Component.text(def.name(), NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    line("+" + def.damageBonusPercent() + "% damage dealt to the " + def.family() + " family"),
-                    line("-" + def.damageReductionPercent() + "% damage taken from the " + def.family() + " family"),
-                    line("Radius " + def.radius() + " blocks when placed")));
-            meta.setEnchantmentGlintOverride(true);
+            meta.displayName(BannerText.name(def));
+            MobFamily family = banners.get().families().get(def.family());
+            meta.lore(BannerText.lore(def, family == null ? List.of() : family.mobs()));
+            meta.setEnchantmentGlintOverride(true); // kept in case a client draws it; 26.3 seems not to on banners
         });
+        // Hide vanilla's "Lime Creeper Charge"-style pattern list; the lore says what the banner does instead.
+        item.setData(DataComponentTypes.TOOLTIP_DISPLAY,
+                TooltipDisplay.tooltipDisplay().addHiddenComponents(DataComponentTypes.BANNER_PATTERNS).build());
         tag(item, def.id());
         return item;
     }
@@ -55,9 +58,6 @@ final class BannerItems {
         return tags.read(item, MODULE);
     }
 
-    private static Component line(String text) {
-        return Component.text(text, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false);
-    }
 
     /** Puts the banner in the player's inventory, or drops it at their feet if it does not fit. */
     void deliver(Player player, BannerDefinition def) {

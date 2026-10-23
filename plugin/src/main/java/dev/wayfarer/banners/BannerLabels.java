@@ -1,12 +1,10 @@
 package dev.wayfarer.banners;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -90,10 +88,7 @@ final class BannerLabels {
     }
 
     private Component text(String bannerId) {
-        List<String> lines = LabelText.lines(bannerId, banners.get().find(bannerId));
-        return Component.text(lines.get(0), NamedTextColor.WHITE)
-                .append(Component.newline())
-                .append(Component.text(lines.get(1), NamedTextColor.GRAY));
+        return BannerText.label(bannerId, banners.get().find(bannerId));
     }
 
     private static Key key(Block block) {

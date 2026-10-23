@@ -119,16 +119,17 @@ class BannerConfigParserTest {
         FeedbackSettings d = FeedbackSettings.defaults();
         assertFalse(d.edgeParticles());
         assertFalse(d.markerEffect());
-        assertEquals(25, d.indicatorMax());
+        assertEquals(40, d.numbersMax());
+        assertTrue(d.damageNumbers());
         java.util.List<String> problems = new java.util.ArrayList<>();
         FeedbackSettings s = FeedbackSettings.parse(Map.of(
                 "marker-effect", Map.of("enabled", true, "effect", "glowing"),
                 "edge-particles", Map.of("particle", "nope"),
-                "indicator", Map.of("max-active", 0)), VOCAB, problems);
+                "damage-numbers", Map.of("max-active", 0)), VOCAB, problems);
         assertTrue(s.markerEffect());
         assertEquals("glowing", s.effect());
         assertEquals("HAPPY_VILLAGER", s.particle());
-        assertEquals(25, s.indicatorMax());
+        assertEquals(40, s.numbersMax());
         assertEquals(2, problems.size());
     }
 }
