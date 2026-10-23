@@ -1,3 +1,61 @@
 # Banners module. Set enabled: false to skip the module at startup.
 version: 1
 enabled: true
+
+# A mob family is a group of entity types that count as one kind of mob.
+# A type may be in only one family; a family breaking that rule (or naming an unknown type) is rejected.
+families:
+  zombie: [zombie, husk, drowned]
+  skeleton: [skeleton, stray, bogged]
+  creeper: [creeper]
+  spider: [spider, cave_spider]
+  enderman: [enderman]
+
+# Per banner: name, colour (base dye colour), patterns (list of pattern:colour), family, kills,
+# damage-bonus and damage-reduction (whole percent), radius (blocks). Omitted numbers use the values below.
+banners:
+  zombie:
+    name: "Zombie Banner"
+    colour: green
+    patterns: ["creeper:lime", "border:black"]
+    family: zombie
+    kills: 100
+    damage-bonus: 10
+    damage-reduction: 10
+    radius: 16
+  skeleton:
+    name: "Skeleton Banner"
+    colour: white
+    patterns: ["skull:black"]
+    family: skeleton
+    kills: 100
+    damage-bonus: 10
+    damage-reduction: 10
+    radius: 16
+  creeper:
+    name: "Creeper Banner"
+    colour: lime
+    patterns: ["creeper:black"]
+    family: creeper
+    kills: 100
+    damage-bonus: 10
+    damage-reduction: 10
+    radius: 16
+  spider:
+    name: "Spider Banner"
+    colour: black
+    patterns: ["circle:red", "cross:black"]
+    family: spider
+    kills: 100
+    damage-bonus: 10
+    damage-reduction: 10
+    radius: 16
+  enderman:
+    name: "Enderman Banner"
+    colour: purple
+    patterns: ["border:black", "circle:magenta"]
+    family: enderman
+    kills: 100
+    damage-bonus: 10
+    damage-reduction: 10
+    radius: 16

@@ -32,7 +32,17 @@ class ModuleManagerTest {
 
             @Override
             public ConfigService config() {
-                return id -> !disabled.contains(id);
+                return new ConfigService() {
+                    @Override
+                    public boolean enabled(String id) {
+                        return !disabled.contains(id);
+                    }
+
+                    @Override
+                    public java.util.Map<String, Object> load(String id) {
+                        return java.util.Map.of();
+                    }
+                };
             }
         };
     }

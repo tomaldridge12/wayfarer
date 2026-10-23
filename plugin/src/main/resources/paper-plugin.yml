@@ -2,3 +2,7 @@ name: Wayfarer
 version: ${version}
 main: dev.wayfarer.WayfarerPlugin
 api-version: "26.3"
+permissions:
+  wayfarer.banners.reload:
+    description: Reload the banners config
+    default: op

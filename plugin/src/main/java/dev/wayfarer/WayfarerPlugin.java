@@ -15,7 +15,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public void onEnable() {
         config = new PaperConfigService(this);
-        modules.register(new BannersModule());
+        modules.register(new BannersModule(this));
         modules.enableAll(this);
         getLogger().info("Wayfarer enabled");
     }
