@@ -22,10 +22,15 @@ public final class SpawnRules {
         }
     }
 
-    /** Distance bands from world spawn: beyond each threshold a boss rolls one more star. */
-    public record Settings(List<Integer> starBands, int guardianMinStars, double extraStarChance) {
+    /**
+     * Distance bands from world spawn (beyond each threshold a boss rolls one more star). Roaming bosses (natural
+     * spawns) are capped at {@code naturalMaxStars} and have their own cooldown per boss per world; structure
+     * guardians are never below {@code guardianMinStars}.
+     */
+    public record Settings(List<Integer> starBands, int guardianMinStars, double extraStarChance, int naturalMaxStars,
+            int naturalCooldownMinutes) {
         public static Settings defaults() {
-            return new Settings(List.of(750, 2000, 4000, 7000), 3, 0.25);
+            return new Settings(List.of(750, 2000, 4000, 7000), 3, 0.25, 2, 20);
         }
     }
 
@@ -40,14 +45,18 @@ public final class SpawnRules {
                 && random.getAsDouble() < spawn.chance();
     }
 
-    /** Whether a player inside this structure wakes its guardian. */
-    public static boolean guardian(BossSpawn spawn, String structure, boolean alive, long bossCooldownLeftMillis,
-            long structureCooldownLeftMillis) {
-        return spawn.structures().contains(structure) && !alive && bossCooldownLeftMillis <= 0
-                && structureCooldownLeftMillis <= 0;
+    /**
+     * Whether a player inside this structure wakes its guardian: the structure's own cooldown has passed and no boss
+     * of this kind is already nearby. Roaming bosses elsewhere do not stop it.
+     */
+    public static boolean guardian(BossSpawn spawn, String structure, boolean aliveNearby, long structureCooldownLeftMillis) {
+        return spawn.structures().contains(structure) && !aliveNearby && structureCooldownLeftMillis <= 0;
     }
 
-    /** Stars by distance from world spawn, sometimes one more; guardians never below their minimum. */
+    /**
+     * Stars by distance from world spawn, sometimes one more. Roaming bosses are capped at the natural maximum;
+     * guardians are never below their minimum.
+     */
     public static int stars(double distanceFromSpawn, boolean guardian, Settings settings, DoubleSupplier random) {
         int stars = 1;
         for (int band : settings.starBands()) {
@@ -60,6 +69,8 @@ public final class SpawnRules {
         }
         if (guardian) {
             stars = Math.max(stars, settings.guardianMinStars());
+        } else {
+            stars = Math.min(stars, settings.naturalMaxStars());
         }
         return StarScale.clamp(stars);
     }

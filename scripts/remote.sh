@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Install and update the Paper server on the remote host. Usage: scripts/remote.sh <command>
 #   key      one-time: copy your default SSH key to the host (needs one from ssh-keygen; you type the password)
-#   setup    create ~/minecraft, download Paper, BlueMap, Chunky and Terralith, write start.sh
+#   setup    create ~/minecraft, download Paper, BlueMap, Chunky, Terralith, Incendium, Nullscape and Structory, write start.sh
 #   sync     build the Wayfarer jar and rsync it plus the other plugin jars to ~/minecraft/plugins
 #   all      setup then sync
 # Override with REMOTE=user@host REMOTE_DIR=minecraft PAPER_VERSION=26.3
@@ -14,6 +14,9 @@ PAPER_VERSION=${PAPER_VERSION:-26.3}
 LOCAL_PLUGINS=(ExcellentEnchants-5.4.3.jar nightcore-2.16.7.jar packetevents-spigot-2.14.0.jar)
 BLUEMAP_URL=https://cdn.modrinth.com/data/swbUV1cr/versions/uHQIrUdf/bluemap-5.29-paper.jar
 CHUNKY_URL=https://cdn.modrinth.com/data/fALzjamp/versions/MdY6JATr/Chunky-Bukkit-1.5.3.jar
+INCENDIUM_URL='https://cdn.modrinth.com/data/ZVzW5oNS/versions/1phtTdhj/Incendium_Legacy_v5.5.4%2B26.3.zip'
+NULLSCAPE_URL='https://cdn.modrinth.com/data/LPjGiSO4/versions/BJjbILcf/Nullscape_v2.0.1%2B26.3.zip'
+STRUCTORY_URL='https://cdn.modrinth.com/data/aKCwCJlY/versions/EV74q3tR/Structory_v1.3.18%2B26.3.zip'
 TERRALITH_URL='https://cdn.modrinth.com/data/8oi3bsk5/versions/fqnsIp6d/Terralith_v2.6.5%2B26.3.zip'
 
 rsh() { ssh -o BatchMode=yes "$REMOTE" "$@"; }
@@ -21,7 +24,7 @@ rsh() { ssh -o BatchMode=yes "$REMOTE" "$@"; }
 cmd_key() { ssh-copy-id "$REMOTE"; }
 
 cmd_setup() {
-  rsh "REMOTE_DIR=$REMOTE_DIR PAPER_VERSION=$PAPER_VERSION BLUEMAP_URL='$BLUEMAP_URL' CHUNKY_URL='$CHUNKY_URL' TERRALITH_URL='$TERRALITH_URL' bash -s" <<'REMOTE_SH'
+  rsh "REMOTE_DIR=$REMOTE_DIR PAPER_VERSION=$PAPER_VERSION BLUEMAP_URL='$BLUEMAP_URL' CHUNKY_URL='$CHUNKY_URL' INCENDIUM_URL='$INCENDIUM_URL' NULLSCAPE_URL='$NULLSCAPE_URL' STRUCTORY_URL='$STRUCTORY_URL' TERRALITH_URL='$TERRALITH_URL' bash -s" <<'REMOTE_SH'
 set -euo pipefail
 mkdir -p ~/"$REMOTE_DIR"/plugins ~/"$REMOTE_DIR"/world/datapacks
 cd ~/"$REMOTE_DIR"
@@ -38,12 +41,15 @@ url=$(wget -qO- "$api" | python3 -c 'import sys,json;print(json.load(sys.stdin)[
 [ -f paper.jar ] && echo "paper.jar exists, keeping" || wget -q -O paper.jar "$url"
 [ -f plugins/bluemap.jar ] || wget -q -O plugins/bluemap.jar "$BLUEMAP_URL"
 [ -f plugins/chunky.jar ] || wget -q -O plugins/chunky.jar "$CHUNKY_URL"
+[ -f world/datapacks/Incendium.zip ] || wget -q -O world/datapacks/Incendium.zip "$INCENDIUM_URL"
+[ -f world/datapacks/Nullscape.zip ] || wget -q -O world/datapacks/Nullscape.zip "$NULLSCAPE_URL"
+[ -f world/datapacks/Structory.zip ] || wget -q -O world/datapacks/Structory.zip "$STRUCTORY_URL"
 [ -f world/datapacks/Terralith.zip ] || wget -q -O world/datapacks/Terralith.zip "$TERRALITH_URL"
 echo 'eula=true' > eula.txt
 cat > start.sh <<'EOS'
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
-exec ./jdk/bin/java -Xms2G -Xmx4G -jar paper.jar --nogui
+exec ./jdk/bin/java -Xms6G -Xmx6G -jar paper.jar --nogui
 EOS
 chmod +x start.sh
 ls -la . plugins world/datapacks

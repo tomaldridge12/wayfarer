@@ -11,11 +11,13 @@ stars:
 # star beyond each distance below, sometimes one extra; structure guardians are never below guardian-min-stars.
 spawning:
   star-distances: [750, 2000, 4000, 7000]
-  guardian-min-stars: 3
+  guardian-min-stars: 3          # structure guardians: 3 stars or more
   extra-star-chance: 0.25
+  natural-max-stars: 2           # roaming bosses (natural spawns) never above this
+  natural-cooldown-minutes: 20   # per boss per world, between roaming appearances
 
 # Each boss is its own mob family on the ladder. health and damage are at one star (a one-star boss is meant to be
-# beatable in iron gear with some preparation). cooldown-minutes: how long before it can appear again in a world.
+# beatable in iron gear with some preparation). cooldown-minutes: how long before the same structure's guardian returns.
 # Variants: entity (a vanilla mob), glow (a text colour name), scale (size, 1 = normal), equipment by slot (head,
 # chest, legs, feet, hand, offhand), colours (name gradient, two #hex values) and abilities from the library:
 # charge, ground_slam, summon_minions, poison_cloud, arrow_volley, blink, fire_ring, pull, shield, enrage.
@@ -33,7 +35,7 @@ bosses:
     spawn:
       entity: zombie
       biomes: ["#minecraft:is_forest", "#minecraft:has_structure/village_plains", meadow]
-      chance: 0.0004
+      chance: 0.002
       night-only: true
     variants:
       rotting_warlord:
@@ -69,7 +71,7 @@ bosses:
     spawn:
       entity: skeleton
       biomes: ["#minecraft:is_mountain", soul_sand_valley, "#c:is_snowy"]
-      chance: 0.0005
+      chance: 0.0025
       structures: [trial_chambers]
     variants:
       bone_marshal:
@@ -105,7 +107,7 @@ bosses:
     spawn:
       entity: spider
       biomes: [dripstone_caves, lush_caves, dark_forest, "#c:is_cave"]
-      chance: 0.0004
+      chance: 0.002
       structures: [mineshaft]
     variants:
       brood_mother:
@@ -138,7 +140,7 @@ bosses:
     spawn:
       entity: creeper
       biomes: any
-      chance: 0.0002
+      chance: 0.001
       night-only: true
     variants:
       blast_prophet:
@@ -171,7 +173,7 @@ bosses:
     spawn:
       entity: enderman
       biomes: ["#minecraft:is_end"]
-      chance: 0.001
+      chance: 0.005
       structures: [stronghold, end_city]
     variants:
       void_stalker:
@@ -204,7 +206,7 @@ bosses:
     spawn:
       entity: witch
       biomes: ["#minecraft:has_structure/swamp_hut", mangrove_swamp]
-      chance: 0.003
+      chance: 0.015
       structures: [swamp_hut]
     variants:
       bog_witch_queen:
@@ -230,7 +232,7 @@ bosses:
     spawn:
       entity: husk
       biomes: ["#minecraft:has_structure/desert_pyramid", desert]
-      chance: 0.0005
+      chance: 0.0025
       structures: [desert_pyramid]
     variants:
       sand_pharaoh:
@@ -258,7 +260,7 @@ bosses:
     spawn:
       entity: drowned
       biomes: ["#minecraft:is_ocean", "#minecraft:is_deep_ocean"]
-      chance: 0.0005
+      chance: 0.0025
       structures: [monument, shipwreck]
     variants:
       drowned_captain:

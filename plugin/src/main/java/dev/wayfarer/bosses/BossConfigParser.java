@@ -47,7 +47,10 @@ public final class BossConfigParser {
         int min = m.get("guardian-min-stars") instanceof Number n ? StarScale.clamp(n.intValue()) : d.guardianMinStars();
         double extra = m.get("extra-star-chance") instanceof Number n ? Math.max(0, Math.min(1, n.doubleValue()))
                 : d.extraStarChance();
-        return new SpawnRules.Settings(bands, min, extra);
+        int naturalMax = m.get("natural-max-stars") instanceof Number n ? StarScale.clamp(n.intValue()) : d.naturalMaxStars();
+        int naturalCooldown = m.get("natural-cooldown-minutes") instanceof Number n && n.intValue() >= 0 ? n.intValue()
+                : d.naturalCooldownMinutes();
+        return new SpawnRules.Settings(bands, min, extra, naturalMax, naturalCooldown);
     }
 
     private StarScale parseStars(Map<String, Object> m) {

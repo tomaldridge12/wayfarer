@@ -32,23 +32,23 @@ class SpawnRulesTest {
     }
 
     @Test
-    void guardiansNeedTheirStructureAndBothCooldowns() {
-        assertTrue(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 0, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:jungle_pyramid", false, 0, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", true, 0, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 1, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 0, 1));
+    void guardiansNeedTheirStructureItsCooldownAndNoTwinNearby() {
+        assertTrue(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:jungle_pyramid", false, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", true, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 1));
     }
 
     @Test
-    void starsRiseWithDistanceAndGuardiansStartAtThree() {
+    void roamingBossesStayLowAndGuardiansRiseWithDistance() {
         SpawnRules.Settings s = SpawnRules.Settings.defaults();
         assertEquals(1, SpawnRules.stars(100, false, s, () -> 0.9));
         assertEquals(2, SpawnRules.stars(100, false, s, () -> 0.1)); // the occasional extra star
-        assertEquals(3, SpawnRules.stars(2500, false, s, () -> 0.9));
-        assertEquals(5, SpawnRules.stars(9000, false, s, () -> 0.9));
-        assertEquals(5, SpawnRules.stars(9000, false, s, () -> 0.1)); // capped at five
-        assertEquals(3, SpawnRules.stars(100, true, s, () -> 0.9));
+        assertEquals(2, SpawnRules.stars(9000, false, s, () -> 0.1)); // roaming: capped at two
+        assertEquals(3, SpawnRules.stars(100, true, s, () -> 0.9)); // guardians start at three
+        assertEquals(3, SpawnRules.stars(2500, true, s, () -> 0.9));
+        assertEquals(4, SpawnRules.stars(4500, true, s, () -> 0.9));
+        assertEquals(5, SpawnRules.stars(9000, true, s, () -> 0.1)); // capped at five
     }
 
     @Test

@@ -101,6 +101,14 @@ public final class BossesModule implements Module {
                             ctx.getSource().getSender().sendMessage(BossText.list(roster));
                             return Command.SINGLE_SUCCESS;
                         }))
+                        .then(Commands.literal("here").executes(ctx -> {
+                            if (ctx.getSource().getSender() instanceof Player p) {
+                                spawning.here(p).forEach(p::sendMessage);
+                            } else {
+                                ctx.getSource().getSender().sendMessage("Run this in game");
+                            }
+                            return Command.SINGLE_SUCCESS;
+                        }))
                         .then(Commands.literal("killall").executes(ctx -> {
                             ctx.getSource().getSender().sendMessage("Removed " + controller.removeAll() + " bosses");
                             return Command.SINGLE_SUCCESS;

@@ -57,13 +57,13 @@ final class BossSpawning implements Listener {
         long now = System.currentTimeMillis();
         for (BossDefinition boss : roster.get().bosses().values()) {
             if (SpawnRules.naturalSpawn(boss.spawn(), entity, biome, night(at.getWorld()), alive(boss),
-                    SpawnRules.cooldownLeft(lastSpawn(at.getWorld(), boss), boss.cooldownMinutes(), now),
+                    naturalCooldownLeft(at.getWorld(), boss, now),
                     ThreadLocalRandom.current()::nextDouble)) {
                 event.setCancelled(true);
                 int stars = SpawnRules.stars(at.distance(at.getWorld().getSpawnLocation()), false,
                         roster.get().spawning(), ThreadLocalRandom.current()::nextDouble);
                 // Spawning inside the spawn event is not safe; the boss takes the mob's place next tick.
-                plugin.getServer().getScheduler().runTask(plugin, () -> appear(boss, stars, at, "natural"));
+                plugin.getServer().getScheduler().runTask(plugin, () -> appear(boss, stars, at, "roaming", true));
                 return;
             }
         }
@@ -86,12 +86,10 @@ final class BossSpawning implements Listener {
                 String key = structureKey.asString();
                 for (BossDefinition boss : roster.get().bosses().values()) {
                     long structureLeft = SpawnRules.cooldownLeft(structureLast(structure), boss.cooldownMinutes(), now);
-                    if (SpawnRules.guardian(boss.spawn(), key, alive(boss),
-                            SpawnRules.cooldownLeft(lastSpawn(at.getWorld(), boss), boss.cooldownMinutes(), now),
-                            structureLeft)) {
+                    if (SpawnRules.guardian(boss.spawn(), key, aliveNear(boss, at), structureLeft)) {
                         int stars = SpawnRules.stars(at.distance(at.getWorld().getSpawnLocation()), true,
                                 roster.get().spawning(), ThreadLocalRandom.current()::nextDouble);
-                        if (appear(boss, stars, spotNear(player, box), "guardian of " + structureKey.getKey())) {
+                        if (appear(boss, stars, spotNear(player, box), "guardian of " + structureKey.getKey(), false)) {
                             structure.getPersistentDataContainer().set(GUARDIAN_LAST, PersistentDataType.LONG, now);
                         }
                         return; // one guardian per check is plenty
@@ -101,12 +99,14 @@ final class BossSpawning implements Listener {
         }
     }
 
-    private boolean appear(BossDefinition boss, int stars, Location at, String why) {
+    private boolean appear(BossDefinition boss, int stars, Location at, String why, boolean roaming) {
         BossVariant variant = BossRoster.pickVariant(boss, ThreadLocalRandom.current()::nextDouble);
         if (!spawn.spawn(boss, variant, stars, at, why)) {
             return false;
         }
-        at.getWorld().getPersistentDataContainer().set(lastKey(boss), PersistentDataType.LONG, System.currentTimeMillis());
+        if (roaming) {
+            at.getWorld().getPersistentDataContainer().set(lastKey(boss), PersistentDataType.LONG, System.currentTimeMillis());
+        }
         for (Player p : at.getWorld().getPlayers()) {
             if (p.getLocation().distanceSquared(at) <= HINT_RANGE * HINT_RANGE) {
                 p.sendActionBar(Component.text("⚔ You sense a powerful presence nearby…", NamedTextColor.GOLD)
@@ -137,6 +137,77 @@ final class BossSpawning implements Listener {
 
     private boolean alive(BossDefinition boss) {
         return controller.live().values().stream().anyMatch(l -> l.boss.id().equals(boss.id()));
+    }
+
+    /** A boss of this kind within hint range of a point, e.g. a guardian already awake in this structure. */
+    private boolean aliveNear(BossDefinition boss, Location at) {
+        return controller.live().values().stream().anyMatch(l -> l.boss.id().equals(boss.id())
+                && l.entity.getWorld().equals(at.getWorld())
+                && l.entity.getLocation().distanceSquared(at) <= HINT_RANGE * HINT_RANGE);
+    }
+
+    private long naturalCooldownLeft(World world, BossDefinition boss, long now) {
+        return SpawnRules.cooldownLeft(lastSpawn(world, boss), roster.get().spawning().naturalCooldownMinutes(), now);
+    }
+
+    /** What /wayfarer boss here reports: this spot's biome and structures, and which bosses could appear. */
+    java.util.List<Component> here(Player player) {
+        Location at = player.getLocation();
+        long now = System.currentTimeMillis();
+        BossRoster r = roster.get();
+        NamespacedKey biomeKey = org.bukkit.Registry.BIOME.getKey(at.getBlock().getBiome());
+        String biome = biomeKey == null ? "?" : biomeKey.asString();
+        java.util.List<Component> lines = new java.util.ArrayList<>();
+        lines.add(Component.text("⚔ Bosses here", NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+        lines.add(Component.text("Biome: ", NamedTextColor.GRAY).append(Component.text(biome, NamedTextColor.WHITE))
+                .append(Component.text(night(at.getWorld()) ? "  (night)" : "  (day)", NamedTextColor.DARK_GRAY)));
+        boolean any = false;
+        for (BossDefinition boss : r.bosses().values()) {
+            SpawnRules.BossSpawn s = boss.spawn();
+            if (s.chance() > 0 && (s.anyBiome() || s.biomes().contains(biome))) {
+                any = true;
+                long left = naturalCooldownLeft(at.getWorld(), boss, now);
+                lines.add(Component.text(" Roams here: ", NamedTextColor.GRAY)
+                        .append(Component.text(boss.name(), NamedTextColor.WHITE))
+                        .append(Component.text(String.format(java.util.Locale.ROOT, "  1 in %,d %s spawns%s, up to %d★%s%s",
+                                Math.round(1 / s.chance()), s.entity(), s.nightOnly() ? " at night" : "",
+                                r.spawning().naturalMaxStars(), alive(boss) ? ", one is alive" : "",
+                                left > 0 ? ", ready in " + minutes(left) : ", ready"), NamedTextColor.DARK_GRAY)));
+            }
+        }
+        for (GeneratedStructure structure : at.getChunk().getStructures()) {
+            var key = org.bukkit.Registry.STRUCTURE.getKey(structure.getStructure());
+            if (key == null) {
+                continue;
+            }
+            boolean inside = structure.getBoundingBox().contains(at.toVector());
+            for (BossDefinition boss : r.bosses().values()) {
+                if (boss.spawn().structures().contains(key.asString())) {
+                    any = true;
+                    long left = SpawnRules.cooldownLeft(structureLast(structure), boss.cooldownMinutes(), now);
+                    lines.add(Component.text(" Guards " + key.getKey() + ": ", NamedTextColor.GRAY)
+                            .append(Component.text(boss.name(), NamedTextColor.WHITE))
+                            .append(Component.text(String.format(java.util.Locale.ROOT, "  %d★+, %s%s",
+                                    r.spawning().guardianMinStars(), left > 0 ? "ready in " + minutes(left) : "ready",
+                                    inside ? "" : " (step inside to wake it)"), NamedTextColor.DARK_GRAY)));
+                }
+            }
+        }
+        if (!any) {
+            lines.add(Component.text(" No boss roams or guards here.", NamedTextColor.DARK_GRAY));
+        }
+        controller.live().values().stream()
+                .filter(l -> l.entity.getWorld().equals(at.getWorld()) && l.entity.getLocation().distanceSquared(at) <= 128 * 128)
+                .forEach(l -> lines.add(Component.text(" Alive nearby: ", NamedTextColor.GRAY)
+                        .append(BossText.name(l.variant, l.mark.stars()))
+                        .append(Component.text(String.format(java.util.Locale.ROOT, "  %.0f blocks",
+                                l.entity.getLocation().distance(at)), NamedTextColor.DARK_GRAY))));
+        return lines;
+    }
+
+    private static String minutes(long millis) {
+        long m = (millis + 59_999) / 60_000;
+        return m >= 60 ? (m / 60) + "h " + (m % 60) + "m" : m + "m";
     }
 
     private static boolean night(World world) {
