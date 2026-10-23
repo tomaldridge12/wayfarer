@@ -39,9 +39,10 @@ check "$LOG1" "$PLAYER2 earned banner skeleton by forced drop"
 check "$LOG1" "skeleton: 0/100 (earned)"
 grep -q '"version":1' "$DATA/banners/$PLAYER.json" && echo "PASS: player file written with version" || { echo "FAIL: player file"; fail=1; }
 
-LOG1B=$(mktemp); boot "$LOG1B" "mobbanners progress $PLAYER" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"
+LOG1B=$(mktemp); boot "$LOG1B" "mobbanners progress $PLAYER" "mobbanners progress $PLAYER2" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"
 check "$LOG1B" "zombie: 100/100 (earned)"
 check "$LOG1B" "skeleton: 0/100"
+check "$LOG1B" "skeleton: 0/100 (earned)"
 check "$LOG1B" "Placed banner registry loaded: "
 check "$LOG1B" "label(s) shown in chunk 0,0"
 check "$LOG1B" "Banner labels refreshed: 1"
