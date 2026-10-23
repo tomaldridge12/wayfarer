@@ -41,8 +41,13 @@ final class BannerItems {
                     line("Radius " + def.radius() + " blocks when placed")));
             meta.setEnchantmentGlintOverride(true);
         });
-        tags.write(item, MODULE, def.id());
+        tag(item, def.id());
         return item;
+    }
+
+    /** Marks an item as the banner with this id. */
+    void tag(ItemStack item, String bannerId) {
+        tags.write(item, MODULE, bannerId);
     }
 
     /** The banner id this item is tagged with, whether or not config still defines it. */

@@ -9,4 +9,6 @@ public interface Core {
     ConfigService config();
 
     ItemTagService itemTags();
+
+    ChunkDataService chunkData();
 }

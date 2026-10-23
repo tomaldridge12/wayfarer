@@ -21,14 +21,14 @@ public final class ItemTags {
     }
 
     public static void write(Holder holder, String module, String value) {
-        holder.set(key(module), value);
+        holder.set(storageKey(module), value);
     }
 
     public static Optional<String> read(Holder holder, String module) {
-        return Optional.ofNullable(holder.get(key(module)));
+        return Optional.ofNullable(holder.get(storageKey(module)));
     }
 
-    static String key(String module) {
+    static String storageKey(String module) {
         if (!MODULE_ID.matcher(module).matches()) {
             throw new IllegalArgumentException("Module id must match [a-z0-9_]+: " + module);
         }

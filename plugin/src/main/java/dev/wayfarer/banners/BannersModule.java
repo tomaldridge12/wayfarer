@@ -32,6 +32,8 @@ public final class BannersModule implements Module {
     private BannerItems items;
     private PlayerStore<PlayerData> store;
     private BannerListener listener;
+    private PlacedBanners placed;
+    private PlacedBannerListener placedListener;
     private BukkitTask saveTask;
     private volatile BannerSet loaded = BannerSet.empty();
 
@@ -56,6 +58,13 @@ public final class BannersModule implements Module {
         plugin.getServer().getOnlinePlayers().forEach(p -> store.load(p.getUniqueId()));
         listener = new BannerListener(this);
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
+        placed = new PlacedBanners(core.chunkData(), items, core.logger());
+        placedListener = new PlacedBannerListener(placed, items, this::banners);
+        plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
+        placed.loadAll(plugin.getServer());
+        core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "
+                + placed.registry().all().count() + " banners");
+        warnInert();
         saveTask = plugin.getServer().getScheduler()
                 .runTaskTimer(plugin, store::flush, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
@@ -69,6 +78,14 @@ public final class BannersModule implements Module {
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
+        }
+        if (placedListener != null) {
+            HandlerList.unregisterAll(placedListener);
+        }
+        if (placed != null) {
+            long count = placed.registry().all().count();
+            placed.clear(); // the records live in chunk data, so nothing is lost
+            core.logger().info("Placed banner registry unloaded: " + count + " banners");
         }
         if (store != null) {
             store.close();
@@ -121,6 +138,7 @@ public final class BannersModule implements Module {
     void reload(CommandSender sender) {
         try {
             load();
+            warnInert();
             sender.sendMessage("Banners reloaded: " + loaded.banners().size() + " banners, "
                     + loaded.problems().size() + " problems (see log)");
         } catch (IOException e) {
@@ -204,6 +222,14 @@ public final class BannersModule implements Module {
                 items.deliver(player, loaded.find(bannerId).orElseThrow());
                 sender.sendMessage("Here is your " + bannerId + " banner");
             }
+        }
+    }
+
+    /** One warning for placed banners (in loaded chunks) whose id config no longer defines. */
+    private void warnInert() {
+        var inert = placed.inertIds(loaded);
+        if (!inert.isEmpty()) {
+            core.logger().warning("[banners] Placed banners in loaded chunks are inert (id not in config): " + inert);
         }
     }
 

@@ -19,7 +19,7 @@ check() { # log file, pattern
 fail=0
 rm -f "$CFG"
 rm -rf "$DATA"
-LOG1=$(mktemp); boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 100" "mobbanners progress $PLAYER"
+LOG1=$(mktemp); boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 100" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Wayfarer enabled"
 check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
@@ -29,11 +29,15 @@ check "$LOG1" "Unknown banner 'nope'"
 check "$LOG1" "No online player named 'nobody'"
 check "$LOG1" "$PLAYER earned banner zombie"
 check "$LOG1" "zombie: 100/100 (earned)"
+check "$LOG1" "Placed banner registry loaded: "
+check "$LOG1" "Marked chunk"
+check "$LOG1" "Placed banner registry unloaded: "
 grep -q '"version":1' "$DATA/banners/$PLAYER.json" && echo "PASS: player file written with version" || { echo "FAIL: player file"; fail=1; }
 
 LOG1B=$(mktemp); boot "$LOG1B" "mobbanners progress $PLAYER"
 check "$LOG1B" "zombie: 100/100 (earned)"
 check "$LOG1B" "skeleton: 0/100"
+check "$LOG1B" "Placed banner registry loaded: "
 
 printf 'version: 1\nenabled: false\n' >"$CFG"
 LOG2=$(mktemp); boot "$LOG2"
@@ -43,4 +47,9 @@ printf 'banners: [unclosed\n' >"$CFG"
 LOG3=$(mktemp); boot "$LOG3"
 check "$LOG3" "Module banners failed to start, skipped"
 check "$LOG3" "Wayfarer enabled"
+traces=0
+for log in "$LOG1" "$LOG1B" "$LOG2"; do
+  if grep -q 'at dev.wayfarer' "$log"; then echo "FAIL: Wayfarer stack trace in $log"; traces=1; fail=1; fi
+done
+[ $traces -eq 1 ] || echo "PASS: no Wayfarer stack traces in normal boots"
 [ $fail -eq 0 ]

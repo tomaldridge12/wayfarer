@@ -36,6 +36,11 @@ class ModuleManagerTest {
             }
 
             @Override
+            public ChunkDataService chunkData() {
+                return null;
+            }
+
+            @Override
             public ConfigService config() {
                 return new ConfigService() {
                     @Override
