@@ -16,6 +16,20 @@ public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefin
         this(families, banners, counting, Map.of(), problems);
     }
 
+    /** Every reward in config order. Only banners so far; heads and gear will add theirs here. */
+    public List<Reward> rewards() {
+        return banners.values().stream().map(BannerSet::asReward).toList();
+    }
+
+    public java.util.Optional<Reward> findReward(RewardKey wanted) {
+        return RewardKey.BANNER.equals(wanted.type())
+                ? find(wanted.id()).map(BannerSet::asReward) : java.util.Optional.empty();
+    }
+
+    private static Reward asReward(BannerDefinition def) {
+        return new Reward(RewardKey.banner(def.id()), def.name(), def.family(), def.kills());
+    }
+
     /** The drop chances for a mob type, in config order. */
     public List<Drop> dropsFor(String mobType) {
         return drops.getOrDefault(mobType.toLowerCase(java.util.Locale.ROOT), List.of());

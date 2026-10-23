@@ -73,6 +73,10 @@ public final class BannerConfigParser {
         Map<String, String> owner = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry : raw.entrySet()) {
             String id = entry.getKey();
+            if (MobFamily.ALL.equals(id)) {
+                problems.add("Family " + id + " rejected: the name is reserved for the all-mobs kill count");
+                continue;
+            }
             if (!(entry.getValue() instanceof List<?> list) || list.isEmpty()) {
                 problems.add("Family " + id + " rejected: must be a non-empty list of mob types");
                 continue;
@@ -114,6 +118,10 @@ public final class BannerConfigParser {
             return null;
         }
         String family = String.valueOf(familyValue);
+        if (MobFamily.ALL.equals(family)) {
+            problems.add(where + "a banner needs a real mob family, not the all-mobs count");
+            return null;
+        }
         if (!families.containsKey(family)) {
             problems.add(where + "family '" + family + "' is not defined or was rejected");
             return null;

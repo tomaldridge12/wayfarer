@@ -7,8 +7,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** Which kills count. Spawn reasons are upper-case names; "custom" is deliberately not excluded by default. */
-public record CountingSettings(Set<String> excludedSpawnReasons, long minLifetimeTicks) {
+/**
+ * Which kills count. Spawn reasons are upper-case names; "custom" is deliberately not excluded by default.
+ * The all-mobs family counts hostile mobs only unless {@code counting.all-mobs: any}.
+ */
+public record CountingSettings(Set<String> excludedSpawnReasons, long minLifetimeTicks, boolean allMobsHostileOnly) {
+    public CountingSettings(Set<String> excludedSpawnReasons, long minLifetimeTicks) {
+        this(excludedSpawnReasons, minLifetimeTicks, true);
+    }
+
     static final List<String> DEFAULT_EXCLUDED = List.of("SPAWNER", "TRIAL_SPAWNER", "OMINOUS_ITEM_SPAWNER",
             "SPAWNER_EGG", "SLIME_SPLIT", "BREEDING", "EGG", "DISPENSE_EGG");
 
@@ -40,6 +47,13 @@ public record CountingSettings(Set<String> excludedSpawnReasons, long minLifetim
         } else if (value != null) {
             problems.add("counting.min-mob-lifetime-ticks must be a whole number of 0 or more; using 0");
         }
-        return new CountingSettings(excluded, min);
+        boolean hostileOnly = true;
+        Object allMobs = map.get("all-mobs");
+        if ("any".equals(allMobs)) {
+            hostileOnly = false;
+        } else if (allMobs != null && !"hostile".equals(allMobs)) {
+            problems.add("counting.all-mobs must be hostile or any; using hostile");
+        }
+        return new CountingSettings(excluded, min, hostileOnly);
     }
 }

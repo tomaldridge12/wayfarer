@@ -5,9 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Data version 1: {"kills": {family: count}, "earned": [banner ids]}. Missing keys default to empty. */
+/**
+ * Data version 2: {"kills": {family: count}, "earned": ["banner:zombie", ...]}. Missing keys default to empty.
+ * Version 1 stored bare banner ids in "earned"; they are read as banner rewards.
+ */
 public final class PlayerDataCodec implements PlayerStore.Codec<PlayerData> {
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     @Override
     public PlayerData empty() {
@@ -25,7 +28,8 @@ public final class PlayerDataCodec implements PlayerStore.Codec<PlayerData> {
             });
         }
         if (raw.get("earned") instanceof List<?> earned) {
-            earned.forEach(id -> data.markEarned(String.valueOf(id)));
+            earned.forEach(id -> data.markEarned(version < 2
+                    ? RewardKey.banner(String.valueOf(id)) : RewardKey.parse(String.valueOf(id), RewardKey.BANNER)));
         }
         return data;
     }

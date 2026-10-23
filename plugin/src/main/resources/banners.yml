@@ -17,6 +17,7 @@ families:
 counting:
   exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
+  all-mobs: hostile           # the "all" kill count: hostile mobs only (hostile), or every counted mob (any)
 
 # How players are told about boosts. There is deliberately no sound.
 feedback:

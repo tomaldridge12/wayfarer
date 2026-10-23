@@ -132,4 +132,14 @@ class BannerConfigParserTest {
         assertEquals(40, s.numbersMax());
         assertEquals(2, problems.size());
     }
+
+    @Test
+    void allIsReservedForTheAllMobsCount() {
+        BannerSet set = BannerConfigParser.parse(root(
+                ordered("all", List.of("zombie"), "zombie", List.of("zombie")),
+                ordered("z", ordered("family", "all"), "ok", ordered("family", "zombie"))), VOCAB);
+        assertFalse(set.families().containsKey("all"));
+        assertEquals(Set.of("ok"), set.banners().keySet());
+        assertEquals(2, set.problems().size());
+    }
 }

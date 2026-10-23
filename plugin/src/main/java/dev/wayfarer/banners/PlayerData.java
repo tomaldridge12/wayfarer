@@ -5,7 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-/** One player's kill count per mob family and earned banner ids. Mutated on the main thread only. */
+/** One player's kill count per mob family and earned rewards. Mutated on the main thread only. */
 public final class PlayerData {
     private final Map<String, Integer> kills = new LinkedHashMap<>();
     private final Set<String> earned = new LinkedHashSet<>();
@@ -18,19 +18,20 @@ public final class PlayerData {
         kills.put(family, count);
     }
 
-    public boolean isEarned(String bannerId) {
-        return earned.contains(bannerId);
+    public boolean isEarned(RewardKey reward) {
+        return earned.contains(reward.toString());
     }
 
     /** @return true if newly earned */
-    public boolean markEarned(String bannerId) {
-        return earned.add(bannerId);
+    public boolean markEarned(RewardKey reward) {
+        return earned.add(reward.toString());
     }
 
     public Map<String, Integer> killsView() {
         return Map.copyOf(kills);
     }
 
+    /** Earned rewards as "type:id" text. */
     public Set<String> earnedView() {
         return Set.copyOf(earned);
     }

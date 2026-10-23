@@ -32,18 +32,18 @@ class PlayerStoreTest {
         PlayerStore<PlayerData> first = store();
         PlayerData data = first.load(ID).join();
         data.setKills("zombie", 42);
-        data.markEarned("zombie");
+        data.markEarned(dev.wayfarer.banners.RewardKey.banner("zombie"));
         first.markDirty(ID);
         first.close();
 
         PlayerData again = store().load(ID).join();
         assertEquals(42, again.kills("zombie"));
-        assertTrue(again.isEarned("zombie"));
+        assertTrue(again.isEarned(dev.wayfarer.banners.RewardKey.banner("zombie")));
     }
 
     @Test
     void fileCarriesAVersionAndMissingKeysDefault() throws IOException {
-        Files.writeString(dir.resolve(ID + ".json"), "{\"version\":1}");
+        Files.writeString(dir.resolve(ID + ".json"), "{\"version\":2}");
         PlayerData data = store().load(ID).join();
         assertEquals(0, data.kills("zombie"));
         assertEquals(java.util.Set.of(), data.earnedView());
@@ -65,5 +65,19 @@ class PlayerStoreTest {
         try (var files = Files.list(dir)) {
             assertTrue(files.anyMatch(p -> p.getFileName().toString().contains(".corrupt-")));
         }
+    }
+
+    @Test
+    void version1FilesAreReadWithBareBannerIdsAsBannerRewards() throws IOException {
+        Files.writeString(dir.resolve(ID + ".json"),
+                "{\"version\":1,\"kills\":{\"zombie\":100},\"earned\":[\"zombie\"]}");
+        PlayerStore<PlayerData> store = store();
+        PlayerData data = store.load(ID).join();
+        assertTrue(data.isEarned(dev.wayfarer.banners.RewardKey.banner("zombie")));
+        assertEquals(100, data.kills("zombie"));
+        store.markDirty(ID);
+        store.close();
+        String saved = Files.readString(dir.resolve(ID + ".json"));
+        assertTrue(saved.contains("\"version\":2") && saved.contains("\"banner:zombie\""), saved);
     }
 }

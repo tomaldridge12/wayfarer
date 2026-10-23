@@ -159,10 +159,10 @@ public final class BannersModule implements Module {
         if (data == null) {
             return; // data failed to load; already logged
         }
-        BannerRules.KillResult result = BannerRules.recordKill(data, kill, loaded);
+        RewardRules.KillResult result = RewardRules.recordKill(data, kill, loaded);
         if (result.counted()) {
             store.markDirty(killer.getUniqueId());
-            result.newlyEarned().forEach(def -> award(killer, def));
+            result.newlyEarned().forEach(reward -> award(killer, reward));
         }
     }
 
@@ -180,35 +180,50 @@ public final class BannersModule implements Module {
         List<BannerDefinition> won = DropRules.roll(mob.getType().getKey().getKey(), loaded,
                 java.util.concurrent.ThreadLocalRandom.current()::nextDouble);
         for (BannerDefinition def : won) {
-            damagers.forEach(player -> awardEarned(player, def, "drop from " + mob.getType().getKey().getKey()));
+            Reward reward = loaded.findReward(RewardKey.banner(def.id())).orElseThrow();
+            damagers.forEach(player -> awardEarned(player, reward, "drop from " + mob.getType().getKey().getKey()));
         }
     }
 
-    /** Marks a banner earned (once) for a player, online or not, and delivers it if they are online. */
-    private void awardEarned(UUID id, BannerDefinition def, String how) {
+    /** Marks a reward earned (once) for a player, online or not, and delivers it if they are online. */
+    private void awardEarned(UUID id, Reward reward, String how) {
         store.load(id).whenCompleteAsync((data, error) -> {
             if (error != null) {
-                core.logger().severe("[banners] Could not award " + def.id() + " to " + id + ": " + error.getMessage());
+                core.logger().severe("[banners] Could not award " + reward.rewardKey() + " to " + id + ": "
+                        + error.getMessage());
                 return;
             }
-            if (!data.markEarned(def.id())) {
+            if (!data.markEarned(reward.rewardKey())) {
                 return; // awarded once per player; claim recovers lost copies
             }
             store.markDirty(id);
-            core.logger().info("[banners] " + id + " earned banner " + def.id() + " by " + how);
+            core.logger().info("[banners] " + id + " earned " + describe(reward) + " by " + how);
             Player online = plugin.getServer().getPlayer(id);
             if (online != null) {
-                items.deliver(online, def);
-                online.sendMessage("You earned the " + def.name() + "!");
+                deliver(online, reward);
+                online.sendMessage("You earned the " + reward.name() + "!");
             }
         }, mainThread);
     }
 
-    /** Operator tool: awards a banner as a successful drop would, without killing anything. */
-    void forceDrop(CommandSender sender, String bannerId, String targetName) {
-        BannerDefinition def = loaded.find(bannerId).orElse(null);
-        if (def == null) {
-            sender.sendMessage("Unknown banner '" + bannerId + "'");
+    /** Hands a player a copy of a reward. Each reward type delivers its own item. */
+    private void deliver(Player player, Reward reward) {
+        switch (reward.rewardKey().type()) {
+            case RewardKey.BANNER -> loaded.find(reward.rewardKey().id()).ifPresent(def -> items.deliver(player, def));
+            default -> core.logger().warning("[banners] No delivery for reward type " + reward.rewardKey().type());
+        }
+    }
+
+    /** "banner zombie", as written in logs and progress. */
+    private static String describe(Reward reward) {
+        return reward.rewardKey().type() + " " + reward.rewardKey().id();
+    }
+
+    /** Operator tool: awards a reward as a successful drop would, without killing anything. */
+    void forceDrop(CommandSender sender, String rewardText, String targetName) {
+        Reward reward = loaded.findReward(RewardKey.parse(rewardText, RewardKey.BANNER)).orElse(null);
+        if (reward == null) {
+            sender.sendMessage("Unknown reward '" + rewardText + "'");
             return;
         }
         UUID target = resolve(targetName);
@@ -216,14 +231,14 @@ public final class BannersModule implements Module {
             sender.sendMessage("Unknown player '" + targetName + "' (use their UUID if they have not joined recently)");
             return;
         }
-        awardEarned(target, def, "forced drop");
-        sender.sendMessage("Forced a " + def.id() + " banner drop for " + target);
+        awardEarned(target, reward, "forced drop");
+        sender.sendMessage("Forced a " + describe(reward) + " drop for " + target);
     }
 
-    private void award(Player player, BannerDefinition def) {
-        core.logger().info("[banners] " + player.getUniqueId() + " earned banner " + def.id());
-        items.deliver(player, def);
-        player.sendMessage("You earned the " + def.name() + "!");
+    private void award(Player player, Reward reward) {
+        core.logger().info("[banners] " + player.getUniqueId() + " earned " + describe(reward));
+        deliver(player, reward);
+        player.sendMessage("You earned the " + reward.name() + "!");
     }
 
     // --- commands (all run on the main thread) ---
@@ -290,14 +305,15 @@ public final class BannersModule implements Module {
         }
         BannerSet set = loaded;
         withData(sender, target, data -> {
-            sender.sendMessage("Banner progress for " + target + ":");
-            set.banners().values().forEach(def -> sender.sendMessage(def.id() + ": "
-                    + Math.min(data.kills(def.family()), def.kills()) + "/" + def.kills()
-                    + (data.isEarned(def.id()) ? " (earned)" : "")));
+            sender.sendMessage("Progress for " + target + ":");
+            sender.sendMessage("all mobs: " + data.kills(MobFamily.ALL) + " kills");
+            set.rewards().forEach(reward -> sender.sendMessage(describe(reward) + ": "
+                    + Math.min(data.kills(reward.family()), reward.kills()) + "/" + reward.kills()
+                    + (data.isEarned(reward.rewardKey()) ? " (earned)" : "")));
         });
     }
 
-    void setKills(CommandSender sender, String targetName, String bannerId, int kills) {
+    void setKills(CommandSender sender, String targetName, String familyOrBanner, int kills) {
         UUID target = resolve(targetName);
         if (target == null) {
             sender.sendMessage("Unknown player '" + targetName + "' (use their UUID if they have not joined recently)");
@@ -305,41 +321,44 @@ public final class BannersModule implements Module {
         }
         BannerSet set = loaded;
         withData(sender, target, data -> {
-            var result = BannerRules.setKills(data, set, bannerId, kills);
+            var result = RewardRules.setKills(data, set, familyOrBanner, kills);
             if (result.isEmpty()) {
-                sender.sendMessage("Unknown banner '" + bannerId + "'");
+                sender.sendMessage("Unknown family or banner '" + familyOrBanner + "'");
                 return;
             }
             store.markDirty(target);
             Player online = plugin.getServer().getPlayer(target);
-            for (BannerDefinition def : result.get().newlyEarned()) {
-                core.logger().info("[banners] " + target + " earned banner " + def.id());
+            for (Reward reward : result.get().newlyEarned()) {
+                core.logger().info("[banners] " + target + " earned " + describe(reward));
                 if (online != null) {
-                    items.deliver(online, def);
+                    deliver(online, reward);
                 }
             }
-            sender.sendMessage("Set " + target + " " + result.get().family() + " kills to " + kills + "; newly earned: "
-                    + result.get().newlyEarned().stream().map(BannerDefinition::id).toList()
+            sender.sendMessage("Set " + target + " " + result.get().families().getFirst() + " kills to " + kills
+                    + "; newly earned: " + result.get().newlyEarned().stream().map(BannersModule::describe).toList()
                     + (online == null && !result.get().newlyEarned().isEmpty() ? " (offline: use /mobbanners claim)" : ""));
         });
     }
 
-    void claim(CommandSender sender, String bannerId) {
+    /** {@code rewardText} is "banner:zombie", or a bare "zombie" meaning the banner. */
+    void claim(CommandSender sender, String rewardText) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can claim banners");
+            sender.sendMessage("Only players can claim rewards");
             return;
         }
         PlayerData data = store.cached(player.getUniqueId());
         if (data == null) {
-            sender.sendMessage("Your banner data is not loaded; try again shortly");
+            sender.sendMessage("Your reward data is not loaded; try again shortly");
             return;
         }
-        switch (BannerRules.claim(data, loaded, bannerId)) {
-            case UNKNOWN_BANNER -> sender.sendMessage("Unknown banner '" + bannerId + "'");
-            case NOT_EARNED -> sender.sendMessage("You have not earned the " + bannerId + " banner yet");
+        RewardKey wanted = RewardKey.parse(rewardText, RewardKey.BANNER);
+        switch (RewardRules.claim(data, loaded, wanted)) {
+            case UNKNOWN_REWARD -> sender.sendMessage("Unknown reward '" + rewardText + "'");
+            case NOT_EARNED -> sender.sendMessage("You have not earned the " + wanted.id() + " " + wanted.type() + " yet");
             case OK -> {
-                items.deliver(player, loaded.find(bannerId).orElseThrow());
-                sender.sendMessage("Here is your " + bannerId + " banner");
+                Reward reward = loaded.findReward(wanted).orElseThrow();
+                deliver(player, reward);
+                sender.sendMessage("Here is your " + reward.name());
             }
         }
     }

@@ -1,5 +1,6 @@
 package dev.wayfarer.banners;
 
+import org.bukkit.entity.Enemy;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -46,7 +47,8 @@ final class BannerListener implements Listener {
                 victim.getEntitySpawnReason().name(),
                 victim instanceof Tameable t && t.isTamed(),
                 victim instanceof Leashable l && l.isLeashed(),
-                victim.getTicksLived());
+                victim.getTicksLived(),
+                victim instanceof Enemy);
         module.onKill(killer, kill);
     }
 }
