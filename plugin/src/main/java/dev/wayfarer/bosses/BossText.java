@@ -20,6 +20,13 @@ public final class BossText {
                         .decoration(TextDecoration.BOLD, false).decoration(TextDecoration.ITALIC, false));
     }
 
+    /** "⚠ Plague Bearer is enraged!" when a boss enters phase two. */
+    public static Component enraged(BossVariant variant) {
+        return Component.text("⚠ ", NamedTextColor.RED)
+                .append(TextStyle.gradient(variant.name(), variant.colourFrom(), variant.colourTo()).decorate(TextDecoration.BOLD))
+                .append(Component.text(" is enraged!", NamedTextColor.RED).decoration(TextDecoration.BOLD, false));
+    }
+
     public static Component list(BossRoster roster) {
         Component out = Component.text("Bosses (" + roster.bosses().size() + "):", NamedTextColor.GOLD);
         for (BossDefinition b : roster.bosses().values()) {

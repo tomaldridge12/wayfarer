@@ -46,7 +46,7 @@ public final class BossesModule implements Module {
         controller = new BossController(plugin.getServer(), () -> roster, spawner, core.logger());
         plugin.getServer().getPluginManager().registerEvents(controller, plugin);
         controller.attachLoaded();
-        tick = plugin.getServer().getScheduler().runTaskTimer(plugin, controller::tick, 10, 10);
+        tick = plugin.getServer().getScheduler().runTaskTimer(plugin, controller::tick, BossController.PERIOD, BossController.PERIOD);
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
                 event.registrar().register(commands()));
     }

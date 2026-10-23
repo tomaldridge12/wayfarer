@@ -44,6 +44,13 @@ final class BossController implements Listener {
         final BossBar bar;
         final Set<UUID> viewers = new HashSet<>();
         final Set<UUID> damagers = new LinkedHashSet<>();
+        final Set<UUID> minions = new HashSet<>();
+        final AbilityPlanner planner;
+        long ticks;
+        boolean phaseTwo;
+        long shieldedUntil = -1;
+        int ticksWalkingHome;
+        int ticksAlone;
 
         Live(LivingEntity entity, BossMark mark, BossDefinition boss, BossVariant variant, BossBar bar) {
             this.entity = entity;
@@ -51,6 +58,7 @@ final class BossController implements Listener {
             this.boss = boss;
             this.variant = variant;
             this.bar = bar;
+            this.planner = new AbilityPlanner(variant.abilities(), mark.stars());
         }
     }
 
@@ -100,13 +108,17 @@ final class BossController implements Listener {
         }
     }
 
-    /** Runs twice a second: boss bars follow health and nearby players; unloaded bosses are let go. */
+    static final int PERIOD = 10;
+
+    /** Runs twice a second: the fight (abilities, phase, leash, heal), then boss bars; unloaded bosses are let go. */
     void tick() {
         for (Live boss : new ArrayList<>(live.values())) {
             if (!boss.entity.isValid()) {
                 release(boss);
                 continue;
             }
+            boss.ticks += PERIOD;
+            fight(boss);
             var max = boss.entity.getAttribute(Attribute.MAX_HEALTH);
             float progress = (float) Math.max(0, Math.min(1, boss.entity.getHealth() / (max == null ? 1 : max.getValue())));
             boss.bar.progress(progress);
@@ -131,8 +143,143 @@ final class BossController implements Listener {
         }
     }
 
+    private void fight(Live boss) {
+        LivingEntity e = boss.entity;
+        boss.minions.removeIf(id -> {
+            Entity m = server.getEntity(id);
+            return m == null || !m.isValid();
+        });
+        if (boss.shieldedUntil >= 0 && (boss.minions.isEmpty() || boss.ticks >= boss.shieldedUntil)) {
+            boss.shieldedUntil = -1;
+            e.setInvulnerable(false);
+        }
+        if (boss.shieldedUntil >= 0) {
+            e.getWorld().spawnParticle(org.bukkit.Particle.ENCHANT, e.getLocation().add(0, 1, 0), 15, 0.6, 1, 0.6, 0.5);
+        }
+        Player target = target(boss);
+        boolean anyone = target != null || e.getWorld().getPlayers().stream().anyMatch(p ->
+                p.getLocation().distanceSquared(e.getLocation()) <= FightRules.ABANDON_RANGE * FightRules.ABANDON_RANGE);
+        boss.ticksAlone = anyone ? 0 : boss.ticksAlone + PERIOD;
+        var maxAttr = e.getAttribute(Attribute.MAX_HEALTH);
+        double max = maxAttr == null ? e.getHealth() : maxAttr.getValue();
+        if (FightRules.shouldHeal(boss.ticksAlone) && e.getHealth() < max) {
+            heal(boss, max);
+            return;
+        }
+        if (!boss.phaseTwo && FightRules.phaseTwo(e.getHealth(), max)) {
+            enrage(boss);
+        }
+        org.bukkit.Location home = new org.bukkit.Location(e.getWorld(), boss.mark.homeX() + 0.5, boss.mark.homeY(),
+                boss.mark.homeZ() + 0.5);
+        switch (FightRules.leash(e.getLocation().distance(home), boss.ticksWalkingHome)) {
+            case TELEPORT_HOME -> {
+                e.teleport(home);
+                boss.ticksWalkingHome = 0;
+                return;
+            }
+            case WALK_HOME -> {
+                if (e instanceof org.bukkit.entity.Mob mob) {
+                    mob.setTarget(null);
+                    mob.getPathfinder().moveTo(home, 1.3);
+                }
+                boss.ticksWalkingHome += PERIOD;
+                return;
+            }
+            case STAY -> boss.ticksWalkingHome = 0;
+        }
+        if (target == null) {
+            return;
+        }
+        double distance = target.getLocation().distance(e.getLocation());
+        double damage = boss.boss.damage() * roster.get().stars().damage(boss.mark.stars());
+        boss.planner.next(boss.ticks, distance, boss.phaseTwo).ifPresent(ability -> {
+            if (AbilityEffects.use(ability, boss, target, damage)) {
+                boss.planner.used(ability, boss.ticks);
+            }
+        });
+    }
+
+    /** The boss's player target, picking the nearest within 24 blocks when it has none. */
+    private Player target(Live boss) {
+        if (!(boss.entity instanceof org.bukkit.entity.Mob mob)) {
+            return null;
+        }
+        if (mob.getTarget() instanceof Player p && AbilityEffects.hittable(p)
+                && p.getLocation().distanceSquared(mob.getLocation()) <= 32 * 32) {
+            return p;
+        }
+        Player nearest = null;
+        double best = 24 * 24;
+        for (Player p : mob.getWorld().getPlayers()) {
+            double d = p.getLocation().distanceSquared(mob.getLocation());
+            if (AbilityEffects.hittable(p) && d <= best) {
+                best = d;
+                nearest = p;
+            }
+        }
+        mob.setTarget(nearest);
+        return nearest;
+    }
+
+    private static final org.bukkit.NamespacedKey ENRAGE_SPEED = new org.bukkit.NamespacedKey("wayfarer", "enrage_speed");
+    private static final org.bukkit.NamespacedKey ENRAGE_DAMAGE = new org.bukkit.NamespacedKey("wayfarer", "enrage_damage");
+
+    private void enrage(Live boss) {
+        boss.phaseTwo = true;
+        addModifier(boss.entity, Attribute.MOVEMENT_SPEED, ENRAGE_SPEED, 0.25);
+        addModifier(boss.entity, Attribute.ATTACK_DAMAGE, ENRAGE_DAMAGE, 0.2);
+        boss.bar.color(net.kyori.adventure.bossbar.BossBar.Color.PURPLE);
+        boss.entity.getWorld().spawnParticle(org.bukkit.Particle.ANGRY_VILLAGER, boss.entity.getLocation().add(0, 2, 0),
+                12, 0.6, 0.4, 0.6, 0);
+        boss.entity.getWorld().playSound(boss.entity.getLocation(), org.bukkit.Sound.ENTITY_WITHER_SPAWN, 0.6f, 1.4f);
+        for (UUID id : boss.viewers) {
+            Player p = server.getPlayer(id);
+            if (p != null) {
+                p.sendActionBar(BossText.enraged(boss.variant));
+            }
+        }
+    }
+
+    private void heal(Live boss, double max) {
+        boss.entity.setHealth(max);
+        boss.phaseTwo = false;
+        boss.ticksAlone = 0;
+        removeModifier(boss.entity, Attribute.MOVEMENT_SPEED, ENRAGE_SPEED);
+        removeModifier(boss.entity, Attribute.ATTACK_DAMAGE, ENRAGE_DAMAGE);
+        boss.bar.color(net.kyori.adventure.bossbar.BossBar.Color.RED);
+        boss.damagers.clear();
+        removeMinions(boss);
+    }
+
+    private static void addModifier(LivingEntity e, Attribute attribute, org.bukkit.NamespacedKey key, double scalar) {
+        var a = e.getAttribute(attribute);
+        if (a != null && a.getModifier(key) == null) {
+            a.addTransientModifier(new org.bukkit.attribute.AttributeModifier(key, scalar,
+                    org.bukkit.attribute.AttributeModifier.Operation.ADD_SCALAR));
+        }
+    }
+
+    private static void removeModifier(LivingEntity e, Attribute attribute, org.bukkit.NamespacedKey key) {
+        var a = e.getAttribute(attribute);
+        if (a != null && a.getModifier(key) != null) {
+            a.removeModifier(key);
+        }
+    }
+
+    private void removeMinions(Live boss) {
+        for (UUID id : boss.minions) {
+            Entity m = server.getEntity(id);
+            if (m != null) {
+                m.remove();
+            }
+        }
+        boss.minions.clear();
+    }
+
     private void release(Live boss) {
         live.remove(boss.entity.getUniqueId());
+        removeMinions(boss);
+        boss.entity.setInvulnerable(false);
         for (UUID id : boss.viewers) {
             Player p = server.getPlayer(id);
             if (p != null) {
