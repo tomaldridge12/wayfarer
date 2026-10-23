@@ -125,4 +125,22 @@ class BannerTextTest {
         }
         return null;
     }
+
+    @Test
+    void plaqueShowsEarnerAndLiveCount() {
+        HeadDefinition head = new HeadDefinition("zombie", "Zombie Trophy", "zombie", 250);
+        assertEquals("☠ Tom's Zombie Trophy\n1,342 zombies slain", plain(BannerText.plaque(head, "green", "Tom", 1342)));
+        assertEquals("☠ Tom's Zombie Trophy\n… zombies slain", plain(BannerText.plaque(head, "green", "Tom", null)));
+        assertEquals("endermen", BannerText.plural("enderman"));
+        assertEquals("cave spiders", BannerText.plural("cave_spider"));
+    }
+
+    @Test
+    void headLoreSaysWhoAndWhen() {
+        HeadDefinition head = new HeadDefinition("zombie", "Zombie Trophy", "zombie", 250);
+        assertEquals(List.of("☠ Trophy head · Zombie family", "", "Place it to display Tom's live kill count.", "",
+                        "Earned 23 Oct 2026 at 250 zombie kills"),
+                BannerText.headLore(head, "Tom", "23 Oct 2026").stream().map(BannerTextTest::plain).toList());
+        assertEquals("Earned at 250 zombie kills", BannerText.earned(null, 250, "zombie"));
+    }
 }

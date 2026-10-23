@@ -3,7 +3,6 @@ package dev.wayfarer.banners;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -21,20 +20,23 @@ final class BannerLabels {
     }
 
     private final Map<Key, TextDisplay> shown = new HashMap<>();
-    private final Supplier<BannerSet> banners;
+    private final java.util.function.Function<String, Component> textFor;
 
-    BannerLabels(Supplier<BannerSet> banners) {
-        this.banners = banners;
+    /** @param textFor the label for a placed-trophy record */
+    BannerLabels(java.util.function.Function<String, Component> textFor) {
+        this.textFor = textFor;
     }
 
-    void show(Block block, String bannerId) {
+    void show(Block block, String record) {
         Key key = key(block);
         hide(key);
         World world = block.getWorld();
-        // A standing banner is two blocks tall; a wall banner hangs within its own block.
-        boolean wall = block.getBlockData() instanceof Directional; // standing banners are Rotatable
-        Location at = block.getLocation().add(0.5, wall ? 1.25 : 2.4, 0.5);
-        Component text = text(bannerId);
+        // Wall variants are Directional; standing banners and floor heads are Rotatable. A standing banner is two
+        // blocks tall, a wall banner hangs within its block, and a head is half a block.
+        boolean wall = block.getBlockData() instanceof Directional;
+        double height = PlacedTrophy.parse(record).isHead() ? (wall ? 1.0 : 0.85) : (wall ? 1.25 : 2.4);
+        Location at = block.getLocation().add(0.5, height, 0.5);
+        Component text = textFor.apply(record);
         TextDisplay label = world.spawn(at, TextDisplay.class, d -> {
             d.setPersistent(false);
             d.text(text);
@@ -69,11 +71,16 @@ final class BannerLabels {
 
     /** Re-renders every label, for /mobbanners reload. */
     int refresh(PlacedBannerRegistry registry) {
+        return refreshWhere(registry, record -> true);
+    }
+
+    /** Re-renders the labels whose placed-trophy record matches. */
+    int refreshWhere(PlacedBannerRegistry registry, java.util.function.Predicate<String> which) {
         int count = 0;
         for (Map.Entry<Key, TextDisplay> e : shown.entrySet()) {
-            String id = registry.at(e.getKey().world(), e.getKey().pos()).orElse(null);
-            if (id != null && e.getValue().isValid()) {
-                e.getValue().text(text(id));
+            String record = registry.at(e.getKey().world(), e.getKey().pos()).orElse(null);
+            if (record != null && which.test(record) && e.getValue().isValid()) {
+                e.getValue().text(textFor.apply(record));
                 count++;
             }
         }
@@ -87,9 +94,6 @@ final class BannerLabels {
         }
     }
 
-    private Component text(String bannerId) {
-        return BannerText.label(bannerId, banners.get().find(bannerId));
-    }
 
     private static Key key(Block block) {
         return new Key(block.getWorld().getUID(),

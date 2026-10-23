@@ -26,11 +26,13 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 final class PlacedBannerListener implements Listener {
     private final PlacedBanners placed;
     private final BannerItems items;
+    private final TrophyHeads heads;
     private final Supplier<BannerSet> banners;
 
-    PlacedBannerListener(PlacedBanners placed, BannerItems items, Supplier<BannerSet> banners) {
+    PlacedBannerListener(PlacedBanners placed, BannerItems items, TrophyHeads heads, Supplier<BannerSet> banners) {
         this.placed = placed;
         this.items = items;
+        this.heads = heads;
         this.banners = banners;
     }
 
@@ -46,8 +48,15 @@ final class PlacedBannerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onPlace(BlockPlaceEvent event) {
-        // Ground and wall banners both arrive here; an id missing from config is still recorded (inert).
-        items.idOf(event.getItemInHand()).ifPresent(id -> placed.place(event.getBlockPlaced(), id));
+        // Ground and wall banners and heads all arrive here; an id missing from config is still recorded (inert).
+        items.idOf(event.getItemInHand()).ifPresent(text -> {
+            PlacedTrophy trophy = PlacedTrophy.parse(text);
+            if (trophy.isHead()) {
+                trophy = PlacedTrophy.head(trophy.reward().id(), heads.earnerOf(event.getItemInHand()).orElse(null),
+                        heads.earnedAtOf(event.getItemInHand()));
+            }
+            placed.place(event.getBlockPlaced(), trophy);
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

@@ -40,6 +40,7 @@ public final class BannersModule implements Module {
     private final Executor mainThread;
     private Core core;
     private BannerItems items;
+    private TrophyHeads heads;
     private PlayerStore<PlayerData> store;
     private BannerListener listener;
     private PlacedBanners placed;
@@ -74,9 +75,10 @@ public final class BannersModule implements Module {
         plugin.getServer().getOnlinePlayers().forEach(p -> store.load(p.getUniqueId()));
         listener = new BannerListener(this);
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
-        placed = new PlacedBanners(core.chunkData(), items, core.logger(), new BannerLabels(this::banners),
-                mainThread::execute);
-        placedListener = new PlacedBannerListener(placed, items, this::banners);
+        heads = new TrophyHeads(core.itemTags(), this::banners, plugin.getServer());
+        placed = new PlacedBanners(core.chunkData(), items, core.logger(), new BannerLabels(this::labelFor),
+                mainThread::execute, heads, this::nameOf);
+        placedListener = new PlacedBannerListener(placed, items, heads, this::banners);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
@@ -173,7 +175,9 @@ public final class BannersModule implements Module {
         RewardRules.KillResult result = RewardRules.recordKill(data, kill, loaded);
         if (result.counted()) {
             store.markDirty(killer.getUniqueId());
+            stampEarned(data, result.newlyEarned());
             result.newlyEarned().forEach(reward -> award(killer, reward));
+            placed.refreshHeadsOf(killer.getUniqueId());
         }
     }
 
@@ -207,6 +211,7 @@ public final class BannersModule implements Module {
             if (!data.markEarned(reward.rewardKey())) {
                 return; // awarded once per player; claim recovers lost copies
             }
+            stampEarned(data, List.of(reward));
             store.markDirty(id);
             core.logger().info("[banners] " + id + " earned " + describe(reward) + " by " + how);
             Player online = plugin.getServer().getPlayer(id);
@@ -221,8 +226,49 @@ public final class BannersModule implements Module {
     private void deliver(Player player, Reward reward) {
         switch (reward.rewardKey().type()) {
             case RewardKey.BANNER -> loaded.find(reward.rewardKey().id()).ifPresent(def -> items.deliver(player, def));
+            case RewardKey.HEAD -> loaded.findHead(reward.rewardKey().id()).ifPresent(def -> {
+                PlayerData data = store.cached(player.getUniqueId());
+                long earnedAt = data == null ? 0 : data.earnedAt(reward.rewardKey());
+                give(player, heads.create(def, player.getUniqueId(), player.getName(), earnedAt));
+            });
             default -> player.sendMessage("Your " + reward.name() + " is recorded; its item arrives in a later update.");
         }
+    }
+
+    /** Into the inventory, or dropped at the player's feet if it does not fit. */
+    private static void give(Player player, org.bukkit.inventory.ItemStack item) {
+        player.getInventory().addItem(item).values()
+                .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+    }
+
+    private static void stampEarned(PlayerData data, List<Reward> rewards) {
+        long now = System.currentTimeMillis();
+        rewards.forEach(r -> data.setEarnedAt(r.rewardKey(), now));
+    }
+
+    /** A player's last known name, for plaques and head lore. */
+    String nameOf(UUID id) {
+        return id == null ? "A Wayfarer"
+                : java.util.Optional.ofNullable(plugin.getServer().getOfflinePlayer(id).getName()).orElse("A Wayfarer");
+    }
+
+    /** The floating label for a placed-trophy record: a banner's name and effect, or a plaque's live count. */
+    private net.kyori.adventure.text.Component labelFor(String record) {
+        PlacedTrophy trophy = PlacedTrophy.parse(record);
+        if (trophy.isBanner()) {
+            return BannerText.label(trophy.reward().id(), loaded.find(trophy.reward().id()));
+        }
+        var def = loaded.findHead(trophy.reward().id());
+        if (def.isEmpty() || trophy.earner() == null) {
+            return BannerText.label(trophy.reward().toString(), java.util.Optional.empty());
+        }
+        PlayerData data = store.cached(trophy.earner());
+        if (data == null) {
+            // Offline earner: show "…" now and redraw once their data has loaded.
+            store.load(trophy.earner()).thenRunAsync(() -> placed.refreshHeadsOf(trophy.earner()), mainThread);
+        }
+        return BannerText.plaque(def.get(), BannerText.familyColour(loaded, def.get().family()),
+                nameOf(trophy.earner()), data == null ? null : data.kills(def.get().family()));
     }
 
     /** "banner zombie", as written in logs and progress. */
@@ -303,8 +349,24 @@ public final class BannersModule implements Module {
             state.setPatterns(meta.getPatterns());
             state.update();
         }
-        placed.place(block, def.id());
+        placed.place(block, PlacedTrophy.banner(def.id()));
         sender.sendMessage("Placed banner " + def.id() + " at " + x + "," + y + "," + z + " in " + world.getName());
+    }
+
+    /** Operator tool: stands a player's trophy head at a position, as if they had placed it. */
+    void placeHead(CommandSender sender, String earnerName, String headId, int x, int y, int z) {
+        HeadDefinition def = loaded.findHead(headId).orElse(null);
+        UUID earner = resolve(earnerName);
+        if (def == null || earner == null) {
+            sender.sendMessage(def == null ? "Unknown head '" + headId + "'" : "Unknown player '" + earnerName + "'");
+            return;
+        }
+        World world = sender instanceof Player p ? p.getWorld() : plugin.getServer().getWorlds().getFirst();
+        world.getChunkAt(x >> 4, z >> 4); // an operator command, so a sync load is acceptable
+        Block block = world.getBlockAt(x, y, z);
+        heads.stand(block, def);
+        placed.place(block, PlacedTrophy.head(def.id(), earner, System.currentTimeMillis()));
+        sender.sendMessage("Placed head " + def.id() + " of " + earner + " at " + x + "," + y + "," + z);
     }
 
     void progress(CommandSender sender, String targetName) {
@@ -335,6 +397,8 @@ public final class BannersModule implements Module {
                 return;
             }
             store.markDirty(target);
+            stampEarned(data, result.get().newlyEarned());
+            placed.refreshHeadsOf(target);
             Player online = plugin.getServer().getPlayer(target);
             for (Reward reward : result.get().newlyEarned()) {
                 core.logger().info("[banners] " + target + " earned " + describe(reward));

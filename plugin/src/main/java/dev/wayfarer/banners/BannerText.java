@@ -37,10 +37,58 @@ public final class BannerText {
 
     /** The banner's name as a bold gradient from a light to a rich tint of its colour. */
     public static Component name(BannerDefinition def) {
-        int dye = DYE.getOrDefault(def.colour(), 0xF9FFFE);
+        return themed(def.name(), def.colour());
+    }
+
+    /** Any name as a bold gradient in a dye colour's theme. */
+    public static Component themed(String text, String dyeColour) {
+        int dye = DYE.getOrDefault(dyeColour, 0xF9FFFE);
         // Tooltips and labels sit on a dark background, so dark dyes are lifted towards white to stay readable.
         double lift = luminance(dye) < 0.3 ? 0.5 : 0.15;
-        return gradient(def.name(), mix(dye, 0xFFFFFF, 0.6), mix(dye, 0xFFFFFF, lift)).decorate(TextDecoration.BOLD);
+        return gradient(text, mix(dye, 0xFFFFFF, 0.6), mix(dye, 0xFFFFFF, lift)).decorate(TextDecoration.BOLD);
+    }
+
+    /** A family's theme colour: the dye of its banner, or white when it has none. */
+    public static String familyColour(BannerSet set, String family) {
+        return set.banners().values().stream().filter(b -> b.family().equals(family)).map(BannerDefinition::colour)
+                .findFirst().orElse("white");
+    }
+
+    public static List<Component> headLore(HeadDefinition def, String earnerName, String earnedOn) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(plain("☠ Trophy head · " + title(def.family()) + " family", NamedTextColor.DARK_GRAY));
+        lines.add(Component.empty());
+        lines.add(plain("Place it to display ", NamedTextColor.GRAY).append(plain(earnerName, NamedTextColor.WHITE))
+                .append(plain("'s live kill count.", NamedTextColor.GRAY)));
+        lines.add(Component.empty());
+        lines.add(plain(earned(earnedOn, def.kills(), def.family()), NamedTextColor.DARK_GRAY)
+                .decoration(TextDecoration.ITALIC, true));
+        return lines;
+    }
+
+    /** "Earned 23 Oct 2026 at 250 zombie kills", or without the date when it is unknown. */
+    static String earned(String earnedOn, int kills, String family) {
+        String at = "at " + String.format(Locale.ROOT, "%,d", kills) + " "
+                + (MobFamily.ALL.equals(family) ? "mob" : family) + " kills";
+        return earnedOn == null ? "Earned " + at : "Earned " + earnedOn + " " + at;
+    }
+
+    /** A plaque: ☠ Tom's Zombie Trophy over a live "1,342 zombies slain". */
+    public static Component plaque(HeadDefinition def, String colour, String earnerName, Integer kills) {
+        String count = kills == null ? "…" : String.format(Locale.ROOT, "%,d", kills);
+        return plain("☠ ", NamedTextColor.WHITE).append(themed(earnerName + "'s " + def.name(), colour))
+                .append(Component.newline())
+                .append(plain(count, NamedTextColor.WHITE))
+                .append(plain(" " + plural(def.family()) + " slain", NamedTextColor.GRAY));
+    }
+
+    /** zombie → zombies, enderman → endermen, all → mobs. */
+    static String plural(String family) {
+        if (MobFamily.ALL.equals(family)) {
+            return "mobs";
+        }
+        String name = family.replace('_', ' ');
+        return name.endsWith("man") ? name.substring(0, name.length() - 3) + "men" : name + "s";
     }
 
     public static List<Component> lore(BannerDefinition def, Collection<String> mobs) {
@@ -163,6 +211,13 @@ public final class BannerText {
                     tooltip = tooltip.append(Component.newline()).append(line);
                 }
                 return name(def.get()).hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(tooltip));
+            }
+        }
+        if (RewardKey.HEAD.equals(reward.rewardKey().type())) {
+            var def = set.findHead(reward.rewardKey().id());
+            if (def.isPresent()) {
+                Component name = themed(def.get().name(), familyColour(set, def.get().family()));
+                return name.hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(name));
             }
         }
         return plain(reward.name(), NamedTextColor.WHITE);

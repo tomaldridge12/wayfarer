@@ -16,6 +16,15 @@ public final class ItemTagService {
         this.plugin = plugin;
     }
 
+    /** A second named value for the same module, e.g. a trophy's earner alongside its reward. */
+    public void write(ItemStack item, String module, String field, String value) {
+        write(item, module + "_" + field, value);
+    }
+
+    public Optional<String> read(ItemStack item, String module, String field) {
+        return read(item, module + "_" + field);
+    }
+
     public void write(ItemStack item, String module, String value) {
         item.editMeta(meta -> ItemTags.write(holder(meta.getPersistentDataContainer()), module, value));
     }

@@ -27,14 +27,18 @@ final class PlacedBanners {
     private final Logger log;
     private final BannerLabels labels;
     private final Consumer<Runnable> nextTick;
+    private final TrophyHeads heads;
+    private final java.util.function.Function<java.util.UUID, String> nameOf;
 
     PlacedBanners(ChunkDataService chunkData, BannerItems items, Logger log, BannerLabels labels,
-            Consumer<Runnable> nextTick) {
+            Consumer<Runnable> nextTick, TrophyHeads heads, java.util.function.Function<java.util.UUID, String> nameOf) {
         this.chunkData = chunkData;
         this.items = items;
         this.log = log;
         this.labels = labels;
         this.nextTick = nextTick;
+        this.heads = heads;
+        this.nameOf = nameOf;
     }
 
     BannerLabels labels() {
@@ -62,14 +66,17 @@ final class PlacedBanners {
         PlacedBannerRegistry.Decoded decoded = PlacedBannerRegistry.decode(text.get());
         decoded.problems().forEach(p -> log.warning("[banners] Chunk " + ref.x() + "," + ref.z() + ": " + p));
         registry.load(ref, decoded.banners());
-        // Safety net: a record whose block is no longer a banner (removed by a path we did not see) is dropped.
+        // Safety net: a record whose block is gone (removed by a path we did not see) is dropped.
         boolean changed = false;
         for (PlacedBannerRegistry.BlockPos pos : List.copyOf(decoded.banners().keySet())) {
             Material type = chunk.getWorld().getBlockAt(pos.x(), pos.y(), pos.z()).getType();
-            if (!Tag.BANNERS.isTagged(type)) {
+            PlacedTrophy trophy = PlacedTrophy.parse(decoded.banners().get(pos));
+            boolean fits = trophy.isHead() ? TrophyHeads.isHeadBlock(type) : Tag.BANNERS.isTagged(type);
+            if (!fits) {
                 registry.remove(ref.world(), pos);
-                log.warning("[banners] Placed banner " + decoded.banners().get(pos) + " at " + pos
-                        + " is no longer a banner block (" + type + "); record removed");
+                log.warning("[banners] Placed " + trophy.reward().type() + " " + trophy.reward().id() + " at " + pos
+                        + " is no longer a " + (trophy.isHead() ? "head" : "banner") + " block (" + type
+                        + "); record removed");
                 changed = true;
             }
         }
@@ -102,10 +109,15 @@ final class PlacedBanners {
         registry.clear();
     }
 
-    void place(Block block, String bannerId) {
-        registry.add(block.getWorld().getUID(), pos(block), bannerId);
+    void place(Block block, PlacedTrophy trophy) {
+        registry.add(block.getWorld().getUID(), pos(block), trophy.encode());
         save(block.getChunk());
-        labels.show(block, bannerId);
+        labels.show(block, trophy.encode());
+    }
+
+    /** Redraws the plaques of every placed head this player earned, after their kill count changed. */
+    void refreshHeadsOf(java.util.UUID earner) {
+        labels.refreshWhere(registry, value -> earner.equals(PlacedTrophy.parse(value).earner()));
     }
 
     /**
@@ -113,11 +125,16 @@ final class PlacedBanners {
      * Call while the block is still there, so an inert banner can be rebuilt from the block's own drop.
      */
     Optional<ItemStack> takeDrop(Block block, BannerSet set) {
-        Optional<String> id = registry.at(block.getWorld().getUID(), pos(block));
-        if (id.isEmpty()) {
+        Optional<String> value = registry.at(block.getWorld().getUID(), pos(block));
+        if (value.isEmpty()) {
             return Optional.empty();
         }
-        ItemStack item = set.find(id.get()).map(items::create).orElseGet(() -> inertItem(block, id.get()));
+        PlacedTrophy trophy = PlacedTrophy.parse(value.get());
+        String id = trophy.reward().id();
+        ItemStack item = trophy.isHead()
+                ? set.findHead(id).map(def -> heads.create(def, trophy.earner(), nameOf.apply(trophy.earner()),
+                        trophy.earnedAt())).orElseGet(() -> inertHead(block, trophy))
+                : set.find(id).map(items::create).orElseGet(() -> inertItem(block, id));
         registry.remove(block.getWorld().getUID(), pos(block));
         labels.hide(block.getWorld().getUID(), pos(block));
         save(block.getChunk());
@@ -139,7 +156,9 @@ final class PlacedBanners {
     /** Placed banner ids in loaded chunks that the config no longer defines. */
     Set<String> inertIds(BannerSet set) {
         Set<String> inert = new TreeSet<>();
-        registry.all().filter(p -> set.find(p.bannerId()).isEmpty()).forEach(p -> inert.add(p.bannerId()));
+        registry.all().map(p -> PlacedTrophy.parse(p.bannerId()))
+                .filter(t -> t.isBanner() ? set.find(t.reward().id()).isEmpty() : set.findReward(t.reward()).isEmpty())
+                .forEach(t -> inert.add(t.isBanner() ? t.reward().id() : t.reward().toString()));
         return inert;
     }
 
@@ -152,6 +171,15 @@ final class PlacedBanners {
             return null;
         }
         items.tag(drop, id);
+        return drop;
+    }
+
+    private ItemStack inertHead(Block block, PlacedTrophy trophy) {
+        ItemStack drop = block.getDrops().stream().filter(i -> Tag.ITEMS_SKULLS.isTagged(i.getType()))
+                .findFirst().orElse(null);
+        if (drop != null) {
+            heads.tag(drop, trophy.reward().id(), trophy.earner());
+        }
         return drop;
     }
 

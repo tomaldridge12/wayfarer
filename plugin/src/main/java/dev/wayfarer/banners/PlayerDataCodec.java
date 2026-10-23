@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Data version 3: {"kills": {family: count}, "earned": ["banner:zombie", ...], "claims": {"relic:x": epochMillis}}.
  * Missing keys default to empty. Version 1 stored bare banner ids in "earned"; they are read as banner rewards.
- * Version 2 had no "claims".
+ * Version 2 had no "claims". "earnedAt" ({"head:zombie": epochMillis}) is optional; old rewards have no date.
  */
 public final class PlayerDataCodec implements PlayerStore.Codec<PlayerData> {
     public static final int VERSION = 3;
@@ -32,6 +32,13 @@ public final class PlayerDataCodec implements PlayerStore.Codec<PlayerData> {
             earned.forEach(id -> data.markEarned(version < 2
                     ? RewardKey.banner(String.valueOf(id)) : RewardKey.parse(String.valueOf(id), RewardKey.BANNER)));
         }
+        if (raw.get("earnedAt") instanceof Map<?, ?> dates) {
+            dates.forEach((reward, when) -> {
+                if (when instanceof Number n) {
+                    data.setEarnedAt(RewardKey.parse(String.valueOf(reward), RewardKey.BANNER), n.longValue());
+                }
+            });
+        }
         if (raw.get("claims") instanceof Map<?, ?> claims) {
             claims.forEach((reward, when) -> {
                 if (when instanceof Number n) {
@@ -48,6 +55,7 @@ public final class PlayerDataCodec implements PlayerStore.Codec<PlayerData> {
         out.put("kills", new LinkedHashMap<>(value.killsView()));
         out.put("earned", List.copyOf(value.earnedView()));
         out.put("claims", new LinkedHashMap<>(value.lastClaimView()));
+        out.put("earnedAt", new LinkedHashMap<>(value.earnedAtView()));
         return out;
     }
 }

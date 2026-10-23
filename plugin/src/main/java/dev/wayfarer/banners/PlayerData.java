@@ -10,6 +10,7 @@ public final class PlayerData {
     private final Map<String, Integer> kills = new LinkedHashMap<>();
     private final Set<String> earned = new LinkedHashSet<>();
     private final Map<String, Long> lastClaim = new LinkedHashMap<>();
+    private final Map<String, Long> earnedAt = new LinkedHashMap<>();
 
     public int kills(String family) {
         return kills.getOrDefault(family, 0);
@@ -26,6 +27,19 @@ public final class PlayerData {
     /** @return true if newly earned */
     public boolean markEarned(RewardKey reward) {
         return earned.add(reward.toString());
+    }
+
+    /** When the reward was earned, in epoch milliseconds, or 0 if unknown (earned before dates were kept). */
+    public long earnedAt(RewardKey reward) {
+        return earnedAt.getOrDefault(reward.toString(), 0L);
+    }
+
+    public void setEarnedAt(RewardKey reward, long epochMillis) {
+        earnedAt.put(reward.toString(), epochMillis);
+    }
+
+    public Map<String, Long> earnedAtView() {
+        return Map.copyOf(earnedAt);
     }
 
     /** When the player last claimed this reward, in epoch milliseconds, or 0 if never. */
