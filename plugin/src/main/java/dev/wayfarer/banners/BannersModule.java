@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.block.Banner;
+import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -23,6 +28,7 @@ public final class BannersModule implements Module {
     static final String PROGRESS_PERMISSION = "wayfarer.banners.progress";
     static final String PROGRESS_OTHERS_PERMISSION = "wayfarer.banners.progress.others";
     static final String CLAIM_PERMISSION = "wayfarer.banners.claim";
+    static final String PLACE_PERMISSION = "wayfarer.banners.place";
     private static final long SAVE_INTERVAL_TICKS = 20L * 60;
 
     private final JavaPlugin plugin;
@@ -59,7 +65,8 @@ public final class BannersModule implements Module {
         plugin.getServer().getOnlinePlayers().forEach(p -> store.load(p.getUniqueId()));
         listener = new BannerListener(this);
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
-        placed = new PlacedBanners(core.chunkData(), items, core.logger());
+        placed = new PlacedBanners(core.chunkData(), items, core.logger(), new BannerLabels(this::banners),
+                mainThread::execute);
         placedListener = new PlacedBannerListener(placed, items, this::banners);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         boostListener = new BoostListener(new BoostGlue(placed, this::banners));
@@ -145,6 +152,7 @@ public final class BannersModule implements Module {
         try {
             load();
             warnInert();
+            core.logger().info("Banner labels refreshed: " + placed.labels().refresh(placed.registry()));
             sender.sendMessage("Banners reloaded: " + loaded.banners().size() + " banners, "
                     + loaded.problems().size() + " problems (see log)");
         } catch (IOException e) {
@@ -166,6 +174,31 @@ public final class BannersModule implements Module {
         }
         items.deliver(target, def);
         sender.sendMessage("Gave " + target.getName() + " the " + def.id() + " banner");
+    }
+
+    /** Operator tool: stands a banner at a position and registers it as if a player had placed it. */
+    void place(CommandSender sender, String bannerId, int x, int y, int z, String worldName) {
+        BannerDefinition def = loaded.find(bannerId).orElse(null);
+        if (def == null) {
+            sender.sendMessage("Unknown banner '" + bannerId + "'");
+            return;
+        }
+        World world = worldName != null ? plugin.getServer().getWorld(worldName)
+                : sender instanceof Player p ? p.getWorld() : plugin.getServer().getWorlds().getFirst();
+        if (world == null) {
+            sender.sendMessage("Unknown world '" + worldName + "'");
+            return;
+        }
+        world.getChunkAt(x >> 4, z >> 4); // loads it if needed; an operator command, so a sync load is acceptable
+        Block block = world.getBlockAt(x, y, z);
+        ItemStack item = items.create(def);
+        block.setType(item.getType());
+        if (block.getState() instanceof Banner state && item.getItemMeta() instanceof BannerMeta meta) {
+            state.setPatterns(meta.getPatterns());
+            state.update();
+        }
+        placed.place(block, def.id());
+        sender.sendMessage("Placed banner " + def.id() + " at " + x + "," + y + "," + z + " in " + world.getName());
     }
 
     void progress(CommandSender sender, String targetName) {

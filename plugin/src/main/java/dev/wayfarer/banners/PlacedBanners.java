@@ -2,9 +2,11 @@ package dev.wayfarer.banners;
 
 import dev.wayfarer.core.ChunkDataService;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -23,11 +25,20 @@ final class PlacedBanners {
     private final ChunkDataService chunkData;
     private final BannerItems items;
     private final Logger log;
+    private final BannerLabels labels;
+    private final Consumer<Runnable> nextTick;
 
-    PlacedBanners(ChunkDataService chunkData, BannerItems items, Logger log) {
+    PlacedBanners(ChunkDataService chunkData, BannerItems items, Logger log, BannerLabels labels,
+            Consumer<Runnable> nextTick) {
         this.chunkData = chunkData;
         this.items = items;
         this.log = log;
+        this.labels = labels;
+        this.nextTick = nextTick;
+    }
+
+    BannerLabels labels() {
+        return labels;
     }
 
     PlacedBannerRegistry registry() {
@@ -65,19 +76,36 @@ final class PlacedBanners {
         if (changed) {
             save(chunk);
         }
+        if (!registry.inChunk(ref).isEmpty()) {
+            // Spawning entities inside the chunk load event is unsafe, so labels follow on the next tick.
+            World world = chunk.getWorld();
+            nextTick.accept(() -> showLabels(world, ref));
+        }
+    }
+
+    private void showLabels(World world, PlacedBannerRegistry.ChunkRef ref) {
+        if (!world.isChunkLoaded(ref.x(), ref.z())) {
+            return;
+        }
+        Map<PlacedBannerRegistry.BlockPos, String> banners = registry.inChunk(ref);
+        banners.forEach((pos, id) -> labels.show(world.getBlockAt(pos.x(), pos.y(), pos.z()), id));
+        log.info("[banners] " + banners.size() + " label(s) shown in chunk " + ref.x() + "," + ref.z());
     }
 
     void unloadChunk(Chunk chunk) {
+        labels.hideChunk(ref(chunk));
         registry.unload(ref(chunk));
     }
 
     void clear() {
+        labels.hideAll();
         registry.clear();
     }
 
     void place(Block block, String bannerId) {
         registry.add(block.getWorld().getUID(), pos(block), bannerId);
         save(block.getChunk());
+        labels.show(block, bannerId);
     }
 
     /**
@@ -91,6 +119,7 @@ final class PlacedBanners {
         }
         ItemStack item = set.find(id.get()).map(items::create).orElseGet(() -> inertItem(block, id.get()));
         registry.remove(block.getWorld().getUID(), pos(block));
+        labels.hide(block.getWorld().getUID(), pos(block));
         save(block.getChunk());
         return Optional.ofNullable(item);
     }

@@ -3,7 +3,7 @@ package dev.wayfarer.banners;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -40,11 +40,26 @@ final class BannerCommands {
                                                 StringArgumentType.getString(ctx, "player"),
                                                 StringArgumentType.getString(ctx, "banner"),
                                                 IntegerArgumentType.getInteger(ctx, "kills"))))))))
+                .then(Commands.literal("place")
+                        .requires(s -> s.getSender().hasPermission(BannersModule.PLACE_PERMISSION))
+                        .then(banner(m).then(Commands.argument("x", IntegerArgumentType.integer())
+                                .then(Commands.argument("y", IntegerArgumentType.integer())
+                                        .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                .executes(ctx -> run(() -> place(m, ctx, null)))
+                                                .then(Commands.argument("world", StringArgumentType.word())
+                                                        .executes(ctx -> run(() -> place(m, ctx,
+                                                                StringArgumentType.getString(ctx, "world"))))))))))
                 .then(Commands.literal("claim")
                         .requires(s -> s.getSender().hasPermission(BannersModule.CLAIM_PERMISSION))
                         .then(banner(m).executes(ctx -> run(() -> m.claim(ctx.getSource().getSender(),
                                 StringArgumentType.getString(ctx, "banner"))))))
                 .build();
+    }
+
+    private static void place(BannersModule m, CommandContext<CommandSourceStack> ctx, String world) {
+        m.place(ctx.getSource().getSender(), StringArgumentType.getString(ctx, "banner"),
+                IntegerArgumentType.getInteger(ctx, "x"), IntegerArgumentType.getInteger(ctx, "y"),
+                IntegerArgumentType.getInteger(ctx, "z"), world);
     }
 
     private static int run(Runnable action) {

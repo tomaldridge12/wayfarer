@@ -95,6 +95,11 @@ public final class PlacedBannerRegistry {
         return out.build();
     }
 
+    /** A copy of one chunk's placed banners. */
+    public Map<BlockPos, String> inChunk(ChunkRef chunk) {
+        return Map.copyOf(chunks.getOrDefault(chunk, Map.of()));
+    }
+
     public int chunkCount() {
         return chunks.size();
     }

@@ -21,3 +21,6 @@ permissions:
   wayfarer.banners.claim:
     description: Claim a copy of a banner you have earned
     default: true
+  wayfarer.banners.place:
+    description: Stand a banner at a position (testing tool)
+    default: op
