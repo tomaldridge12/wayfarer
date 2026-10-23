@@ -1,0 +1,250 @@
+# Bosses module. Set enabled: false to skip the module at startup.
+version: 1
+enabled: true
+
+# Stars (1-5) multiply a boss's base health and damage. Index 0 is one star.
+stars:
+  health: [1.0, 1.5, 2.2, 3.0, 4.0]
+  damage: [1.0, 1.2, 1.45, 1.75, 2.1]
+
+# Each boss is its own mob family on the ladder. health and damage are at one star (a one-star boss is meant to be
+# beatable in iron gear with some preparation). cooldown-minutes: how long before it can appear again in a world.
+# Variants: entity (a vanilla mob), glow (a text colour name), scale (size, 1 = normal), equipment by slot (head,
+# chest, legs, feet, hand, offhand), colours (name gradient, two #hex values) and abilities from the library:
+# charge, ground_slam, summon_minions, poison_cloud, arrow_volley, blink, fire_ring, pull, shield, enrage.
+bosses:
+  rotting_warlord:
+    name: "Rotting Warlord"
+    health: 100
+    damage: 6
+    cooldown-minutes: 60
+    variants:
+      rotting_warlord:
+        name: "Rotting Warlord"
+        entity: zombie
+        glow: dark_green
+        scale: 1.5
+        colours: ["#B7E07A", "#3E7A1E"]
+        equipment: {head: iron_helmet, chest: iron_chestplate, hand: iron_axe}
+        abilities: [charge, ground_slam]
+      plague_bearer:
+        name: "Plague Bearer"
+        entity: zombie
+        glow: green
+        scale: 1.4
+        colours: ["#D6FF8A", "#5E8C2A"]
+        equipment: {head: leather_helmet, chest: chainmail_chestplate}
+        abilities: [poison_cloud, summon_minions]
+      grave_caller:
+        name: "Grave Caller"
+        entity: husk
+        glow: dark_gray
+        scale: 1.4
+        colours: ["#E8D9B0", "#6B5B3A"]
+        equipment: {head: golden_helmet, hand: stone_hoe}
+        abilities: [summon_minions, pull]
+
+  bone_marshal:
+    name: "Bone Marshal"
+    health: 90
+    damage: 6
+    cooldown-minutes: 60
+    variants:
+      bone_marshal:
+        name: "Bone Marshal"
+        entity: skeleton
+        glow: white
+        scale: 1.4
+        colours: ["#FFFFFF", "#A8A8A8"]
+        equipment: {head: iron_helmet, hand: bow}
+        abilities: [arrow_volley, blink]
+      frost_archer:
+        name: "Frost Archer"
+        entity: stray
+        glow: aqua
+        scale: 1.4
+        colours: ["#E3FBFF", "#4FB3D9"]
+        equipment: {head: chainmail_helmet, hand: bow}
+        abilities: [arrow_volley, pull]
+      ossuary_knight:
+        name: "Ossuary Knight"
+        entity: wither_skeleton
+        glow: dark_gray
+        scale: 1.3
+        colours: ["#BDBDBD", "#2E2E2E"]
+        equipment: {head: iron_helmet, chest: iron_chestplate, hand: stone_sword}
+        abilities: [ground_slam, charge]
+
+  brood_mother:
+    name: "Brood Mother"
+    health: 90
+    damage: 6
+    cooldown-minutes: 60
+    variants:
+      brood_mother:
+        name: "Brood Mother"
+        entity: spider
+        glow: dark_red
+        scale: 2.0
+        colours: ["#FF8A8A", "#7A1010"]
+        abilities: [summon_minions, charge]
+      venom_queen:
+        name: "Venom Queen"
+        entity: cave_spider
+        glow: dark_aqua
+        scale: 2.5
+        colours: ["#7AF0E0", "#1B6B6B"]
+        abilities: [poison_cloud, blink]
+      web_weaver:
+        name: "Web Weaver"
+        entity: spider
+        glow: gray
+        scale: 1.8
+        colours: ["#F2F2F2", "#7A7A7A"]
+        abilities: [pull, summon_minions]
+
+  blast_prophet:
+    name: "Blast Prophet"
+    health: 80
+    damage: 7
+    cooldown-minutes: 90
+    variants:
+      blast_prophet:
+        name: "Blast Prophet"
+        entity: creeper
+        glow: green
+        scale: 1.6
+        colours: ["#C6FF7A", "#2E9E2E"]
+        abilities: [fire_ring, charge]
+      storm_herald:
+        name: "Storm Herald"
+        entity: creeper
+        glow: blue
+        scale: 1.6
+        colours: ["#A8D8FF", "#2A5BD9"]
+        abilities: [charge, pull]
+      volatile_saint:
+        name: "Volatile Saint"
+        entity: creeper
+        glow: gold
+        scale: 1.6
+        colours: ["#FFF1A8", "#E08A00"]
+        abilities: [ground_slam, fire_ring]
+
+  void_stalker:
+    name: "Void Stalker"
+    health: 110
+    damage: 7
+    cooldown-minutes: 90
+    variants:
+      void_stalker:
+        name: "Void Stalker"
+        entity: enderman
+        glow: dark_purple
+        scale: 1.3
+        colours: ["#E0A8FF", "#5A1E8C"]
+        abilities: [blink, charge]
+      rift_warden:
+        name: "Rift Warden"
+        entity: enderman
+        glow: light_purple
+        scale: 1.3
+        colours: ["#FFC8FF", "#9C3CB0"]
+        abilities: [pull, blink]
+      hollow_seer:
+        name: "Hollow Seer"
+        entity: enderman
+        glow: black
+        scale: 1.3
+        colours: ["#B8B8D0", "#2A2A40"]
+        abilities: [shield, summon_minions]
+
+  bog_witch_queen:
+    name: "Bog Witch Queen"
+    health: 120
+    damage: 6
+    cooldown-minutes: 90
+    variants:
+      bog_witch_queen:
+        name: "Bog Witch Queen"
+        entity: witch
+        glow: dark_green
+        scale: 1.4
+        colours: ["#B6E08A", "#4A2E6B"]
+        abilities: [poison_cloud, blink]
+      hex_mother:
+        name: "Hex Mother"
+        entity: witch
+        glow: dark_purple
+        scale: 1.4
+        colours: ["#E6A8FF", "#3A1E5A"]
+        abilities: [summon_minions, pull]
+
+  sand_pharaoh:
+    name: "Sand Pharaoh"
+    health: 140
+    damage: 7
+    cooldown-minutes: 120
+    variants:
+      sand_pharaoh:
+        name: "Sand Pharaoh"
+        entity: husk
+        glow: gold
+        scale: 1.6
+        colours: ["#FFE7A0", "#C98A1E"]
+        equipment: {head: golden_helmet, chest: golden_chestplate, hand: golden_sword}
+        abilities: [summon_minions, shield]
+      dune_tyrant:
+        name: "Dune Tyrant"
+        entity: husk
+        glow: yellow
+        scale: 1.8
+        colours: ["#FFF3C4", "#B07A2E"]
+        equipment: {head: golden_helmet, hand: golden_axe}
+        abilities: [ground_slam, charge]
+
+  drowned_captain:
+    name: "Drowned Captain"
+    health: 140
+    damage: 7
+    cooldown-minutes: 120
+    variants:
+      drowned_captain:
+        name: "Drowned Captain"
+        entity: drowned
+        glow: dark_aqua
+        scale: 1.5
+        colours: ["#A8F0FF", "#1E5A7A"]
+        equipment: {head: chainmail_helmet, hand: trident}
+        abilities: [arrow_volley, pull]
+      tidecaller:
+        name: "Tidecaller"
+        entity: drowned
+        glow: aqua
+        scale: 1.5
+        colours: ["#D2FFFF", "#2E8CA8"]
+        equipment: {hand: trident, offhand: nautilus_shell}
+        abilities: [pull, summon_minions]
+
+  piglin_warlord:
+    name: "Piglin Warlord"
+    health: 160
+    damage: 8
+    cooldown-minutes: 120
+    variants:
+      piglin_warlord:
+        name: "Piglin Warlord"
+        entity: piglin_brute
+        glow: gold
+        scale: 1.4
+        colours: ["#FFD27A", "#B5651D"]
+        equipment: {head: golden_helmet, hand: golden_axe}
+        abilities: [charge, ground_slam]
+      gilded_brute:
+        name: "Gilded Brute"
+        entity: piglin_brute
+        glow: yellow
+        scale: 1.5
+        colours: ["#FFF6B0", "#D4A017"]
+        equipment: {head: golden_helmet, chest: golden_chestplate, hand: golden_sword}
+        abilities: [shield, fire_ring]

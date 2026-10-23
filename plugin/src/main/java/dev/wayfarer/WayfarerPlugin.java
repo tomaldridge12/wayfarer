@@ -1,6 +1,7 @@
 package dev.wayfarer;
 
 import dev.wayfarer.banners.BannersModule;
+import dev.wayfarer.bosses.BossesModule;
 import dev.wayfarer.core.ChunkDataService;
 import dev.wayfarer.core.ConfigService;
 import dev.wayfarer.core.Core;
@@ -22,6 +23,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         itemTags = new ItemTagService(this);
         chunkData = new ChunkDataService(this);
         modules.register(new BannersModule(this));
+        modules.register(new BossesModule(this));
         modules.enableAll(this);
         getLogger().info("Wayfarer enabled");
     }
