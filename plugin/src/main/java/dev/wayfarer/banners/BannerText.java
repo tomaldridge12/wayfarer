@@ -69,8 +69,13 @@ public final class BannerText {
 
     /** ✦ Rare Relic (cool blue) for tier I, ✦ Epic Relic (purple to gold) for tier II. */
     public static Component rarity(int tier) {
-        return tier >= 2 ? gradient("✦ Epic Relic", 0xC77DFF, 0xFFB000).decorate(TextDecoration.BOLD)
-                : gradient("✦ Rare Relic", 0x8FD3FF, 0x2E86C1).decorate(TextDecoration.BOLD);
+        return switch (tier) {
+            case RelicDefinition.REGALIA -> gradient("✦ Boss Regalia", 0xE0E0E0, 0x9E9E9E).decorate(TextDecoration.BOLD);
+            case 1 -> gradient("✦ Rare Relic", 0x8FD3FF, 0x2E86C1).decorate(TextDecoration.BOLD);
+            case 2 -> gradient("✦ Epic Relic", 0xC77DFF, 0xFFB000).decorate(TextDecoration.BOLD);
+            case RelicDefinition.ASCENDED -> gradient("✦ Ascended Relic", 0xFF6B6B, 0xFFD27A).decorate(TextDecoration.BOLD);
+            default -> gradient("✦ LEGENDARY ✦", 0xFFF1A8, 0xFF7A00).decorate(TextDecoration.BOLD);
+        };
     }
 
     public static List<Component> relicLore(RelicDefinition def, Collection<String> mobs, String earnedOn) {
@@ -80,8 +85,11 @@ public final class BannerText {
         lines.add(rarity(def.tier()).append(family));
         lines.add(Component.empty());
         String who = MobFamily.ALL.equals(def.family()) ? "every hostile mob"
-                : mobs.isEmpty() ? "the " + def.family() + " family" : mobList(mobs);
-        if (def.slot().armour()) {
+                : mobs.isEmpty() ? "the " + title(def.family()) : mobList(mobs);
+        if (def.edgePercent() == 0) {
+            lines.add(plain(def.tier() == RelicDefinition.REGALIA ? " Worn to show you have mastered this foe."
+                    : " No family edge", NamedTextColor.GRAY));
+        } else if (def.slot().armour()) {
             lines.add(plain(" ✚ −" + def.edgePercent() + "%", GUARD).append(plain(" damage taken from " + who, NamedTextColor.GRAY)));
         } else {
             lines.add(plain(" ⚔ +" + def.edgePercent() + "%", DAMAGE_UP).append(plain(" damage to " + who, NamedTextColor.GRAY)));
@@ -90,7 +98,8 @@ public final class BannerText {
             lines.add(plain(" ✦ ", PERK).append(plain(perk.describe(), NamedTextColor.WHITE)));
         }
         lines.add(Component.empty());
-        lines.add(plain(earned(earnedOn, def.kills(), def.family()), NamedTextColor.DARK_GRAY)
+        lines.add(plain(def.dropOnly() ? (earnedOn == null ? "Dropped by a boss" : "Dropped by a boss on " + earnedOn)
+                        : earned(earnedOn, def.kills(), def.family()), NamedTextColor.DARK_GRAY)
                 .decoration(TextDecoration.ITALIC, true));
         return lines;
     }
@@ -231,7 +240,8 @@ public final class BannerText {
         lines.add(plain("All mobs", NamedTextColor.WHITE).append(plain(" · ", NamedTextColor.DARK_GRAY))
                 .append(plain(count(data.kills(MobFamily.ALL)), NamedTextColor.GRAY)));
         java.util.Map<String, List<Reward>> byFamily = new java.util.LinkedHashMap<>();
-        set.rewards().forEach(r -> byFamily.computeIfAbsent(r.family(), f -> new ArrayList<>()).add(r));
+        set.rewards().stream().filter(r -> r.kills() != RelicDefinition.DROP_ONLY || data.isEarned(r.rewardKey()))
+                .forEach(r -> byFamily.computeIfAbsent(r.family(), f -> new ArrayList<>()).add(r));
         byFamily.forEach((family, rewards) -> {
             lines.add(plain(title(family), NamedTextColor.WHITE).append(plain(" · ", NamedTextColor.DARK_GRAY))
                     .append(plain(count(data.kills(family)), NamedTextColor.GRAY)));

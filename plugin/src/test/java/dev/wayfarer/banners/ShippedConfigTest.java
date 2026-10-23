@@ -2,6 +2,7 @@ package dev.wayfarer.banners;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.util.List;
@@ -51,15 +52,23 @@ class ShippedConfigTest {
         }
         BannerSet set = BannerConfigParser.parse(root, ANY);
         assertEquals(List.of(), set.problems());
-        assertEquals(List.of("zombie", "skeleton", "creeper", "spider", "enderman"), List.copyOf(set.banners().keySet()));
-        set.banners().values().forEach(b -> {
+        assertEquals(List.of("zombie", "skeleton", "creeper", "spider", "enderman"),
+                set.banners().keySet().stream().filter(id -> !set.isBossFamily(set.banners().get(id).family())).toList());
+        set.banners().values().stream().filter(b -> !set.isBossFamily(b.family())).forEach(b -> {
             assertEquals(100, b.kills());
             assertEquals(10, b.damageBonusPercent());
             assertEquals(10, b.damageReductionPercent());
             assertEquals(16, b.radius());
         });
-        assertEquals(5, set.heads().size());
-        assertEquals(21, set.relics().size());
+        assertEquals(14, set.heads().size());
+        assertEquals(76, set.relics().size());
+        assertEquals(9, set.bossBase().size());
+        assertEquals("zombie", set.baseFamilyOf("rotting_warlord"));
+        assertEquals(null, set.baseFamilyOf("sand_pharaoh"));
+        assertEquals(9, set.legendaries().size());
+        assertEquals(10, set.relics().values().stream().filter(r -> r.tier() == RelicDefinition.ASCENDED).count());
+        assertTrue(set.findRelic("gravecleaver").orElseThrow().dropOnly());
+        assertEquals(10, set.findRelic("rotting_warlord_regalia_head").orElseThrow().kills());
         assertEquals(400, set.findRelic("zombie_weapon").orElseThrow().kills());
         assertEquals(240, set.findRelic("creeper_weapon").orElseThrow().kills());
         assertEquals(MobFamily.ALL, set.findRelic("wayfarers_blade").orElseThrow().family());
@@ -73,7 +82,7 @@ class ShippedConfigTest {
         assertEquals("wild", set.findRelic("zombie_armour").orElseThrow().trimPattern());
         assertEquals(40, set.findRelic("zombie_weapon_2").orElseThrow().edgePercent());
         assertEquals(10, set.findRelic("wayfarers_blade").orElseThrow().edgePercent());
-        set.relics().values().stream().filter(r -> !r.id().equals("wayfarers_blade"))
+        set.relics().values().stream().filter(r -> !r.id().equals("wayfarers_blade") && r.tier() != RelicDefinition.REGALIA)
                 .forEach(r -> assertFalse(r.perks().isEmpty(), r.id() + " should have a perk"));
         assertEquals(2, set.findRelic("spider_armour_2").orElseThrow().perks().size());
         assertEquals(0.45, set.findRelic("skeleton_weapon_2").orElseThrow().perks().getFirst().amount(), 1e-9);

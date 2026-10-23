@@ -41,12 +41,12 @@ final class TrophyHeads {
     }
 
     ItemStack create(HeadDefinition def, UUID earner, String earnerName, long earnedAtMillis) {
-        ItemStack item = new ItemStack(material(def.family()));
+        ItemStack item = new ItemStack(material(def));
         String colour = BannerText.familyColour(banners.get(), def.family());
         item.editMeta(SkullMeta.class, meta -> {
             if (item.getType() == Material.PLAYER_HEAD) {
                 // Only a name: the 26.x client resolves the skin itself (unverified in game).
-                meta.setPlayerProfile(server.createProfile(mhfName(def.family())));
+                meta.setPlayerProfile(server.createProfile(skin(def)));
             }
             meta.displayName(BannerText.themed(def.name(), colour));
             meta.lore(BannerText.headLore(def, earnerName, earnedAtMillis > 0 ? date(earnedAtMillis) : null));
@@ -90,10 +90,10 @@ final class TrophyHeads {
 
     /** Operator tool: stands a floor head of this family at the block. */
     void stand(Block block, HeadDefinition def) {
-        Material material = material(def.family());
+        Material material = material(def);
         block.setType(material);
         if (material == Material.PLAYER_HEAD && block.getState() instanceof Skull skull) {
-            skull.setPlayerProfile(server.createProfile(mhfName(def.family())));
+            skull.setPlayerProfile(server.createProfile(skin(def)));
             skull.update();
         }
     }
@@ -107,8 +107,17 @@ final class TrophyHeads {
         return DATE.format(Instant.ofEpochMilli(epochMillis));
     }
 
-    private static Material material(String family) {
-        return VANILLA.getOrDefault(family, Material.PLAYER_HEAD);
+    /** The head's item from config, else the family's vanilla head, else a player head. */
+    private static Material material(HeadDefinition def) {
+        Material configured = def.item() == null ? null : Material.matchMaterial(def.item());
+        if (configured != null && TrophyHeads.isHeadBlock(configured)) {
+            return configured;
+        }
+        return VANILLA.getOrDefault(def.family(), Material.PLAYER_HEAD);
+    }
+
+    private static String skin(HeadDefinition def) {
+        return def.skin() != null ? def.skin() : mhfName(def.family());
     }
 
     /** cave_spider → MHF_CaveSpider */

@@ -50,20 +50,36 @@ public final class BoostRules {
         Party attacker = shooter != null ? shooter : direct;
         if (attacker.player() && !victim.player()) {
             String family = set.familyOf(victim.type());
-            Optional<Boost> banner = bonus(attacker.at(), family, nearby.apply(attacker.at()), set);
+            String base = set.baseFamilyOf(victim.type()); // a mini boss also counts as its base family
+            List<PlacedBannerRegistry.Placed> near = nearby.apply(attacker.at()).toList();
+            Optional<Boost> banner = stronger(bonus(attacker.at(), family, near.stream(), set),
+                    bonus(attacker.at(), base, near.stream(), set));
             // A projectile carries the edge of the bow that fired it; a melee hit uses the held weapon.
             List<Edge> weapon = shooter != null ? direct.edges() : attacker.edges();
-            Optional<Edge> edge = weapon.stream().filter(e -> matches(e, family, victim.hostile()))
+            Optional<Edge> edge = weapon.stream()
+                    .filter(e -> matches(e, family, victim.hostile()) || (base != null && matches(e, base, victim.hostile())))
                     .max(java.util.Comparator.comparingInt(Edge::percent));
             return combine(banner, edge.map(List::of).orElse(List.of()), 1000).map(b -> new Resolved(b, true));
         }
         if (victim.player() && !attacker.player()) {
             String family = set.familyOf(attacker.type());
-            Optional<Boost> banner = reduction(victim.at(), family, nearby.apply(victim.at()), set);
-            List<Edge> armour = victim.edges().stream().filter(e -> matches(e, family, attacker.hostile())).toList();
+            String base = set.baseFamilyOf(attacker.type());
+            List<PlacedBannerRegistry.Placed> near = nearby.apply(victim.at()).toList();
+            Optional<Boost> banner = stronger(reduction(victim.at(), family, near.stream(), set),
+                    reduction(victim.at(), base, near.stream(), set));
+            List<Edge> armour = victim.edges().stream()
+                    .filter(e -> matches(e, family, attacker.hostile()) || (base != null && matches(e, base, attacker.hostile())))
+                    .toList();
             return combine(banner, armour, 100).map(b -> new Resolved(b, false));
         }
         return Optional.empty();
+    }
+
+    private static Optional<Boost> stronger(Optional<Boost> a, Optional<Boost> b) {
+        if (a.isEmpty()) {
+            return b;
+        }
+        return b.isPresent() && b.get().percent() > a.get().percent() ? b : a;
     }
 
     private static boolean matches(Edge edge, String mobFamily, boolean hostile) {

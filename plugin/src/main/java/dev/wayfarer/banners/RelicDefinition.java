@@ -10,17 +10,41 @@ import java.util.Map;
  */
 public record RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot,
         String item, Map<String, Integer> enchants, String trimPattern, String trimMaterial, int edgePercent,
-        java.util.List<Perk> perks) {
+        java.util.List<Perk> perks, Integer dye) {
+
+    /** Tiers: 0 cosmetic regalia, 1 Rare (iron-level), 2 Epic (diamond-level), 3 Ascended, 4 Legendary. */
+    public static final int REGALIA = 0;
+    public static final int ASCENDED = 3;
+    public static final int LEGENDARY = 4;
+
+    /** Drop-only relics (Ascended, Legendary) can never be reached by kill count. */
+    public static final int DROP_ONLY = Integer.MAX_VALUE;
+
+    public RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot,
+            String item, Map<String, Integer> enchants, String trimPattern, String trimMaterial, int edgePercent,
+            java.util.List<Perk> perks) {
+        this(id, name, family, kills, tier, slot, item, enchants, trimPattern, trimMaterial, edgePercent, perks, null);
+    }
+
+    public boolean dropOnly() {
+        return kills == DROP_ONLY;
+    }
 
     /** A relic with no item details, for rules that only need its place on the ladder. */
     public RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot) {
-        this(id, name, family, kills, tier, slot, null, Map.of(), null, null, defaultEdge(slot, tier, family), java.util.List.of());
+        this(id, name, family, kills, tier, slot, null, Map.of(), null, null, defaultEdge(slot, tier, family), java.util.List.of(), null);
     }
 
     /** Weapons +30% / +40%; armour −25% / −30%; the all-mobs relic +10%. */
     static int defaultEdge(Slot slot, int tier, String family) {
+        if (tier == REGALIA) {
+            return 0;
+        }
         if (MobFamily.ALL.equals(family)) {
-            return 10;
+            return tier >= LEGENDARY ? 15 : 10;
+        }
+        if (tier >= ASCENDED) {
+            return slot == Slot.WEAPON ? 50 : 35;
         }
         return slot == Slot.WEAPON ? (tier >= 2 ? 40 : 30) : (tier >= 2 ? 30 : 25);
     }

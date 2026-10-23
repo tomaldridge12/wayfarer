@@ -27,6 +27,11 @@ final class BannerListener implements Listener {
     }
 
     @EventHandler
+    void onBossDefeated(dev.wayfarer.core.BossDefeatedEvent event) {
+        module.onBossDefeated(event);
+    }
+
+    @EventHandler
     void onQuit(PlayerQuitEvent event) {
         module.playerQuit(event.getPlayer().getUniqueId());
     }
@@ -34,7 +39,9 @@ final class BannerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onDeath(EntityDeathEvent event) {
         LivingEntity victim = event.getEntity();
-        if (victim instanceof Player) {
+        // Bosses are counted from BossDefeatedEvent (every damager); boss minions never count.
+        if (victim instanceof Player || dev.wayfarer.core.MinionMark.is(victim)
+                || dev.wayfarer.core.BossMark.read(victim).isPresent()) {
             return;
         }
         Entity cause = event.getDamageSource().getCausingEntity(); // a projectile's cause is its shooter

@@ -301,6 +301,18 @@ final class BossController implements Listener {
         return n;
     }
 
+    /** Operator tool: defeats every tracked boss as if this player had fought it; returns how many. */
+    int defeatAll(UUID player) {
+        int n = 0;
+        for (Live boss : new ArrayList<>(live.values())) {
+            boss.damagers.add(player);
+            boss.entity.setInvulnerable(false);
+            boss.entity.setHealth(0);
+            n++;
+        }
+        return n;
+    }
+
     void clear() {
         new ArrayList<>(live.values()).forEach(this::release);
     }

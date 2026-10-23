@@ -72,7 +72,9 @@ final class BoostGlue {
 
     private static BoostRules.Party party(Entity entity, java.util.List<BoostRules.Edge> edges) {
         Location at = entity.getLocation();
-        return new BoostRules.Party(entity instanceof Player, entity.getType().getKey().getKey(),
+        String type = dev.wayfarer.core.BossMark.read(entity).map(m -> BannerSet.BOSS_PREFIX + m.family())
+                .orElse(entity.getType().getKey().getKey()); // a boss counts as its own family
+        return new BoostRules.Party(entity instanceof Player, type,
                 new BoostRules.Point(entity.getWorld().getUID(), at.getX(), at.getY(), at.getZ()),
                 entity instanceof org.bukkit.entity.Enemy, edges);
     }

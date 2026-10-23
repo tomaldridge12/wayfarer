@@ -7,7 +7,31 @@ import java.util.Map;
 public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
         Map<String, HeadDefinition> heads, Map<String, RelicDefinition> relics,
         CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems,
-        List<String> missingOptionalEnchants) {
+        List<String> missingOptionalEnchants, Map<String, String> bossBase, BossLoot.Settings bossLoot,
+        Map<String, String> legendaries) {
+
+    /** The prefix the boost glue gives boss entities, so they count as their boss family. */
+    public static final String BOSS_PREFIX = "boss:";
+
+    public BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
+            Map<String, HeadDefinition> heads, Map<String, RelicDefinition> relics,
+            CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems,
+            List<String> missingOptionalEnchants) {
+        this(families, banners, heads, relics, counting, drops, problems, missingOptionalEnchants, Map.of(),
+                BossLoot.Settings.defaults(), Map.of());
+    }
+
+    /** Whether this family is a boss's own family. */
+    public boolean isBossFamily(String family) {
+        return bossBase.containsKey(family);
+    }
+
+    /** A mini boss's base family (zombie for the Rotting Warlord), or null for other bosses and plain mobs. */
+    public String baseFamilyOf(String typeOrFamily) {
+        String family = typeOrFamily.startsWith(BOSS_PREFIX) ? typeOrFamily.substring(BOSS_PREFIX.length()) : typeOrFamily;
+        String base = bossBase.get(family);
+        return base == null || base.isEmpty() ? null : base;
+    }
 
     /** Without the optional ExcellentEnchants plugin its enchants are left out of relics, listed here (not a problem). */
     public BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
@@ -32,7 +56,7 @@ public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefin
 
     /** Every reward: banners, trophy heads and relics, ordered by kill count (stable within equal counts). */
     public List<Reward> rewards() {
-        List<Reward> all = new java.util.ArrayList<>();
+        List<Reward> all = new java.util.ArrayList<>(); // drop-only relics have a kill count no one reaches
         banners.values().forEach(d -> all.add(new Reward(RewardKey.banner(d.id()), d.name(), d.family(), d.kills())));
         heads.values().forEach(d -> all.add(new Reward(new RewardKey(RewardKey.HEAD, d.id()), d.name(), d.family(), d.kills())));
         relics.values().forEach(d -> all.add(new Reward(new RewardKey(RewardKey.RELIC, d.id()), d.name(), d.family(), d.kills())));
@@ -64,6 +88,10 @@ public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefin
 
     /** The family a mob type belongs to, or null. */
     public String familyOf(String mobType) {
+        if (mobType.startsWith(BOSS_PREFIX)) {
+            String boss = mobType.substring(BOSS_PREFIX.length());
+            return families.containsKey(boss) ? boss : null;
+        }
         String mob = mobType.toLowerCase(java.util.Locale.ROOT);
         return families.values().stream().filter(f -> f.mobs().contains(mob)).map(MobFamily::id)
                 .findFirst().orElse(null);

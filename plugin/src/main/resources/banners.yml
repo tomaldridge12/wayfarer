@@ -91,6 +91,87 @@ banners:
     damage-reduction: 10
     radius: 16
 
+  rotting_warlord:
+    name: "Rotting Warlord Banner"
+    colour: green
+    patterns: ["skull:black", "border:lime"]
+    family: rotting_warlord
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  bone_marshal:
+    name: "Bone Marshal Banner"
+    colour: white
+    patterns: ["skull:black", "cross:gray"]
+    family: bone_marshal
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  brood_mother:
+    name: "Brood Mother Banner"
+    colour: black
+    patterns: ["circle:red", "cross:black"]
+    family: brood_mother
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  blast_prophet:
+    name: "Blast Prophet Banner"
+    colour: lime
+    patterns: ["creeper:black", "border:orange"]
+    family: blast_prophet
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  void_stalker:
+    name: "Void Stalker Banner"
+    colour: purple
+    patterns: ["globe:black", "border:black"]
+    family: void_stalker
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  bog_witch_queen:
+    name: "Bog Witch Queen Banner"
+    colour: green
+    patterns: ["flower:purple", "border:black"]
+    family: bog_witch_queen
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  sand_pharaoh:
+    name: "Sand Pharaoh Banner"
+    colour: yellow
+    patterns: ["triangle_top:orange", "border:brown"]
+    family: sand_pharaoh
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  drowned_captain:
+    name: "Drowned Captain Banner"
+    colour: cyan
+    patterns: ["flow:light_blue", "border:blue"]
+    family: drowned_captain
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
+  piglin_warlord:
+    name: "Piglin Warlord Banner"
+    colour: orange
+    patterns: ["piglin:black", "border:yellow"]
+    family: piglin_warlord
+    kills: 1
+    damage-bonus: 20
+    damage-reduction: 20
+    radius: 24
 # The Wayfarer set: relic armour from this many different families worn at once (head, chest, legs, feet, off-hand
 # charm; any tier) gives less damage from all hostile mobs and extra hearts.
 wayfarer-set:
@@ -121,8 +202,57 @@ heads:
     family: enderman
     kills: 150
 
+  rotting_warlord:
+    name: "Rotting Warlord Trophy"
+    family: rotting_warlord
+    kills: 3
+    item: zombie_head
+  bone_marshal:
+    name: "Bone Marshal Trophy"
+    family: bone_marshal
+    kills: 3
+    item: skeleton_skull
+  brood_mother:
+    name: "Brood Mother Trophy"
+    family: brood_mother
+    kills: 3
+    item: player_head
+    skin: MHF_Spider
+  blast_prophet:
+    name: "Blast Prophet Trophy"
+    family: blast_prophet
+    kills: 3
+    item: creeper_head
+  void_stalker:
+    name: "Void Stalker Trophy"
+    family: void_stalker
+    kills: 3
+    item: player_head
+    skin: MHF_Enderman
+  bog_witch_queen:
+    name: "Bog Witch Queen Trophy"
+    family: bog_witch_queen
+    kills: 3
+    item: player_head
+    skin: MHF_Witch
+  sand_pharaoh:
+    name: "Sand Pharaoh Trophy"
+    family: sand_pharaoh
+    kills: 3
+    item: zombie_head
+  drowned_captain:
+    name: "Drowned Captain Trophy"
+    family: drowned_captain
+    kills: 3
+    item: zombie_head
+  piglin_warlord:
+    name: "Piglin Warlord Trophy"
+    family: piglin_warlord
+    kills: 3
+    item: piglin_head
 # Relics: a themed weapon and one armour piece per family, in two tiers (I iron-level, II diamond-level).
-# kills: the family's kill count needed ('all' is the all-mobs count). item: the base item (never netherite).
+# kills: the family's kill count needed ('all' is the all-mobs count); drop-only relics come only from boss loot.
+# tier: 0 regalia (cosmetic), 1 rare (iron-level), 2 epic (diamond-level), 3 ascended, 4 legendary; dye: #hex for leather. item: the base item (never netherite).
 # edge: the family edge in percent (weapons: extra damage to the family; armour: less damage from it); omitted
 # means weapons 30 / 40 and armour 25 / 30 by tier. trim: pattern:material for armour. enchants: preset levels,
 # kept at or below each enchant's maximum. perks: from the fixed library (hunger_immunity, poison_immunity,
@@ -424,3 +554,602 @@ relics:
       unbreaking: 3
       excellentenchants:double_strike: 2
       excellentenchants:vampire: 2
+
+  rotting_warlord_regalia_head:
+    name: "Rotting Warlord Crown"
+    family: rotting_warlord
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#3E7A1E"
+  rotting_warlord_regalia_chest:
+    name: "Rotting Warlord Mantle"
+    family: rotting_warlord
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#3E7A1E"
+  rotting_warlord_regalia_legs:
+    name: "Rotting Warlord Greaves"
+    family: rotting_warlord
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#3E7A1E"
+  rotting_warlord_regalia_feet:
+    name: "Rotting Warlord Treads"
+    family: rotting_warlord
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#3E7A1E"
+  bone_marshal_regalia_head:
+    name: "Bone Marshal Crown"
+    family: bone_marshal
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#D9D9D9"
+  bone_marshal_regalia_chest:
+    name: "Bone Marshal Mantle"
+    family: bone_marshal
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#D9D9D9"
+  bone_marshal_regalia_legs:
+    name: "Bone Marshal Greaves"
+    family: bone_marshal
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#D9D9D9"
+  bone_marshal_regalia_feet:
+    name: "Bone Marshal Treads"
+    family: bone_marshal
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#D9D9D9"
+  brood_mother_regalia_head:
+    name: "Brood Mother Crown"
+    family: brood_mother
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#7A1010"
+  brood_mother_regalia_chest:
+    name: "Brood Mother Mantle"
+    family: brood_mother
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#7A1010"
+  brood_mother_regalia_legs:
+    name: "Brood Mother Greaves"
+    family: brood_mother
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#7A1010"
+  brood_mother_regalia_feet:
+    name: "Brood Mother Treads"
+    family: brood_mother
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#7A1010"
+  blast_prophet_regalia_head:
+    name: "Blast Prophet Crown"
+    family: blast_prophet
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#2E9E2E"
+  blast_prophet_regalia_chest:
+    name: "Blast Prophet Mantle"
+    family: blast_prophet
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#2E9E2E"
+  blast_prophet_regalia_legs:
+    name: "Blast Prophet Greaves"
+    family: blast_prophet
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#2E9E2E"
+  blast_prophet_regalia_feet:
+    name: "Blast Prophet Treads"
+    family: blast_prophet
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#2E9E2E"
+  void_stalker_regalia_head:
+    name: "Void Stalker Crown"
+    family: void_stalker
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#5A1E8C"
+  void_stalker_regalia_chest:
+    name: "Void Stalker Mantle"
+    family: void_stalker
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#5A1E8C"
+  void_stalker_regalia_legs:
+    name: "Void Stalker Greaves"
+    family: void_stalker
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#5A1E8C"
+  void_stalker_regalia_feet:
+    name: "Void Stalker Treads"
+    family: void_stalker
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#5A1E8C"
+  bog_witch_queen_regalia_head:
+    name: "Bog Witch Queen Crown"
+    family: bog_witch_queen
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#4A2E6B"
+  bog_witch_queen_regalia_chest:
+    name: "Bog Witch Queen Mantle"
+    family: bog_witch_queen
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#4A2E6B"
+  bog_witch_queen_regalia_legs:
+    name: "Bog Witch Queen Greaves"
+    family: bog_witch_queen
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#4A2E6B"
+  bog_witch_queen_regalia_feet:
+    name: "Bog Witch Queen Treads"
+    family: bog_witch_queen
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#4A2E6B"
+  sand_pharaoh_regalia_head:
+    name: "Sand Pharaoh Crown"
+    family: sand_pharaoh
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#C98A1E"
+  sand_pharaoh_regalia_chest:
+    name: "Sand Pharaoh Mantle"
+    family: sand_pharaoh
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#C98A1E"
+  sand_pharaoh_regalia_legs:
+    name: "Sand Pharaoh Greaves"
+    family: sand_pharaoh
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#C98A1E"
+  sand_pharaoh_regalia_feet:
+    name: "Sand Pharaoh Treads"
+    family: sand_pharaoh
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#C98A1E"
+  drowned_captain_regalia_head:
+    name: "Drowned Captain Crown"
+    family: drowned_captain
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#1E5A7A"
+  drowned_captain_regalia_chest:
+    name: "Drowned Captain Mantle"
+    family: drowned_captain
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#1E5A7A"
+  drowned_captain_regalia_legs:
+    name: "Drowned Captain Greaves"
+    family: drowned_captain
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#1E5A7A"
+  drowned_captain_regalia_feet:
+    name: "Drowned Captain Treads"
+    family: drowned_captain
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#1E5A7A"
+  piglin_warlord_regalia_head:
+    name: "Piglin Warlord Crown"
+    family: piglin_warlord
+    kills: 10
+    tier: 0
+    slot: head
+    item: leather_helmet
+    dye: "#B5651D"
+  piglin_warlord_regalia_chest:
+    name: "Piglin Warlord Mantle"
+    family: piglin_warlord
+    kills: 10
+    tier: 0
+    slot: chest
+    item: leather_chestplate
+    dye: "#B5651D"
+  piglin_warlord_regalia_legs:
+    name: "Piglin Warlord Greaves"
+    family: piglin_warlord
+    kills: 10
+    tier: 0
+    slot: legs
+    item: leather_leggings
+    dye: "#B5651D"
+  piglin_warlord_regalia_feet:
+    name: "Piglin Warlord Treads"
+    family: piglin_warlord
+    kills: 10
+    tier: 0
+    slot: feet
+    item: leather_boots
+    dye: "#B5651D"
+  zombie_weapon_3:
+    name: "Zombie Cleaver of Ruin"
+    family: zombie
+    drop-only: true
+    tier: 3
+    slot: weapon
+    item: diamond_axe
+    enchants:
+      sharpness: 4
+      unbreaking: 3
+      excellentenchants:vampire: 3
+      excellentenchants:rage: 2
+    perks:
+      - {type: hunger_immunity}
+      - {type: kill_heal, amount: 1}
+  zombie_armour_3:
+    name: "Rotguard Chestplate of Ruin"
+    family: zombie
+    drop-only: true
+    tier: 3
+    slot: chest
+    item: diamond_chestplate
+    trim: wild:emerald
+    enchants:
+      protection: 4
+      unbreaking: 3
+      excellentenchants:hardened: 2
+      excellentenchants:regrowth: 3
+    perks:
+      - {type: no_knockback, family: zombie}
+      - {type: hunger_immunity}
+  skeleton_weapon_3:
+    name: "Bonebow of Ruin"
+    family: skeleton
+    drop-only: true
+    tier: 3
+    slot: weapon
+    item: bow
+    enchants:
+      power: 4
+      unbreaking: 3
+      excellentenchants:sniper: 2
+      excellentenchants:withered_arrows: 3
+    perks:
+      - {type: arrow_saver, amount: 0.6}
+  skeleton_armour_3:
+    name: "Bonecrown Helm of Ruin"
+    family: skeleton
+    drop-only: true
+    tier: 3
+    slot: head
+    item: diamond_helmet
+    trim: rib:quartz
+    enchants:
+      protection: 4
+      unbreaking: 3
+      excellentenchants:night_vision: 1
+      excellentenchants:saturation: 2
+    perks:
+      - {type: projectile_ward, family: skeleton, amount: 50}
+  spider_weapon_3:
+    name: "Spider Fang of Ruin"
+    family: spider
+    drop-only: true
+    tier: 3
+    slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 4
+      unbreaking: 3
+      excellentenchants:venom: 2
+      excellentenchants:paralyze: 3
+    perks:
+      - {type: poison_immunity}
+      - {type: kill_heal, amount: 1}
+  spider_armour_3:
+    name: "Silkstep Boots of Ruin"
+    family: spider
+    drop-only: true
+    tier: 3
+    slot: feet
+    item: diamond_boots
+    trim: eye:redstone
+    enchants:
+      protection: 4
+      unbreaking: 3
+      excellentenchants:speed: 2
+      excellentenchants:jumping: 2
+    perks:
+      - {type: cobweb_walker}
+      - {type: fall_cushion, amount: 12}
+  creeper_weapon_3:
+    name: "Blast Maul of Ruin"
+    family: creeper
+    drop-only: true
+    tier: 3
+    slot: weapon
+    item: mace
+    enchants:
+      density: 4
+      unbreaking: 3
+      excellentenchants:thunder: 3
+    perks:
+      - {type: knock_away, family: creeper, amount: 3.0}
+      - {type: lightning_strike, amount: 0.1}
+  creeper_armour_3:
+    name: "Blastproof Greaves of Ruin"
+    family: creeper
+    drop-only: true
+    tier: 3
+    slot: legs
+    item: diamond_leggings
+    trim: bolt:copper
+    enchants:
+      blast_protection: 4
+      unbreaking: 3
+      excellentenchants:elemental_protection: 3
+      excellentenchants:stopping_force: 3
+    perks:
+      - {type: explosion_ward, amount: 80}
+  enderman_weapon_3:
+    name: "Void Edge of Ruin"
+    family: enderman
+    drop-only: true
+    tier: 3
+    slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 4
+      unbreaking: 3
+      excellentenchants:blindness: 2
+      excellentenchants:double_strike: 2
+    perks:
+      - {type: enderman_calm}
+      - {type: kill_heal, amount: 1}
+  enderman_armour_3:
+    name: "Pearl Charm of Ruin"
+    family: enderman
+    drop-only: true
+    tier: 3
+    slot: offhand
+    item: shield
+    enchants:
+      unbreaking: 3
+    perks:
+      - {type: pearl_mastery, amount: 90}
+  gravecleaver:
+    name: "Gravecleaver"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: diamond_axe
+    enchants:
+      sharpness: 5
+      unbreaking: 3
+      excellentenchants:vampire: 3
+      excellentenchants:rage: 2
+    perks:
+      - {type: kill_heal, amount: 2}
+      - {type: hunger_immunity}
+  marshals_longbow:
+    name: "Marshal's Longbow"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: bow
+    enchants:
+      power: 5
+      unbreaking: 3
+      excellentenchants:sniper: 2
+      excellentenchants:withered_arrows: 3
+    perks:
+      - {type: arrow_saver, amount: 0.6}
+  broodfang:
+    name: "Broodfang"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 5
+      unbreaking: 3
+      excellentenchants:venom: 2
+      excellentenchants:paralyze: 3
+    perks:
+      - {type: poison_immunity}
+      - {type: kill_heal, amount: 1}
+  prophets_maul:
+    name: "Prophet's Maul"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: mace
+    enchants:
+      density: 5
+      unbreaking: 3
+      excellentenchants:thunder: 3
+    perks:
+      - {type: lightning_strike, amount: 0.25}
+      - {type: explosion_ward, amount: 30}
+  voidwalkers:
+    name: "Voidwalkers"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: feet
+    item: diamond_boots
+    enchants:
+      protection: 4
+      unbreaking: 3
+      feather_falling: 4
+      excellentenchants:speed: 2
+    perks:
+      - {type: pearl_mastery, amount: 75}
+      - {type: fall_cushion, amount: 12}
+      - {type: enderman_calm}
+  hexbloom_crown:
+    name: "Hexbloom Crown"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: head
+    item: diamond_helmet
+    enchants:
+      protection: 4
+      unbreaking: 3
+      respiration: 3
+      excellentenchants:saturation: 2
+    perks:
+      - {type: poison_immunity}
+      - {type: hunger_immunity}
+  pharaohs_khopesh:
+    name: "Pharaoh's Khopesh"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: diamond_sword
+    enchants:
+      sharpness: 5
+      unbreaking: 3
+      excellentenchants:double_strike: 2
+      excellentenchants:blindness: 2
+    perks:
+      - {type: lightning_strike, amount: 0.15}
+      - {type: kill_heal, amount: 1}
+  captains_trident:
+    name: "Captain's Trident"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: trident
+    enchants:
+      impaling: 5
+      loyalty: 3
+      unbreaking: 3
+    perks:
+      - {type: lightning_strike, amount: 0.2}
+  warlords_greataxe:
+    name: "Warlord's Greataxe"
+    family: all
+    drop-only: true
+    tier: 4
+    slot: weapon
+    item: diamond_axe
+    enchants:
+      sharpness: 5
+      unbreaking: 3
+      excellentenchants:rage: 2
+      excellentenchants:vampire: 2
+    perks:
+      - {type: kill_heal, amount: 3}
+      - {type: explosion_ward, amount: 25}
+
+# Bosses (from the bosses module): each boss is its own family on the ladder. base: the mob family a mini boss belongs
+# to (its Ascended relics drop from it, and that family's relics and banners also work against it).
+bosses:
+  count-toward-base-family: false   # true: a mini boss kill also counts toward its base family's kill count
+  loot:                             # personal rolls for every player who damaged the boss
+    ascended-chance: [0.05, 0.12, 0.20, 0.27, 0.35]   # by stars; mini bosses only
+    legendary-chance: [0.01, 0.025, 0.04, 0.06, 0.08] # by stars
+    xp-per-star: 60                                   # dropped once at the boss
+    materials:                                        # per player: [min, max] times the stars
+      emerald: [2, 4]
+      experience_bottle: [1, 2]
+  families:
+    rotting_warlord: {base: zombie}
+    bone_marshal: {base: skeleton}
+    brood_mother: {base: spider}
+    blast_prophet: {base: creeper}
+    void_stalker: {base: enderman}
+    bog_witch_queen: {base: ""}
+    sand_pharaoh: {base: ""}
+    drowned_captain: {base: ""}
+    piglin_warlord: {base: ""}
+  legendaries:                      # the Legendary relic each boss can drop
+    rotting_warlord: gravecleaver
+    bone_marshal: marshals_longbow
+    brood_mother: broodfang
+    blast_prophet: prophets_maul
+    void_stalker: voidwalkers
+    bog_witch_queen: hexbloom_crown
+    sand_pharaoh: pharaohs_khopesh
+    drowned_captain: captains_trident
+    piglin_warlord: warlords_greataxe

@@ -58,6 +58,28 @@ public final class RewardRules {
     }
 
     /**
+     * A boss defeat for one player who damaged it: +1 for the boss family, its base family when configured, and
+     * the all-mobs family. Returns any rewards that newly earned.
+     */
+    public static KillResult recordBossKill(PlayerData data, BannerSet set, String bossFamily) {
+        List<String> families = new ArrayList<>();
+        if (set.families().containsKey(bossFamily)) {
+            families.add(bossFamily);
+        }
+        String base = set.baseFamilyOf(bossFamily);
+        if (base != null && set.bossLoot().countTowardBase()) {
+            families.add(base);
+        }
+        families.add(MobFamily.ALL);
+        List<Reward> earned = new ArrayList<>();
+        for (String family : families) {
+            data.setKills(family, data.kills(family) + 1);
+            earned.addAll(award(data, set, family));
+        }
+        return new KillResult(true, families, earned);
+    }
+
+    /**
      * Sets a kill count (for operators) and returns any rewards that newly earned. {@code target} is a family
      * id (including the all-mobs family) or, for convenience, a banner id meaning that banner's family.
      */

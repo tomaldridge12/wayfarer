@@ -42,7 +42,8 @@ public final class WayfarerSet {
 
     /** Whether worn relic armour (already checked to be in its own slot) completes the set. */
     public static boolean complete(Collection<RelicDefinition> wornArmour, Settings settings) {
-        return wornArmour.stream().filter(r -> r.slot().armour() && !MobFamily.ALL.equals(r.family()))
+        return wornArmour.stream().filter(r -> r.slot().armour() && r.tier() != RelicDefinition.REGALIA
+                        && !MobFamily.ALL.equals(r.family()))
                 .map(RelicDefinition::family).distinct().count() >= settings.families();
     }
 

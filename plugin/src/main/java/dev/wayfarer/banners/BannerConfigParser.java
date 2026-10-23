@@ -32,7 +32,22 @@ public final class BannerConfigParser {
     }
 
     private BannerSet run(Map<String, Object> root) {
-        Map<String, MobFamily> families = parseFamilies(asMap(root.get("families")));
+        Map<String, MobFamily> families = new LinkedHashMap<>(parseFamilies(asMap(root.get("families"))));
+        Map<String, Object> bossRoot = asMap(root.get("bosses"));
+        Map<String, String> bossBase = new LinkedHashMap<>();
+        asMap(bossRoot.get("families")).forEach((boss, value) -> {
+            String base = value == null ? "" : String.valueOf(asMap(value).getOrDefault("base", ""));
+            if (families.containsKey(boss) || MobFamily.ALL.equals(boss)) {
+                problems.add("Boss family " + boss + " skipped: the name is already a mob family");
+            } else if (!base.isEmpty() && !families.containsKey(base)) {
+                problems.add("Boss family " + boss + ": base family '" + base + "' is not defined; treated as none");
+                bossBase.put(boss, "");
+                families.put(boss, new MobFamily(boss, java.util.Set.of()));
+            } else {
+                bossBase.put(boss, base);
+                families.put(boss, new MobFamily(boss, java.util.Set.of())); // matched by boss mark, never by mob type
+            }
+        });
         Map<String, BannerDefinition> banners = new LinkedHashMap<>();
         Map<String, List<BannerSet.Drop>> drops = new LinkedHashMap<>();
         Map<String, Object> raw = asMap(root.get("banners"));
@@ -47,7 +62,11 @@ public final class BannerConfigParser {
         asMap(root.get("heads")).forEach((id, value) -> {
             Ladder l = ladder("Head " + id, value, families, false);
             if (l != null) {
-                heads.put(id, new HeadDefinition(id, l.name(id), l.family(), l.kills()));
+                Object item = l.raw().get("item");
+                Object skin = l.raw().get("skin");
+                heads.put(id, new HeadDefinition(id, l.name(id), l.family(), l.kills(),
+                        item == null ? null : String.valueOf(item).toLowerCase(Locale.ROOT),
+                        skin == null ? null : String.valueOf(skin)));
             }
         });
         Map<String, RelicDefinition> relics = new LinkedHashMap<>();
@@ -58,8 +77,48 @@ public final class BannerConfigParser {
             }
         });
         CountingSettings counting = CountingSettings.parse(root.get("counting"), vocabulary, problems);
+        BossLoot.Settings loot = parseBossLoot(asMap(bossRoot.get("loot")), Boolean.TRUE.equals(bossRoot.get("count-toward-base-family")));
+        Map<String, String> legendaries = new LinkedHashMap<>();
+        asMap(bossRoot.get("legendaries")).forEach((boss, relicId) -> {
+            String id = String.valueOf(relicId);
+            if (!bossBase.containsKey(boss) || !relics.containsKey(id)) {
+                problems.add("Boss legendary " + boss + " -> " + id + " skipped: unknown boss family or relic");
+            } else {
+                legendaries.put(boss, id);
+            }
+        });
         return new BannerSet(families, banners, heads, relics, counting, drops, List.copyOf(problems),
-                List.copyOf(missingOptional));
+                List.copyOf(missingOptional), Map.copyOf(bossBase), loot, Map.copyOf(legendaries));
+    }
+
+    private BossLoot.Settings parseBossLoot(Map<String, Object> m, boolean countTowardBase) {
+        BossLoot.Settings d = BossLoot.Settings.defaults();
+        List<Double> ascended = chances(m.get("ascended-chance"), d.ascendedChance(), "bosses.loot.ascended-chance");
+        List<Double> legendary = chances(m.get("legendary-chance"), d.legendaryChance(), "bosses.loot.legendary-chance");
+        int xp = m.get("xp-per-star") instanceof Number n && n.intValue() >= 0 ? n.intValue() : d.xpPerStar();
+        Map<String, List<Integer>> materials = new LinkedHashMap<>();
+        Object raw = m.containsKey("materials") ? m.get("materials") : d.materials();
+        asMap(raw).forEach((item, range) -> {
+            if (vocabulary.isItem(item.toLowerCase(Locale.ROOT)) && range instanceof List<?> r && r.size() == 2
+                    && r.get(0) instanceof Number a && r.get(1) instanceof Number b && a.intValue() >= 0) {
+                materials.put(item.toLowerCase(Locale.ROOT), List.of(a.intValue(), b.intValue()));
+            } else {
+                problems.add("bosses.loot.materials." + item + " skipped: needs a known item and [min, max]");
+            }
+        });
+        return new BossLoot.Settings(ascended, legendary, xp, Map.copyOf(materials), countTowardBase);
+    }
+
+    private List<Double> chances(Object value, List<Double> fallback, String name) {
+        if (value == null) {
+            return fallback;
+        }
+        if (value instanceof List<?> list && list.size() == 5 && list.stream().allMatch(v -> v instanceof Number n
+                && n.doubleValue() >= 0 && n.doubleValue() <= 1)) {
+            return list.stream().map(v -> ((Number) v).doubleValue()).toList();
+        }
+        problems.add(name + " must be five chances from 0 to 1; using defaults");
+        return fallback;
     }
 
     /** The fields every ladder reward shares. */
@@ -85,7 +144,8 @@ public final class BannerConfigParser {
                     : "family '" + family + "' is not defined or was rejected"));
             return null;
         }
-        Integer kills = number(m, "kills", -1, 1, Integer.MAX_VALUE, where);
+        Integer kills = Boolean.TRUE.equals(m.get("drop-only")) ? Integer.valueOf(1)
+                : number(m, "kills", -1, 1, Integer.MAX_VALUE, where);
         if (kills == null || kills < 0) {
             if (kills != null) {
                 problems.add(where + "missing kills");
@@ -101,7 +161,7 @@ public final class BannerConfigParser {
             return null;
         }
         String where = "Relic " + id + " skipped: ";
-        Integer tier = number(l.raw(), "tier", 1, 1, 2, where);
+        Integer tier = number(l.raw(), "tier", 1, 0, 4, where);
         RelicDefinition.Slot slot;
         try {
             slot = RelicDefinition.Slot.parse(String.valueOf(l.raw().getOrDefault("slot", "weapon")));
@@ -143,8 +203,17 @@ public final class BannerConfigParser {
                 problems.add("Relic " + id + ": " + parsed + "; that perk left out");
             }
         }
-        return new RelicDefinition(id, l.name(id), l.family(), l.kills(), tier, slot, item,
-                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge, List.copyOf(perks));
+        Integer dye = null;
+        if (l.raw().get("dye") != null) {
+            try {
+                dye = Integer.parseInt(String.valueOf(l.raw().get("dye")).replace("#", ""), 16);
+            } catch (NumberFormatException e) {
+                problems.add("Relic " + id + ": dye must be #RRGGBB; ignored");
+            }
+        }
+        int kills = Boolean.TRUE.equals(l.raw().get("drop-only")) ? RelicDefinition.DROP_ONLY : l.kills();
+        return new RelicDefinition(id, l.name(id), l.family(), kills, tier, slot, item,
+                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge, List.copyOf(perks), dye);
     }
 
     /**

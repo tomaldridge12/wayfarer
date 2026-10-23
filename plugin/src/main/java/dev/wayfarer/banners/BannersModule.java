@@ -315,6 +315,83 @@ public final class BannersModule implements Module {
         return reward.rewardKey().type() + " " + reward.rewardKey().id();
     }
 
+    /**
+     * A boss defeat: every player who damaged it gets +1 on the boss family (and its rewards), a guaranteed boss
+     * head and materials, and their own Ascended and Legendary rolls. XP orbs drop once at the boss.
+     */
+    void onBossDefeated(dev.wayfarer.core.BossDefeatedEvent event) {
+        BannerSet set = loaded;
+        String family = event.boss().family();
+        int stars = event.boss().stars();
+        if (!set.isBossFamily(family)) {
+            core.logger().warning("[banners] Boss family " + family + " is not in banners.yml (bosses.families); no rewards");
+            return;
+        }
+        org.bukkit.Location at = event.location();
+        int xp = set.bossLoot().xpPerStar() * stars;
+        if (xp > 0) {
+            at.getWorld().spawn(at, org.bukkit.entity.ExperienceOrb.class, orb -> orb.setExperience(xp));
+        }
+        String base = set.baseFamilyOf(family);
+        for (UUID id : event.damagers()) {
+            store.load(id).whenCompleteAsync((data, error) -> {
+                if (error != null) {
+                    core.logger().severe("[banners] Could not reward " + id + " for " + family + ": " + error.getMessage());
+                    return;
+                }
+                RewardRules.KillResult result = RewardRules.recordBossKill(data, set, family);
+                store.markDirty(id);
+                stampEarned(data, result.newlyEarned());
+                placed.refreshHeadsOf(id);
+                for (Reward reward : result.newlyEarned()) {
+                    core.logger().info("[banners] " + id + " earned " + describe(reward) + " by defeating " + family);
+                    deliverEarned(id, reward);
+                }
+                Player online = plugin.getServer().getPlayer(id);
+                List<String> got = new ArrayList<>();
+                java.util.concurrent.ThreadLocalRandom rnd = java.util.concurrent.ThreadLocalRandom.current();
+                set.heads().values().stream().filter(h -> h.family().equals(family)).findFirst().ifPresent(h -> {
+                    if (online != null) {
+                        giveItem(online, heads.create(h, id, online.getName(), System.currentTimeMillis()));
+                    }
+                    got.add("head");
+                });
+                set.bossLoot().materials().forEach((item, range) -> {
+                    int amount = BossLoot.materialAmount(range, stars, rnd::nextDouble);
+                    org.bukkit.Material material = org.bukkit.Material.matchMaterial(item);
+                    if (online != null && material != null && amount > 0) {
+                        for (int left = amount; left > 0; left -= material.getMaxStackSize()) {
+                            giveItem(online, new org.bukkit.inventory.ItemStack(material, Math.min(left, material.getMaxStackSize())));
+                        }
+                    }
+                    got.add(amount + " " + item);
+                });
+                BossLoot.Rolls rolls = BossLoot.roll(set.bossLoot(), stars, base != null, rnd::nextDouble);
+                if (rolls.ascended()) {
+                    BossLoot.pickAscended(set, base, rnd::nextDouble).flatMap(def ->
+                            set.findReward(new RewardKey(RewardKey.RELIC, def.id()))).ifPresent(r -> {
+                        awardEarned(id, r, "drop from " + family);
+                        got.add("ascended " + r.rewardKey().id());
+                    });
+                }
+                if (rolls.legendary()) {
+                    java.util.Optional.ofNullable(set.legendaries().get(family))
+                            .flatMap(rid -> set.findReward(new RewardKey(RewardKey.RELIC, rid))).ifPresent(r -> {
+                                awardEarned(id, r, "drop from " + family);
+                                got.add("legendary " + r.rewardKey().id());
+                            });
+                }
+                core.logger().info("[banners] Boss " + family + " ★" + stars + " loot for " + id + ": " + got);
+            }, mainThread);
+        }
+    }
+
+    /** Into the inventory, or dropped at the player's feet if it does not fit. */
+    private static void giveItem(Player player, org.bukkit.inventory.ItemStack item) {
+        player.getInventory().addItem(item).values()
+                .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+    }
+
     /** Operator tool: awards a reward as a successful drop would, without killing anything. */
     void forceDrop(CommandSender sender, String targetName, String rewardText) {
         Reward reward = loaded.findReward(RewardKey.parse(rewardText.trim(), RewardKey.BANNER)).orElse(null);

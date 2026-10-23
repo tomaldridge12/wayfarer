@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Boot a throwaway Paper server several times and assert log lines. Exit 0 = pass.
-# Boot 1: default config, commands, awards. Boot 1b: restart, player data, placed banner and head persisted.
+# Boot 1: default config, commands, awards, bosses (spawn every variant, a forced defeat with loot). Boot 1b: restart, player data, placed banner and head persisted.
 # Boot 2: banners module switched off. Boot 4: without ExcellentEnchants. Boot 3: unreadable banners config.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -59,21 +59,24 @@ LOGS=build/smoke-logs
 rm -rf "$LOGS" && mkdir -p "$LOGS"
 rm -f "$CFG" "$RUN/plugins/Wayfarer/bosses.yml" # start from the shipped configs
 rm -rf "$DATA"
-LOG1=$LOGS/log1.log; boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 400" "mobbanners setkills $PLAYER all 250" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world" "mobbanners placehead $PLAYER zombie 2 100 0" "mobbanners forcedrop $PLAYER2 skeleton" "mobbanners forcedrop $PLAYER2 relic:zombie_weapon_2" "mobbanners progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "forceload remove ~-16 ~-16 ~112 ~16"
+LOG1=$LOGS/log1.log; boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 400" "mobbanners setkills $PLAYER all 250" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world" "mobbanners placehead $PLAYER zombie 2 100 0" "mobbanners forcedrop $PLAYER2 skeleton" "mobbanners forcedrop $PLAYER2 relic:zombie_weapon_2" "mobbanners progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "wayfarer boss spawn rotting_warlord rotting_warlord 5" "wayfarer boss defeat $PLAYER" "forceload remove ~-16 ~-16 ~112 ~16"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Module bosses enabled"
 check "$LOG1" "Bosses loaded: 9 bosses, 23 variants, 0 problems; 8 spawn naturally, 7 guard structures"
 check "$LOG1" "Spawned 23 boss variants at ★1"
 check "$LOG1" "Spawned 23 boss variants at ★5"
 check "$LOG1" "Removed 23 bosses"
+check "$LOG1" "Defeated 1 bosses"
+check "$LOG1" "$PLAYER earned banner rotting_warlord by defeating rotting_warlord"
+check "$LOG1" "Boss rotting_warlord ★5 loot for $PLAYER: [head, "
 check "$LOG1" "Wayfarer enabled"
-check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
-check "$LOG1" "Banner items built: 5 of 5"
-check "$LOG1" "Ladder loaded: 5 trophy heads, 21 relics"
-check "$LOG1" "Relic items built: 21 of 21"
+check "$LOG1" "Banners loaded: 14 banners, 14 families, 0 problems"
+check "$LOG1" "Banner items built: 14 of 14"
+check "$LOG1" "Ladder loaded: 14 trophy heads, 76 relics"
+check "$LOG1" "Relic items built: 76 of 76"
 check "$LOG1" "relic enchants can still be found outside Wayfarer"
 check "$LOG1" "Banner feedback: action bar on, damage numbers on (max 40), edge particles off, marker effect off (luck)"
-check "$LOG1" "Banners reloaded: 5 banners, 0 problems"
+check "$LOG1" "Banners reloaded: 14 banners, 0 problems"
 check "$LOG1" "Unknown banner 'nope'"
 check "$LOG1" "No online player named 'nobody'"
 check "$LOG1" "$PLAYER earned banner zombie"
@@ -97,7 +100,7 @@ check "$LOG1B" "✔  Zombie Trophy"
 check "$LOG1B" "✔  Zombie Cleaver"
 check "$LOG1B" "✔  Zombie Cleaver II"
 check "$LOG1B" "0/100  Skeleton Banner"
-check "$LOG1B" "All mobs · 250 kills"
+check "$LOG1B" "All mobs · 251 kills"
 check "$LOG1B" "✔  Skeleton Banner"
 check "$LOG1B" "Placed banner registry loaded: "
 check "$LOG1B" "2 label(s) shown in chunk 0,0"
@@ -115,7 +118,7 @@ if [ -n "$EE" ]; then
   mv "$EE" "$RUN/plugins-off/"
   trap 'rm -f "$CFG"; mv "$RUN"/plugins-off/*.jar "$RUN/plugins/" 2>/dev/null || true' EXIT
   LOG4=$LOGS/log4.log; boot "$LOG4"
-  check "$LOG4" "Relic items built: 21 of 21"
+  check "$LOG4" "Relic items built: 76 of 76"
   check "$LOG4" "ExcellentEnchants is not installed; relics are given without its enchants"
   check "$LOG4" "Wayfarer enabled"
   mv "$RUN"/plugins-off/*.jar "$RUN/plugins/"

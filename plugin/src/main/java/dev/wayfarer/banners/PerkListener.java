@@ -143,6 +143,32 @@ final class PerkListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onLightning(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player player && event.getEntity() instanceof LivingEntity victim
+                && !(victim instanceof Player)) {
+            perk(player, Perk.Type.LIGHTNING_STRIKE, null)
+                    .filter(p -> ThreadLocalRandom.current().nextDouble() < p.amount())
+                    .ifPresent(p -> plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        if (victim.isValid()) {
+                            victim.getWorld().strikeLightningEffect(victim.getLocation()); // no fire, no world damage
+                            victim.damage(4, player);
+                        }
+                    }));
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    void onKillHeal(org.bukkit.event.entity.EntityDeathEvent event) {
+        if (event.getEntity().getKiller() instanceof Player player) {
+            perk(player, Perk.Type.KILL_HEAL, null).ifPresent(p -> {
+                var max = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+                double cap = max == null ? 20 : max.getValue();
+                player.setHealth(Math.min(cap, player.getHealth() + p.amount() * 2));
+            });
+        }
+    }
+
     @EventHandler(ignoreCancelled = true)
     void onTarget(EntityTargetLivingEntityEvent event) {
         if (event.getEntity() instanceof Enderman && event.getTarget() instanceof Player player

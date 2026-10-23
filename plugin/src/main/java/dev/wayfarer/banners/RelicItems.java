@@ -47,7 +47,10 @@ final class RelicItems {
                     armour.setTrim(new ArmorTrim(material, pattern));
                 }
             }
-            meta.setEnchantmentGlintOverride(true);
+            if (meta instanceof org.bukkit.inventory.meta.LeatherArmorMeta leather && def.dye() != null) {
+                leather.setColor(org.bukkit.Color.fromRGB(def.dye()));
+            }
+            meta.setEnchantmentGlintOverride(def.tier() != RelicDefinition.REGALIA);
         });
         tags.write(item, MODULE, new RewardKey(RewardKey.RELIC, def.id()).toString());
         tags.write(item, MODULE, EARNED, Long.toString(earnedAtMillis));

@@ -22,7 +22,9 @@ public record Perk(Type type, String family, double amount) {
         KNOCK_AWAY(true, 1.5, "Hits knock the %s family far back"),
         EXPLOSION_WARD(false, 50, "−%.0f%% explosion damage"),
         ENDERMAN_CALM(false, 1, "Looking at endermen does not anger them"),
-        PEARL_MASTERY(false, 50, "Ender pearls do no damage; %.0f%% shorter cooldown");
+        PEARL_MASTERY(false, 50, "Ender pearls do no damage; %.0f%% shorter cooldown"),
+        KILL_HEAL(false, 1, "Each kill heals %.0f ❤"),
+        LIGHTNING_STRIKE(false, 0.15, "%.0f%% chance to call lightning on hit");
 
         final boolean needsFamily;
         final double defaultAmount;
@@ -38,7 +40,8 @@ public record Perk(Type type, String family, double amount) {
     /** The perk's line in a relic tooltip. Chances are shown as percents. */
     public String describe() {
         return switch (type) {
-            case ARROW_SAVER -> String.format(Locale.ROOT, type.text, amount * 100);
+            case ARROW_SAVER, LIGHTNING_STRIKE -> String.format(Locale.ROOT, type.text, amount * 100);
+            case KILL_HEAL -> String.format(Locale.ROOT, type.text, amount);
             case NO_KNOCKBACK, KNOCK_AWAY -> String.format(Locale.ROOT, type.text, family);
             case PROJECTILE_WARD -> String.format(Locale.ROOT, type.text, amount, family);
             case FALL_CUSHION, EXPLOSION_WARD, PEARL_MASTERY -> String.format(Locale.ROOT, type.text, amount);

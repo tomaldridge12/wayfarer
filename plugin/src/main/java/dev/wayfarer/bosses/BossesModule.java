@@ -100,6 +100,23 @@ public final class BossesModule implements Module {
                             ctx.getSource().getSender().sendMessage("Removed " + controller.removeAll() + " bosses");
                             return Command.SINGLE_SUCCESS;
                         }))
+                        .then(Commands.literal("defeat")
+                                .then(Commands.argument("player", StringArgumentType.word()).executes(ctx -> {
+                                    String who = StringArgumentType.getString(ctx, "player");
+                                    java.util.UUID id;
+                                    try {
+                                        id = java.util.UUID.fromString(who);
+                                    } catch (IllegalArgumentException e) {
+                                        Player p = plugin.getServer().getPlayerExact(who);
+                                        if (p == null) {
+                                            ctx.getSource().getSender().sendMessage("Unknown player '" + who + "'");
+                                            return 0;
+                                        }
+                                        id = p.getUniqueId();
+                                    }
+                                    ctx.getSource().getSender().sendMessage("Defeated " + controller.defeatAll(id) + " bosses");
+                                    return Command.SINGLE_SUCCESS;
+                                })))
                         .then(Commands.literal("reload").executes(ctx -> {
                             reload(ctx.getSource().getSender());
                             return Command.SINGLE_SUCCESS;
