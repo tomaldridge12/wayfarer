@@ -10,10 +10,10 @@ public record FeedbackSettings(
         boolean damageNumbers, int numbersMax, int numbersLifetimeTicks, int numbersViewDistance,
         boolean showBlocked,
         boolean edgeParticles, String particle, int particlesPerUpdate,
-        boolean markerEffect, String effect) {
+        boolean markerEffect, String effect, boolean announceEarned) {
 
     public static FeedbackSettings defaults() {
-        return new FeedbackSettings(true, true, 40, 20, 16, true, false, "HAPPY_VILLAGER", 64, false, "luck");
+        return new FeedbackSettings(true, true, 40, 20, 16, true, false, "HAPPY_VILLAGER", 64, false, "luck", true);
     }
 
     static FeedbackSettings parse(Object raw, Vocabulary vocabulary, List<String> problems) {
@@ -46,7 +46,8 @@ public record FeedbackSettings(
                 particle,
                 positive(edge, "max-per-update", d.particlesPerUpdate(), "feedback.edge-particles.max-per-update", problems),
                 bool(marker, "enabled", d.markerEffect()),
-                effect);
+                effect,
+                bool(root, "announce-earned", d.announceEarned()));
     }
 
     private static Map<?, ?> section(Map<?, ?> root, String key) {

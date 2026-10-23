@@ -171,4 +171,16 @@ class BannerTextTest {
         assertEquals(" ✦ Cobwebs dissolve as you walk into them", lore.get(3));
         assertEquals(" ✦ No fall damage from falls of 5 blocks or less", lore.get(4));
     }
+
+    @Test
+    void announcementNamesTheEarnerAndTheReward() {
+        Reward cleaver = new Reward(new RewardKey("relic", "zombie_weapon_2"), "Zombie Cleaver II", "zombie", 1200);
+        BannerSet set = new BannerSet(java.util.Map.of(), java.util.Map.of("zombie", ZOMBIE), CountingSettings.defaults(), List.of());
+        Component name = BannerText.rewardTitle(cleaver, set);
+        assertEquals("Zombie Cleaver II", plain(name));
+        assertEquals("✦ Tom earned the Zombie Cleaver II", plain(BannerText.announcement("Tom", name)));
+        assertEquals("✦ Reward earned ✦", plain(BannerText.earnedSubtitle()));
+        assertEquals("Zombie Banner", plain(BannerText.rewardTitle(
+                new Reward(RewardKey.banner("zombie"), "Zombie Banner", "zombie", 100), set)));
+    }
 }

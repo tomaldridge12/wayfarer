@@ -42,6 +42,7 @@ public final class BannersModule implements Module {
     private BannerItems items;
     private TrophyHeads heads;
     private RelicItems relics;
+    private EarnMoment moment;
     private RelicListener relicListener;
     private PerkListener perkListener;
     private WayfarerSetTask setTask;
@@ -75,6 +76,7 @@ public final class BannersModule implements Module {
         this.core = core;
         this.items = new BannerItems(core.itemTags(), this::banners);
         this.relics = new RelicItems(core.itemTags(), this::banners);
+        this.moment = new EarnMoment(plugin.getServer(), () -> feedbackSettings);
         load(); // throws if the file is unreadable, which skips only this module
         store = new PlayerStore<>(plugin.getDataFolder().toPath().resolve("data").resolve(id()),
                 PlayerDataCodec.VERSION, new PlayerDataCodec(), core.logger(),
@@ -240,35 +242,39 @@ public final class BannersModule implements Module {
             stampEarned(data, List.of(reward));
             store.markDirty(id);
             core.logger().info("[banners] " + id + " earned " + describe(reward) + " by " + how);
-            Player online = plugin.getServer().getPlayer(id);
-            if (online != null) {
-                deliver(online, reward);
-                online.sendMessage("You earned the " + reward.name() + "!");
-            }
+            deliverEarned(id, reward);
         }, mainThread);
     }
 
-    /** Hands a player a copy of a reward. Each reward type delivers its own item. */
-    private void deliver(Player player, Reward reward) {
-        switch (reward.rewardKey().type()) {
-            case RewardKey.BANNER -> loaded.find(reward.rewardKey().id()).ifPresent(def -> items.deliver(player, def));
-            case RewardKey.HEAD -> loaded.findHead(reward.rewardKey().id()).ifPresent(def -> {
-                PlayerData data = store.cached(player.getUniqueId());
-                long earnedAt = data == null ? 0 : data.earnedAt(reward.rewardKey());
-                give(player, heads.create(def, player.getUniqueId(), player.getName(), earnedAt));
-            });
-            case RewardKey.RELIC -> loaded.findRelic(reward.rewardKey().id()).ifPresent(def -> {
-                PlayerData data = store.cached(player.getUniqueId());
-                give(player, relics.create(def, data == null ? 0 : data.earnedAt(reward.rewardKey())));
-            });
-            default -> core.logger().warning("[banners] No delivery for reward type " + reward.rewardKey().type());
+    /** Hands a player a copy of a reward and returns it. Each reward type delivers its own item. */
+    private org.bukkit.inventory.ItemStack deliver(Player player, Reward reward) {
+        org.bukkit.inventory.ItemStack item = build(player.getUniqueId(), player.getName(), reward);
+        if (item != null) {
+            player.getInventory().addItem(item.clone()).values()
+                    .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
         }
+        return item;
     }
 
-    /** Into the inventory, or dropped at the player's feet if it does not fit. */
-    private static void give(Player player, org.bukkit.inventory.ItemStack item) {
-        player.getInventory().addItem(item).values()
-                .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+    /** The item for a reward as its earner would receive it, or null if config no longer has it. */
+    private org.bukkit.inventory.ItemStack build(UUID earner, String earnerName, Reward reward) {
+        PlayerData data = store.cached(earner);
+        long earnedAt = data == null ? 0 : data.earnedAt(reward.rewardKey());
+        String id = reward.rewardKey().id();
+        return switch (reward.rewardKey().type()) {
+            case RewardKey.BANNER -> loaded.find(id).map(items::create).orElse(null);
+            case RewardKey.HEAD -> loaded.findHead(id).map(def -> heads.create(def, earner, earnerName, earnedAt)).orElse(null);
+            case RewardKey.RELIC -> loaded.findRelic(id).map(def -> relics.create(def, earnedAt)).orElse(null);
+            default -> null;
+        };
+    }
+
+    /** Delivers a newly earned reward if the earner is online, and makes it a moment (title, pop, announcement). */
+    private void deliverEarned(UUID earner, Reward reward) {
+        Player online = plugin.getServer().getPlayer(earner);
+        String name = online != null ? online.getName() : nameOf(earner);
+        org.bukkit.inventory.ItemStack item = online != null ? deliver(online, reward) : build(earner, name, reward);
+        moment.celebrate(online, name, BannerText.rewardTitle(reward, loaded), item);
     }
 
     private static void stampEarned(PlayerData data, List<Reward> rewards) {
@@ -324,8 +330,7 @@ public final class BannersModule implements Module {
 
     private void award(Player player, Reward reward) {
         core.logger().info("[banners] " + player.getUniqueId() + " earned " + describe(reward));
-        deliver(player, reward);
-        player.sendMessage("You earned the " + reward.name() + "!");
+        deliverEarned(player.getUniqueId(), reward);
     }
 
     // --- commands (all run on the main thread) ---
@@ -432,9 +437,7 @@ public final class BannersModule implements Module {
             Player online = plugin.getServer().getPlayer(target);
             for (Reward reward : result.get().newlyEarned()) {
                 core.logger().info("[banners] " + target + " earned " + describe(reward));
-                if (online != null) {
-                    deliver(online, reward);
-                }
+                deliverEarned(target, reward);
             }
             sender.sendMessage("Set " + target + " " + result.get().families().getFirst() + " kills to " + kills
                     + "; newly earned: " + result.get().newlyEarned().stream().map(BannersModule::describe).toList()

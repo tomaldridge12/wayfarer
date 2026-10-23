@@ -60,8 +60,10 @@ final class BannerItems {
 
 
     /** Puts the banner in the player's inventory, or drops it at their feet if it does not fit. */
-    void deliver(Player player, BannerDefinition def) {
-        player.getInventory().addItem(create(def)).values()
+    ItemStack deliver(Player player, BannerDefinition def) {
+        ItemStack item = create(def);
+        player.getInventory().addItem(item.clone()).values()
                 .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+        return item;
     }
 }

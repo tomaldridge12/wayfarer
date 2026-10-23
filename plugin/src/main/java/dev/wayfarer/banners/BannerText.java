@@ -95,6 +95,25 @@ public final class BannerText {
         return lines;
     }
 
+    /** "✦ Tom earned the Zombie Cleaver II", for everyone on the server. */
+    public static Component announcement(String earnerName, Component rewardName) {
+        return plain("✦ ", EARNED).append(plain(earnerName, NamedTextColor.WHITE))
+                .append(plain(" earned the ", NamedTextColor.GRAY)).append(rewardName);
+    }
+
+    public static Component earnedSubtitle() {
+        return gradient("✦ Reward earned ✦", 0xFFE7A0, 0xFF9F1C);
+    }
+
+    /** A reward's name in its theme, for titles and announcements. */
+    public static Component rewardTitle(Reward reward, BannerSet set) {
+        String colour = familyColour(set, reward.family());
+        if (RewardKey.BANNER.equals(reward.rewardKey().type())) {
+            return set.find(reward.rewardKey().id()).map(BannerText::name).orElse(plain(reward.name(), NamedTextColor.WHITE));
+        }
+        return themed(reward.name(), colour);
+    }
+
     /** Action bar when the Wayfarer set completes or breaks. */
     public static Component setActive(boolean on, WayfarerSet.Settings s) {
         return on ? gradient("✦ Wayfarer set ✦", 0xFFE7A0, 0xFF9F1C).decorate(TextDecoration.BOLD)

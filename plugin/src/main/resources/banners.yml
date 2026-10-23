@@ -19,10 +19,11 @@ counting:
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
   all-mobs: hostile           # the "all" kill count: hostile mobs only (hostile), or every counted mob (any)
 
-# How players are told about boosts. There is deliberately no sound.
+# How players are told about boosts and rewards. The only sound is the fanfare when you earn a reward.
 feedback:
   action-bar: true            # styled message on entering and leaving a boost zone
   show-blocked: true          # action bar flash when a banner softens a hit on you
+  announce-earned: true       # tell everyone when someone earns a reward (hover shows the item); never for claims
   damage-numbers:             # a floating number over every mob a player hits; boosted hits add ▲ and the extra in red
     enabled: true
     max-active: 40            # new ones are skipped while this many exist
