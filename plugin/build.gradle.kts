@@ -14,6 +14,9 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperVersion")
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
@@ -21,6 +24,9 @@ java {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
     processResources {
         val props = mapOf("version" to project.version)
         inputs.properties(props)

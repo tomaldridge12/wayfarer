@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
-# Boot Paper, run the datapack function, assert the expected log lines. Exit 0 = pass.
+# Boot Paper twice and assert log lines. Exit 0 = pass.
+# Boot 1: default config. Boot 2: banners module switched off in its config.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-LOG=$(mktemp)
-(sleep "${BOOT_WAIT:-45}"; echo "function mcdev:hello"; sleep 3; echo stop) | scripts/dev.sh >"$LOG" 2>&1 || true
+CFG=server/plugins/Wayfarer/banners.yml
+trap 'rm -f "$CFG"' EXIT
+
+boot() { # log file
+  (sleep "${BOOT_WAIT:-45}"; echo stop) | scripts/dev.sh >"$1" 2>&1 || true
+}
+check() { # log file, pattern
+  grep -qF "$2" "$1" && echo "PASS: $2" || { echo "FAIL: $2 (log: $1)"; fail=1; }
+}
+
 fail=0
-for pat in "McDev enabled" "Running function mcdev:hello"; do
-  grep -qF "$pat" "$LOG" && echo "PASS: $pat" || { echo "FAIL: $pat"; fail=1; }
-done
-[ $fail -eq 0 ] || { echo "log: $LOG"; exit 1; }
+rm -f "$CFG"
+LOG1=$(mktemp); boot "$LOG1"
+check "$LOG1" "Module banners enabled"
+check "$LOG1" "Wayfarer enabled"
+
+printf 'version: 1\nenabled: false\n' >"$CFG"
+LOG2=$(mktemp); boot "$LOG2"
+check "$LOG2" "Module banners skipped (disabled in config)"
+[ $fail -eq 0 ]

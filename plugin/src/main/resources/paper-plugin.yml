@@ -1,4 +1,4 @@
-name: McDev
+name: Wayfarer
 version: ${version}
-main: dev.tom.mcdev.McDevPlugin
+main: dev.wayfarer.WayfarerPlugin
 api-version: "26.3"
