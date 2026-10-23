@@ -73,6 +73,10 @@ class ShippedConfigTest {
         assertEquals("wild", set.findRelic("zombie_armour").orElseThrow().trimPattern());
         assertEquals(40, set.findRelic("zombie_weapon_2").orElseThrow().edgePercent());
         assertEquals(10, set.findRelic("wayfarers_blade").orElseThrow().edgePercent());
+        set.relics().values().stream().filter(r -> !r.id().equals("wayfarers_blade"))
+                .forEach(r -> assertFalse(r.perks().isEmpty(), r.id() + " should have a perk"));
+        assertEquals(2, set.findRelic("spider_armour_2").orElseThrow().perks().size());
+        assertEquals(0.45, set.findRelic("skeleton_weapon_2").orElseThrow().perks().getFirst().amount(), 1e-9);
         List<String> problems = new java.util.ArrayList<>();
         FeedbackSettings feedback = FeedbackSettings.parse(root.get("feedback"), ANY, problems);
         assertEquals(List.of(), problems);

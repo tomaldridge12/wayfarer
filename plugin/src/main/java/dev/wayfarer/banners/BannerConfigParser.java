@@ -131,8 +131,18 @@ public final class BannerConfigParser {
                 problems.add("Relic " + id + ": trim '" + trim + "' ignored (use pattern:material, e.g. wild:emerald)");
             }
         }
+        List<Perk> perks = new ArrayList<>();
+        Object rawPerks = l.raw().get("perks");
+        for (Object entry : rawPerks instanceof List<?> list ? list : rawPerks == null ? List.of() : List.of(rawPerks)) {
+            Object parsed = Perk.parse(entry, families.keySet());
+            if (parsed instanceof Perk p) {
+                perks.add(p);
+            } else {
+                problems.add("Relic " + id + ": " + parsed + "; that perk left out");
+            }
+        }
         return new RelicDefinition(id, l.name(id), l.family(), l.kills(), tier, slot, item,
-                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge);
+                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge, List.copyOf(perks));
     }
 
     /**

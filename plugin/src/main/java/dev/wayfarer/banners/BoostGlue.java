@@ -34,7 +34,17 @@ final class BoostGlue {
         BoostRules.Party attacker = party(direct, projectile ? relics.projectileEdges(direct)
                 : direct instanceof Player pl ? relics.weaponEdges(pl) : java.util.List.of());
         Entity hit = event.getEntity();
-        BoostRules.Party victim = party(hit, hit instanceof Player pl ? relics.armourEdges(pl) : java.util.List.of());
+        java.util.List<BoostRules.Edge> guard = new java.util.ArrayList<>();
+        if (hit instanceof Player pl) {
+            guard.addAll(relics.armourEdges(pl));
+            if (projectile) {
+                // Projectile-ward perks act like an armour edge against that family's arrows.
+                relics.activePerks(pl).stream().filter(p -> p.type() == Perk.Type.PROJECTILE_WARD)
+                        .map(p -> new BoostRules.Edge("perk", p.family(), (int) Math.round(p.amount())))
+                        .max(java.util.Comparator.comparingInt(BoostRules.Edge::percent)).ifPresent(guard::add);
+            }
+        }
+        BoostRules.Party victim = party(hit, guard);
         Optional<BoostRules.Resolved> resolved = BoostRules.resolve(attacker, shooter, victim, at -> nearby(at, set), set);
         double before = event.getFinalDamage();
         if (resolved.isEmpty() || before <= 0) {

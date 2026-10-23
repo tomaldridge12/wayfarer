@@ -22,6 +22,7 @@ public final class BannerText {
     static final TextColor GUARD = TextColor.color(0x55FFFF);
     static final TextColor EXTRA = TextColor.color(0xFF5555);
     static final TextColor CRIT = TextColor.color(0xFFE066);
+    static final TextColor PERK = TextColor.color(0xE0A3FF);
 
     /** Minecraft's dye colours, used to theme each banner's name. */
     private static final Map<String, Integer> DYE = Map.ofEntries(
@@ -84,6 +85,9 @@ public final class BannerText {
             lines.add(plain(" ✚ −" + def.edgePercent() + "%", GUARD).append(plain(" damage taken from " + who, NamedTextColor.GRAY)));
         } else {
             lines.add(plain(" ⚔ +" + def.edgePercent() + "%", DAMAGE_UP).append(plain(" damage to " + who, NamedTextColor.GRAY)));
+        }
+        for (Perk perk : def.perks()) {
+            lines.add(plain(" ✦ ", PERK).append(plain(perk.describe(), NamedTextColor.WHITE)));
         }
         lines.add(Component.empty());
         lines.add(plain(earned(earnedOn, def.kills(), def.family()), NamedTextColor.DARK_GRAY)

@@ -9,11 +9,12 @@ import java.util.Map;
  * damage dealt (weapons) or damage taken away (armour).
  */
 public record RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot,
-        String item, Map<String, Integer> enchants, String trimPattern, String trimMaterial, int edgePercent) {
+        String item, Map<String, Integer> enchants, String trimPattern, String trimMaterial, int edgePercent,
+        java.util.List<Perk> perks) {
 
     /** A relic with no item details, for rules that only need its place on the ladder. */
     public RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot) {
-        this(id, name, family, kills, tier, slot, null, Map.of(), null, null, defaultEdge(slot, tier, family));
+        this(id, name, family, kills, tier, slot, null, Map.of(), null, null, defaultEdge(slot, tier, family), java.util.List.of());
     }
 
     /** Weapons +30% / +40%; armour −25% / −30%; the all-mobs relic +10%. */

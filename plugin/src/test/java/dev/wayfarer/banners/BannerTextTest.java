@@ -161,4 +161,14 @@ class BannerTextTest {
         assertEquals(List.of("✦ Epic Relic · All mobs", "", " ⚔ +10% damage to every hostile mob", "",
                 "Earned at 5,000 mob kills"), BannerText.relicLore(blade, Set.of(), null).stream().map(BannerTextTest::plain).toList());
     }
+
+    @Test
+    void relicLoreListsPerks() {
+        RelicDefinition boots = new RelicDefinition("spider_armour", "Silkstep Boots", "spider", 600, 1,
+                RelicDefinition.Slot.FEET, "iron_boots", java.util.Map.of(), null, null, 25,
+                List.of(new Perk(Perk.Type.COBWEB_WALKER, null, 1), new Perk(Perk.Type.FALL_CUSHION, null, 5)));
+        List<String> lore = BannerText.relicLore(boots, Set.of("spider"), null).stream().map(BannerTextTest::plain).toList();
+        assertEquals(" ✦ Cobwebs dissolve as you walk into them", lore.get(3));
+        assertEquals(" ✦ No fall damage from falls of 5 blocks or less", lore.get(4));
+    }
 }

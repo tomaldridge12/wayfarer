@@ -43,6 +43,7 @@ public final class BannersModule implements Module {
     private TrophyHeads heads;
     private RelicItems relics;
     private RelicListener relicListener;
+    private PerkListener perkListener;
     private PlayerStore<PlayerData> store;
     private BannerListener listener;
     private PlacedBanners placed;
@@ -84,6 +85,8 @@ public final class BannersModule implements Module {
         placedListener = new PlacedBannerListener(placed, items, heads, this::banners);
         relicListener = new RelicListener(relics);
         plugin.getServer().getPluginManager().registerEvents(relicListener, plugin);
+        perkListener = new PerkListener(plugin, relics, this::banners);
+        plugin.getServer().getPluginManager().registerEvents(perkListener, plugin);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
@@ -123,6 +126,9 @@ public final class BannersModule implements Module {
         }
         if (relicListener != null) {
             HandlerList.unregisterAll(relicListener);
+        }
+        if (perkListener != null) {
+            HandlerList.unregisterAll(perkListener);
         }
         if (boostListener != null) {
             HandlerList.unregisterAll(boostListener);

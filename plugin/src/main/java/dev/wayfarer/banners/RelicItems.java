@@ -72,6 +72,29 @@ final class RelicItems {
         return edges;
     }
 
+    /** The perks of every relic a player is using: main-hand weapon, worn armour, off-hand charm. */
+    List<Perk> activePerks(org.bukkit.entity.Player player) {
+        var inv = player.getInventory();
+        List<Perk> perks = new java.util.ArrayList<>();
+        for (var used : List.of(
+                java.util.Map.entry(inv.getItemInMainHand(), RelicDefinition.Slot.WEAPON),
+                java.util.Map.entry(inv.getItemInOffHand(), RelicDefinition.Slot.OFFHAND))) {
+            relicUsedAs(used.getKey(), used.getValue()).ifPresent(def -> perks.addAll(def.perks()));
+        }
+        relicUsedAs(inv.getHelmet(), RelicDefinition.Slot.HEAD).ifPresent(def -> perks.addAll(def.perks()));
+        relicUsedAs(inv.getChestplate(), RelicDefinition.Slot.CHEST).ifPresent(def -> perks.addAll(def.perks()));
+        relicUsedAs(inv.getLeggings(), RelicDefinition.Slot.LEGS).ifPresent(def -> perks.addAll(def.perks()));
+        relicUsedAs(inv.getBoots(), RelicDefinition.Slot.FEET).ifPresent(def -> perks.addAll(def.perks()));
+        return perks;
+    }
+
+    private Optional<RelicDefinition> relicUsedAs(ItemStack item, RelicDefinition.Slot usedAs) {
+        if (item == null || item.isEmpty()) {
+            return Optional.empty();
+        }
+        return relicId(item).flatMap(id -> banners.get().findRelic(id)).filter(def -> def.slot() == usedAs);
+    }
+
     /** Marks an arrow with the relic bow that fired it. */
     void tagProjectile(org.bukkit.entity.Entity projectile, String relicId) {
         tags.write(projectile, MODULE + "_shot", relicId);

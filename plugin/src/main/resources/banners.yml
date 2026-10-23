@@ -117,7 +117,9 @@ heads:
 # kills: the family's kill count needed ('all' is the all-mobs count). item: the base item (never netherite).
 # edge: the family edge in percent (weapons: extra damage to the family; armour: less damage from it); omitted
 # means weapons 30 / 40 and armour 25 / 30 by tier. trim: pattern:material for armour. enchants: preset levels,
-# kept at or below each enchant's maximum; excellentenchants: entries need the ExcellentEnchants plugin and
+# kept at or below each enchant's maximum. perks: from the fixed library (hunger_immunity, poison_immunity,
+# no_knockback, arrow_saver, projectile_ward, cobweb_walker, fall_cushion, knock_away, explosion_ward,
+# enderman_calm, pearl_mastery) with family and amount where needed; excellentenchants: entries need the ExcellentEnchants plugin and
 # work only on the items that plugin allows (e.g. Thunder lists swords and axes).
 relics:
   zombie_weapon:
@@ -132,6 +134,8 @@ relics:
       unbreaking: 2
       excellentenchants:vampire: 1
       excellentenchants:rage: 1
+    perks:
+      - {type: hunger_immunity}
   zombie_armour:
     name: "Rotguard Chestplate"
     family: zombie
@@ -145,6 +149,8 @@ relics:
       unbreaking: 2
       excellentenchants:hardened: 1
       excellentenchants:regrowth: 1
+    perks:
+      - {type: no_knockback, family: zombie}
   zombie_weapon_2:
     name: "Zombie Cleaver II"
     family: zombie
@@ -157,6 +163,8 @@ relics:
       unbreaking: 3
       excellentenchants:vampire: 2
       excellentenchants:rage: 2
+    perks:
+      - {type: hunger_immunity}
   zombie_armour_2:
     name: "Rotguard Chestplate II"
     family: zombie
@@ -170,6 +178,8 @@ relics:
       unbreaking: 3
       excellentenchants:hardened: 2
       excellentenchants:regrowth: 2
+    perks:
+      - {type: no_knockback, family: zombie}
   skeleton_weapon:
     name: "Bonebow"
     family: skeleton
@@ -182,6 +192,8 @@ relics:
       unbreaking: 2
       excellentenchants:sniper: 1
       excellentenchants:withered_arrows: 1
+    perks:
+      - {type: arrow_saver, amount: 0.3}
   skeleton_armour:
     name: "Bonecrown Helm"
     family: skeleton
@@ -195,6 +207,8 @@ relics:
       unbreaking: 2
       excellentenchants:night_vision: 1
       excellentenchants:saturation: 1
+    perks:
+      - {type: projectile_ward, family: skeleton, amount: 30}
   skeleton_weapon_2:
     name: "Bonebow II"
     family: skeleton
@@ -207,6 +221,8 @@ relics:
       unbreaking: 3
       excellentenchants:sniper: 2
       excellentenchants:withered_arrows: 2
+    perks:
+      - {type: arrow_saver, amount: 0.45}
   skeleton_armour_2:
     name: "Bonecrown Helm II"
     family: skeleton
@@ -220,6 +236,8 @@ relics:
       unbreaking: 3
       excellentenchants:night_vision: 1
       excellentenchants:saturation: 2
+    perks:
+      - {type: projectile_ward, family: skeleton, amount: 40}
   spider_weapon:
     name: "Spider Fang"
     family: spider
@@ -232,6 +250,8 @@ relics:
       unbreaking: 2
       excellentenchants:venom: 1
       excellentenchants:paralyze: 1
+    perks:
+      - {type: poison_immunity}
   spider_armour:
     name: "Silkstep Boots"
     family: spider
@@ -245,6 +265,9 @@ relics:
       unbreaking: 2
       excellentenchants:speed: 1
       excellentenchants:jumping: 1
+    perks:
+      - {type: cobweb_walker}
+      - {type: fall_cushion, amount: 5}
   spider_weapon_2:
     name: "Spider Fang II"
     family: spider
@@ -257,6 +280,8 @@ relics:
       unbreaking: 3
       excellentenchants:venom: 2
       excellentenchants:paralyze: 2
+    perks:
+      - {type: poison_immunity}
   spider_armour_2:
     name: "Silkstep Boots II"
     family: spider
@@ -270,6 +295,9 @@ relics:
       unbreaking: 3
       excellentenchants:speed: 2
       excellentenchants:jumping: 2
+    perks:
+      - {type: cobweb_walker}
+      - {type: fall_cushion, amount: 8}
   creeper_weapon:
     name: "Blast Maul"
     family: creeper
@@ -281,6 +309,8 @@ relics:
       density: 2
       unbreaking: 2
       excellentenchants:thunder: 1
+    perks:
+      - {type: knock_away, family: creeper, amount: 1.5}
   creeper_armour:
     name: "Blastproof Greaves"
     family: creeper
@@ -294,6 +324,8 @@ relics:
       unbreaking: 2
       excellentenchants:elemental_protection: 1
       excellentenchants:stopping_force: 1
+    perks:
+      - {type: explosion_ward, amount: 50}
   creeper_weapon_2:
     name: "Blast Maul II"
     family: creeper
@@ -305,6 +337,8 @@ relics:
       density: 3
       unbreaking: 3
       excellentenchants:thunder: 2
+    perks:
+      - {type: knock_away, family: creeper, amount: 2.2}
   creeper_armour_2:
     name: "Blastproof Greaves II"
     family: creeper
@@ -318,6 +352,8 @@ relics:
       unbreaking: 3
       excellentenchants:elemental_protection: 2
       excellentenchants:stopping_force: 2
+    perks:
+      - {type: explosion_ward, amount: 65}
   enderman_weapon:
     name: "Void Edge"
     family: enderman
@@ -330,6 +366,8 @@ relics:
       unbreaking: 2
       excellentenchants:blindness: 1
       excellentenchants:double_strike: 1
+    perks:
+      - {type: enderman_calm}
   enderman_armour:
     name: "Pearl Charm"
     family: enderman
@@ -339,6 +377,8 @@ relics:
     item: shield
     enchants:
       unbreaking: 2
+    perks:
+      - {type: pearl_mastery, amount: 50}
   enderman_weapon_2:
     name: "Void Edge II"
     family: enderman
@@ -351,6 +391,8 @@ relics:
       unbreaking: 3
       excellentenchants:blindness: 2
       excellentenchants:double_strike: 2
+    perks:
+      - {type: enderman_calm}
   enderman_armour_2:
     name: "Pearl Charm II"
     family: enderman
@@ -360,6 +402,8 @@ relics:
     item: shield
     enchants:
       unbreaking: 3
+    perks:
+      - {type: pearl_mastery, amount: 75}
   wayfarers_blade:
     name: "Wayfarer's Blade"
     family: all
