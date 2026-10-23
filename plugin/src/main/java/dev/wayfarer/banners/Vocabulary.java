@@ -7,4 +7,7 @@ public interface Vocabulary {
     boolean isPattern(String name);
 
     boolean isColour(String name);
+
+    /** An upper-case spawn reason name such as SPAWNER. */
+    boolean isSpawnReason(String name);
 }

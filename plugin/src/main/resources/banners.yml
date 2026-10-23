@@ -11,6 +11,13 @@ families:
   spider: [spider, cave_spider]
   enderman: [enderman]
 
+# Which kills count. Spawn reasons are Paper's CreatureSpawnEvent.SpawnReason names. Listing them replaces the
+# default list, so include all you want excluded. "custom" (used by MythicMobs) is deliberately not excluded.
+# Tamed and leashed mobs, and kills not made by a player (or their projectile), never count.
+counting:
+  exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
+  min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
+
 # Per banner: name, colour (base dye colour), patterns (list of pattern:colour), family, kills,
 # damage-bonus and damage-reduction (whole percent), radius (blocks). Omitted numbers use the values below.
 banners:

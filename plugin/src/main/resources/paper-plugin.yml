@@ -9,3 +9,15 @@ permissions:
   wayfarer.banners.give:
     description: Give a banner item to a player
     default: op
+  wayfarer.banners.setkills:
+    description: Set a player's kill count for a banner's mob family
+    default: op
+  wayfarer.banners.progress:
+    description: View your own banner progress
+    default: true
+  wayfarer.banners.progress.others:
+    description: View another player's banner progress
+    default: op
+  wayfarer.banners.claim:
+    description: Claim a copy of a banner you have earned
+    default: true

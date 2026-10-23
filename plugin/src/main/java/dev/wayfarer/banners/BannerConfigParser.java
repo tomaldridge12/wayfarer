@@ -40,7 +40,8 @@ public final class BannerConfigParser {
                 banners.put(banner.id(), banner);
             }
         }
-        return new BannerSet(families, banners, List.copyOf(problems));
+        CountingSettings counting = CountingSettings.parse(root.get("counting"), vocabulary, problems);
+        return new BannerSet(families, banners, counting, List.copyOf(problems));
     }
 
     /** A family with an unknown mob, or a mob already in an earlier family, is rejected whole. */

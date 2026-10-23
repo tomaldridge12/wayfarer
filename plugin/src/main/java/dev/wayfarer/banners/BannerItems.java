@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.banner.Pattern;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 
@@ -51,5 +52,11 @@ final class BannerItems {
 
     private static Component line(String text) {
         return Component.text(text, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false);
+    }
+
+    /** Puts the banner in the player's inventory, or drops it at their feet if it does not fit. */
+    void deliver(Player player, BannerDefinition def) {
+        player.getInventory().addItem(create(def)).values()
+                .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
     }
 }

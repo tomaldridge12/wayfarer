@@ -24,6 +24,11 @@ class BannerConfigParserTest {
         }
 
         @Override
+        public boolean isSpawnReason(String name) {
+            return Set.of("SPAWNER", "CUSTOM", "NATURAL").contains(name);
+        }
+
+        @Override
         public boolean isColour(String name) {
             return Set.of("white", "green", "lime", "black").contains(name);
         }

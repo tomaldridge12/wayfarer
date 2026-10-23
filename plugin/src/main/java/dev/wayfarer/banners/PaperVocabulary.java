@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 
 /** The server's own mob types, banner patterns and dye colours. */
 final class PaperVocabulary implements Vocabulary {
@@ -24,6 +25,16 @@ final class PaperVocabulary implements Vocabulary {
     public boolean isColour(String name) {
         try {
             DyeColor.valueOf(name.toUpperCase(java.util.Locale.ROOT));
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isSpawnReason(String name) {
+        try {
+            CreatureSpawnEvent.SpawnReason.valueOf(name);
             return true;
         } catch (IllegalArgumentException e) {
             return false;
