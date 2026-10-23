@@ -24,3 +24,6 @@ permissions:
   wayfarer.banners.place:
     description: Stand a banner at a position (testing tool)
     default: op
+  wayfarer.banners.forcedrop:
+    description: Award a banner as a successful drop would (testing tool)
+    default: op

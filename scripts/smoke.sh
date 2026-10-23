@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 CFG=server/plugins/Wayfarer/banners.yml
 DATA=server/plugins/Wayfarer/data
 PLAYER=00000000-0000-0000-0000-000000000001
+PLAYER2=00000000-0000-0000-0000-000000000002
 trap 'rm -f "$CFG"' EXIT
 
 boot() { # log file, then console commands to run after boot
@@ -19,7 +20,7 @@ check() { # log file, pattern
 fail=0
 rm -f "$CFG"
 rm -rf "$DATA"
-LOG1=$(mktemp); boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 100" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world"
+LOG1=$(mktemp); boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 100" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world" "mobbanners forcedrop skeleton $PLAYER2" "mobbanners progress $PLAYER2"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Wayfarer enabled"
 check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
@@ -34,6 +35,8 @@ check "$LOG1" "Placed banner registry loaded: "
 check "$LOG1" "Marked chunk"
 check "$LOG1" "Placed banner registry unloaded: "
 check "$LOG1" "Placed banner zombie at 0,100,0 in world"
+check "$LOG1" "$PLAYER2 earned banner skeleton by forced drop"
+check "$LOG1" "skeleton: 0/100 (earned)"
 grep -q '"version":1' "$DATA/banners/$PLAYER.json" && echo "PASS: player file written with version" || { echo "FAIL: player file"; fail=1; }
 
 LOG1B=$(mktemp); boot "$LOG1B" "mobbanners progress $PLAYER" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"

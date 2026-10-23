@@ -49,6 +49,12 @@ final class BannerCommands {
                                                 .then(Commands.argument("world", StringArgumentType.word())
                                                         .executes(ctx -> run(() -> place(m, ctx,
                                                                 StringArgumentType.getString(ctx, "world"))))))))))
+                .then(Commands.literal("forcedrop")
+                        .requires(s -> s.getSender().hasPermission(BannersModule.FORCEDROP_PERMISSION))
+                        .then(banner(m).then(player(m).executes(ctx -> run(() -> m.forceDrop(
+                                ctx.getSource().getSender(),
+                                StringArgumentType.getString(ctx, "banner"),
+                                StringArgumentType.getString(ctx, "player")))))))
                 .then(Commands.literal("claim")
                         .requires(s -> s.getSender().hasPermission(BannersModule.CLAIM_PERMISSION))
                         .then(banner(m).executes(ctx -> run(() -> m.claim(ctx.getSource().getSender(),

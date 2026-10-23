@@ -36,6 +36,11 @@ feedback:
 
 # Per banner: name, colour (base dye colour), patterns (list of pattern:colour), family, kills,
 # damage-bonus and damage-reduction (whole percent), radius (blocks). Omitted numbers use the values below.
+# Optional drops: a chance (above 0, at most 1) that killing that mob type awards the banner to every
+# player who damaged it, for example on a vanilla boss:
+#     drops:
+#       wither: 0.5
+#       elder_guardian: 1.0
 banners:
   zombie:
     name: "Zombie Banner"

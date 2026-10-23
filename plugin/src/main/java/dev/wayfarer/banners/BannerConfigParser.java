@@ -33,15 +33,38 @@ public final class BannerConfigParser {
     private BannerSet run(Map<String, Object> root) {
         Map<String, MobFamily> families = parseFamilies(asMap(root.get("families")));
         Map<String, BannerDefinition> banners = new LinkedHashMap<>();
+        Map<String, List<BannerSet.Drop>> drops = new LinkedHashMap<>();
         Map<String, Object> raw = asMap(root.get("banners"));
         for (Map.Entry<String, Object> entry : raw.entrySet()) {
             BannerDefinition banner = parseBanner(entry.getKey(), entry.getValue(), families);
             if (banner != null) {
                 banners.put(banner.id(), banner);
+                parseDrops(banner.id(), asMap(entry.getValue()).get("drops"), drops);
             }
         }
         CountingSettings counting = CountingSettings.parse(root.get("counting"), vocabulary, problems);
-        return new BannerSet(families, banners, counting, List.copyOf(problems));
+        return new BannerSet(families, banners, counting, drops, List.copyOf(problems));
+    }
+
+    /** `drops: {wither: 0.5}` gives a 50% chance per kill of that mob type. Bad entries are skipped alone. */
+    private void parseDrops(String bannerId, Object value, Map<String, List<BannerSet.Drop>> drops) {
+        if (value == null) {
+            return;
+        }
+        if (!(value instanceof Map<?, ?> map)) {
+            problems.add("Banner " + bannerId + " drops ignored: must be a map of mob type to chance");
+            return;
+        }
+        map.forEach((mobKey, chanceValue) -> {
+            String mob = String.valueOf(mobKey).toLowerCase(Locale.ROOT);
+            if (!vocabulary.isMob(mob)) {
+                problems.add("Banner " + bannerId + " drop from '" + mobKey + "' skipped: unknown mob type");
+            } else if (!(chanceValue instanceof Number n) || n.doubleValue() <= 0 || n.doubleValue() > 1) {
+                problems.add("Banner " + bannerId + " drop from " + mob + " skipped: chance must be above 0 and at most 1");
+            } else {
+                drops.computeIfAbsent(mob, m -> new ArrayList<>()).add(new BannerSet.Drop(bannerId, n.doubleValue()));
+            }
+        });
     }
 
     /** A family with an unknown mob, or a mob already in an earlier family, is rejected whole. */

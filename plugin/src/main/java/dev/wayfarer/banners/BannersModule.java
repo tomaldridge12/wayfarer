@@ -17,6 +17,7 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,6 +32,7 @@ public final class BannersModule implements Module {
     static final String PROGRESS_OTHERS_PERMISSION = "wayfarer.banners.progress.others";
     static final String CLAIM_PERMISSION = "wayfarer.banners.claim";
     static final String PLACE_PERMISSION = "wayfarer.banners.place";
+    static final String FORCEDROP_PERMISSION = "wayfarer.banners.forcedrop";
     private static final long SAVE_INTERVAL_TICKS = 20L * 60;
 
     private final JavaPlugin plugin;
@@ -43,6 +45,8 @@ public final class BannersModule implements Module {
     private PlacedBanners placed;
     private PlacedBannerListener placedListener;
     private BoostListener boostListener;
+    private DropListener dropListener;
+    private final DropRules drops = new DropRules();
     private BannerFeedback feedback;
     private BukkitTask feedbackTask;
     private volatile FeedbackSettings feedbackSettings = FeedbackSettings.defaults();
@@ -77,14 +81,18 @@ public final class BannersModule implements Module {
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
                 BannerFeedback.UPDATE_TICKS, BannerFeedback.UPDATE_TICKS);
+        dropListener = new DropListener(this);
+        plugin.getServer().getPluginManager().registerEvents(dropListener, plugin);
         boostListener = new BoostListener(new BoostGlue(placed, this::banners), feedback);
         plugin.getServer().getPluginManager().registerEvents(boostListener, plugin);
         placed.loadAll(plugin.getServer());
         core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "
                 + placed.registry().all().count() + " banners");
         warnInert();
-        saveTask = plugin.getServer().getScheduler()
-                .runTaskTimer(plugin, store::flush, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
+        saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+            store.flush();
+            drops.forgetStale(plugin.getServer().getCurrentTick());
+        }, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
                 event.registrar().register(BannerCommands.build(this)));
     }
@@ -108,6 +116,9 @@ public final class BannersModule implements Module {
         }
         if (boostListener != null) {
             HandlerList.unregisterAll(boostListener);
+        }
+        if (dropListener != null) {
+            HandlerList.unregisterAll(dropListener);
         }
         if (placed != null) {
             long count = placed.registry().all().count();
@@ -153,6 +164,60 @@ public final class BannersModule implements Module {
             store.markDirty(killer.getUniqueId());
             result.newlyEarned().forEach(def -> award(killer, def));
         }
+    }
+
+    void recordDropHit(LivingEntity mob, UUID player) {
+        if (!loaded.dropsFor(mob.getType().getKey().getKey()).isEmpty()) {
+            drops.recordHit(mob.getUniqueId(), player, plugin.getServer().getCurrentTick());
+        }
+    }
+
+    void onDropMobDeath(LivingEntity mob) {
+        List<UUID> damagers = drops.takeDamagers(mob.getUniqueId());
+        if (damagers.isEmpty()) {
+            return;
+        }
+        List<BannerDefinition> won = DropRules.roll(mob.getType().getKey().getKey(), loaded,
+                java.util.concurrent.ThreadLocalRandom.current()::nextDouble);
+        for (BannerDefinition def : won) {
+            damagers.forEach(player -> awardEarned(player, def, "drop from " + mob.getType().getKey().getKey()));
+        }
+    }
+
+    /** Marks a banner earned (once) for a player, online or not, and delivers it if they are online. */
+    private void awardEarned(UUID id, BannerDefinition def, String how) {
+        store.load(id).whenCompleteAsync((data, error) -> {
+            if (error != null) {
+                core.logger().severe("[banners] Could not award " + def.id() + " to " + id + ": " + error.getMessage());
+                return;
+            }
+            if (!data.markEarned(def.id())) {
+                return; // awarded once per player; claim recovers lost copies
+            }
+            store.markDirty(id);
+            core.logger().info("[banners] " + id + " earned banner " + def.id() + " by " + how);
+            Player online = plugin.getServer().getPlayer(id);
+            if (online != null) {
+                items.deliver(online, def);
+                online.sendMessage("You earned the " + def.name() + "!");
+            }
+        }, mainThread);
+    }
+
+    /** Operator tool: awards a banner as a successful drop would, without killing anything. */
+    void forceDrop(CommandSender sender, String bannerId, String targetName) {
+        BannerDefinition def = loaded.find(bannerId).orElse(null);
+        if (def == null) {
+            sender.sendMessage("Unknown banner '" + bannerId + "'");
+            return;
+        }
+        UUID target = resolve(targetName);
+        if (target == null) {
+            sender.sendMessage("Unknown player '" + targetName + "' (use their UUID if they have not joined recently)");
+            return;
+        }
+        awardEarned(target, def, "forced drop");
+        sender.sendMessage("Forced a " + def.id() + " banner drop for " + target);
     }
 
     private void award(Player player, BannerDefinition def) {
