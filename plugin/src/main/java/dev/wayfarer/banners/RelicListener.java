@@ -36,6 +36,14 @@ final class RelicListener implements Listener {
         }
     }
 
+    /** Arrows remember the relic bow that fired them, so their edge does not depend on what is held on impact. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onShoot(org.bukkit.event.entity.EntityShootBowEvent event) {
+        if (event.getEntity() instanceof Player && event.getBow() != null) {
+            relics.relicId(event.getBow()).ifPresent(id -> relics.tagProjectile(event.getProjectile(), id));
+        }
+    }
+
     @EventHandler
     void onSmithing(PrepareSmithingEvent event) {
         if (RelicItems.isNetheriteUpgrade(event.getInventory().getInputTemplate())

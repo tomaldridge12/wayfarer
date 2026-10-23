@@ -165,7 +165,12 @@ public final class BannerText {
 
     /** Action bar flash when a banner softened a hit on the player. */
     public static Component blocked(BannerDefinition def, double amount) {
-        return plain("✚ ", GUARD).append(plain(def.name(), NamedTextColor.GRAY))
+        return blocked(def.name(), amount);
+    }
+
+    /** "✚ <source> blocked 1.5": a banner or relic armour softened a hit. */
+    public static Component blocked(String sourceName, double amount) {
+        return plain("✚ ", GUARD).append(plain(sourceName, NamedTextColor.GRAY))
                 .append(plain(" blocked ", NamedTextColor.DARK_GRAY))
                 .append(plain(DamageNumbers.format(amount), GUARD));
     }

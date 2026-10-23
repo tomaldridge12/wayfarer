@@ -113,8 +113,9 @@ final class BannerFeedback {
         FeedbackSettings s = settings.get();
         double blocked = applied.before() - applied.after();
         if (s.showBlocked() && blocked > 0) {
-            set.find(applied.resolved().boost().bannerId())
-                    .ifPresent(def -> player.sendActionBar(BannerText.blocked(def, blocked)));
+            String source = applied.resolved().boost().bannerId();
+            set.find(source).map(BannerDefinition::name).or(() -> set.findRelic(source).map(RelicDefinition::name))
+                    .ifPresent(name -> player.sendActionBar(BannerText.blocked(name, blocked)));
         }
     }
 

@@ -145,4 +145,61 @@ class BoostRulesTest {
         registry.add(OTHER_WORLD, new BlockPos(0, 64, 0), "z");
         assertTrue(hit(player(0, 0), null, mob("zombie", 0, 0), set).isEmpty());
     }
+
+    private static Party armed(double x, double z, BoostRules.Edge... edges) {
+        return new Party(true, "player", new Point(WORLD, x, 64, z), false, List.of(edges));
+    }
+
+    private static final BoostRules.Edge CLEAVER = new BoostRules.Edge("zombie_weapon", "zombie", 30);
+
+    @Test
+    void weaponEdgeWorksWithoutAnyBanner() {
+        BannerSet set = set(banner("z", "zombie", 10, 10, 16));
+        assertEquals(new Boost("zombie_weapon", 30), hit(armed(100, 100, CLEAVER), null, mob("zombie", 100, 100), set)
+                .orElseThrow().boost());
+        assertTrue(hit(armed(100, 100, CLEAVER), null, mob("skeleton", 100, 100), set).isEmpty());
+    }
+
+    @Test
+    void weaponEdgeAddsToTheBannerBoost() {
+        BannerSet set = set(banner("z", "zombie", 10, 10, 16));
+        place(0, 0, "z");
+        place(1, 1, "z");
+        assertEquals(new Boost("z", 40), hit(armed(0, 0, CLEAVER), null, mob("zombie", 0, 0), set).orElseThrow().boost());
+    }
+
+    @Test
+    void armourEdgesAddToTheBannerReductionButNeverPastAllDamage() {
+        BannerSet set = set(banner("z", "zombie", 10, 60, 16));
+        place(0, 0, "z");
+        Party wearing = armed(0, 0, new BoostRules.Edge("zombie_armour_2", "zombie", 30),
+                new BoostRules.Edge("spider_armour", "spider", 25));
+        assertEquals(new Boost("z", 90), hit(mob("zombie", 0, 0), null, wearing, set).orElseThrow().boost());
+        Party tough = armed(0, 0, new BoostRules.Edge("a", "zombie", 30), new BoostRules.Edge("b", "zombie", 30));
+        assertEquals(100, hit(mob("zombie", 0, 0), null, tough, set).orElseThrow().boost().percent());
+        assertEquals(0.0, BoostRules.withReduction(7, new Boost("z", 100)), 1e-9);
+        // Away from banners, relic armour alone still counts.
+        assertEquals(new Boost("zombie_armour_2", 30), hit(mob("zombie", 90, 90), null, armed(90, 90,
+                new BoostRules.Edge("zombie_armour_2", "zombie", 30)), set).orElseThrow().boost());
+    }
+
+    @Test
+    void arrowsCarryTheirBowsEdgeNotWhatTheShooterHoldsNow() {
+        BannerSet set = set(banner("s", "skeleton", 10, 10, 16));
+        Party arrow = new Party(false, "arrow", new Point(WORLD, 50, 64, 50), false,
+                List.of(new BoostRules.Edge("skeleton_weapon", "skeleton", 30)));
+        Party shooterNowHoldingACleaver = armed(100, 100, CLEAVER);
+        assertEquals(new Boost("skeleton_weapon", 30),
+                hit(arrow, shooterNowHoldingACleaver, mob("skeleton", 0, 0), set).orElseThrow().boost());
+        assertTrue(hit(arrow, shooterNowHoldingACleaver, mob("zombie", 0, 0), set).isEmpty());
+    }
+
+    @Test
+    void theAllMobsEdgeHitsEveryHostileMobOnly() {
+        BannerSet set = set(banner("z", "zombie", 10, 10, 16));
+        BoostRules.Edge blade = new BoostRules.Edge("wayfarers_blade", MobFamily.ALL, 10);
+        assertEquals(10, hit(armed(90, 90, blade), null, mob("witch", 90, 90), set).orElseThrow().boost().percent());
+        Party cow = new Party(false, "cow", new Point(WORLD, 90, 64, 90), false, List.of());
+        assertTrue(hit(armed(90, 90, blade), null, cow, set).isEmpty());
+    }
 }

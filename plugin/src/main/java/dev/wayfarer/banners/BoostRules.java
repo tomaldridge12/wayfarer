@@ -1,6 +1,7 @@
 package dev.wayfarer.banners;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -17,8 +18,19 @@ public final class BoostRules {
     public record Boost(String bannerId, int percent) {
     }
 
-    /** One side of a hit: a player, or any other entity (pets included) by type. */
-    public record Party(boolean player, String type, Point at) {
+    /** A relic's family edge: its family (or the all-mobs family) and percent. */
+    public record Edge(String relicId, String family, int percent) {
+    }
+
+    /**
+     * One side of a hit: a player, or any other entity (pets included) by type. {@code edges} are the relic
+     * edges it brings: a player's main-hand weapon when attacking, worn armour and off-hand charm when hit,
+     * or the relic bow that fired an arrow.
+     */
+    public record Party(boolean player, String type, Point at, boolean hostile, List<Edge> edges) {
+        public Party(boolean player, String type, Point at) {
+            this(player, type, at, !player, List.of());
+        }
     }
 
     /** The boost for a hit: a bonus when the player attacks, a reduction when the player is hit. */
@@ -37,14 +49,39 @@ public final class BoostRules {
             java.util.function.Function<Point, Stream<PlacedBannerRegistry.Placed>> nearby, BannerSet set) {
         Party attacker = shooter != null ? shooter : direct;
         if (attacker.player() && !victim.player()) {
-            return bonus(attacker.at(), set.familyOf(victim.type()), nearby.apply(attacker.at()), set)
-                    .map(b -> new Resolved(b, true));
+            String family = set.familyOf(victim.type());
+            Optional<Boost> banner = bonus(attacker.at(), family, nearby.apply(attacker.at()), set);
+            // A projectile carries the edge of the bow that fired it; a melee hit uses the held weapon.
+            List<Edge> weapon = shooter != null ? direct.edges() : attacker.edges();
+            Optional<Edge> edge = weapon.stream().filter(e -> matches(e, family, victim.hostile()))
+                    .max(java.util.Comparator.comparingInt(Edge::percent));
+            return combine(banner, edge.map(List::of).orElse(List.of()), 1000).map(b -> new Resolved(b, true));
         }
         if (victim.player() && !attacker.player()) {
-            return reduction(victim.at(), set.familyOf(attacker.type()), nearby.apply(victim.at()), set)
-                    .map(b -> new Resolved(b, false));
+            String family = set.familyOf(attacker.type());
+            Optional<Boost> banner = reduction(victim.at(), family, nearby.apply(victim.at()), set);
+            List<Edge> armour = victim.edges().stream().filter(e -> matches(e, family, attacker.hostile())).toList();
+            return combine(banner, armour, 100).map(b -> new Resolved(b, false));
         }
         return Optional.empty();
+    }
+
+    private static boolean matches(Edge edge, String mobFamily, boolean hostile) {
+        return MobFamily.ALL.equals(edge.family()) ? hostile : edge.family().equals(mobFamily);
+    }
+
+    /**
+     * Banner and relic edges add up (banners never stack with each other); capped so damage taken never goes
+     * below zero. The source named is the banner when there is one, else the strongest relic.
+     */
+    private static Optional<Boost> combine(Optional<Boost> banner, List<Edge> edges, int cap) {
+        int total = banner.map(Boost::percent).orElse(0) + edges.stream().mapToInt(Edge::percent).sum();
+        if (total <= 0) {
+            return Optional.empty();
+        }
+        String source = banner.map(Boost::bannerId).orElseGet(() -> edges.stream()
+                .max(java.util.Comparator.comparingInt(Edge::percent)).map(Edge::relicId).orElse(null));
+        return Optional.of(new Boost(source, Math.min(total, cap)));
     }
 
     /** Bonus for a player hitting a mob of this family. */

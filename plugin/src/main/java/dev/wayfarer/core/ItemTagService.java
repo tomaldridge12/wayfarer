@@ -16,6 +16,15 @@ public final class ItemTagService {
         this.plugin = plugin;
     }
 
+    /** The same tagging for entities and blocks with persistent data (e.g. marking an arrow). */
+    public void write(org.bukkit.persistence.PersistentDataHolder holder, String module, String value) {
+        ItemTags.write(holder(holder.getPersistentDataContainer()), module, value);
+    }
+
+    public Optional<String> read(org.bukkit.persistence.PersistentDataHolder holder, String module) {
+        return ItemTags.read(holder(holder.getPersistentDataContainer()), module);
+    }
+
     /** A second named value for the same module, e.g. a trophy's earner alongside its reward. */
     public void write(ItemStack item, String module, String field, String value) {
         write(item, module + "_" + field, value);

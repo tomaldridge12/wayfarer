@@ -17,18 +17,25 @@ final class BoostGlue {
 
     private final PlacedBanners placed;
     private final Supplier<BannerSet> banners;
+    private final RelicItems relics;
 
-    BoostGlue(PlacedBanners placed, Supplier<BannerSet> banners) {
+    BoostGlue(PlacedBanners placed, Supplier<BannerSet> banners, RelicItems relics) {
         this.placed = placed;
         this.banners = banners;
+        this.relics = relics;
     }
 
     Optional<Applied> apply(EntityDamageByEntityEvent event) {
         BannerSet set = banners.get();
         Entity direct = event.getDamager();
-        BoostRules.Party shooter = direct instanceof Projectile p && p.getShooter() instanceof Entity e ? party(e) : null;
-        Optional<BoostRules.Resolved> resolved = BoostRules.resolve(party(direct), shooter, party(event.getEntity()),
-                at -> nearby(at, set), set);
+        boolean projectile = direct instanceof Projectile;
+        BoostRules.Party shooter = direct instanceof Projectile p && p.getShooter() instanceof Entity e
+                ? party(e, java.util.List.of()) : null;
+        BoostRules.Party attacker = party(direct, projectile ? relics.projectileEdges(direct)
+                : direct instanceof Player pl ? relics.weaponEdges(pl) : java.util.List.of());
+        Entity hit = event.getEntity();
+        BoostRules.Party victim = party(hit, hit instanceof Player pl ? relics.armourEdges(pl) : java.util.List.of());
+        Optional<BoostRules.Resolved> resolved = BoostRules.resolve(attacker, shooter, victim, at -> nearby(at, set), set);
         double before = event.getFinalDamage();
         if (resolved.isEmpty() || before <= 0) {
             return Optional.empty(); // nothing applies, or the hit was blocked or fully absorbed
@@ -47,9 +54,10 @@ final class BoostGlue {
         return placed.registry().within(at.world(), at.x(), at.z(), set.maxRadius());
     }
 
-    private static BoostRules.Party party(Entity entity) {
+    private static BoostRules.Party party(Entity entity, java.util.List<BoostRules.Edge> edges) {
         Location at = entity.getLocation();
         return new BoostRules.Party(entity instanceof Player, entity.getType().getKey().getKey(),
-                new BoostRules.Point(entity.getWorld().getUID(), at.getX(), at.getY(), at.getZ()));
+                new BoostRules.Point(entity.getWorld().getUID(), at.getX(), at.getY(), at.getZ()),
+                entity instanceof org.bukkit.entity.Enemy, edges);
     }
 }

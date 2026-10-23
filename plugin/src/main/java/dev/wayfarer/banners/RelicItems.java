@@ -55,6 +55,43 @@ final class RelicItems {
         return item;
     }
 
+    /** The family edge of the relic weapon in a player's main hand, if any. */
+    List<BoostRules.Edge> weaponEdges(org.bukkit.entity.Player player) {
+        return edge(player.getInventory().getItemInMainHand(), RelicDefinition.Slot.WEAPON).map(List::of).orElse(List.of());
+    }
+
+    /** The family edges of relic armour a player is wearing, and of a relic charm in the off-hand. */
+    List<BoostRules.Edge> armourEdges(org.bukkit.entity.Player player) {
+        var inv = player.getInventory();
+        List<BoostRules.Edge> edges = new java.util.ArrayList<>();
+        edge(inv.getHelmet(), RelicDefinition.Slot.HEAD).ifPresent(edges::add);
+        edge(inv.getChestplate(), RelicDefinition.Slot.CHEST).ifPresent(edges::add);
+        edge(inv.getLeggings(), RelicDefinition.Slot.LEGS).ifPresent(edges::add);
+        edge(inv.getBoots(), RelicDefinition.Slot.FEET).ifPresent(edges::add);
+        edge(inv.getItemInOffHand(), RelicDefinition.Slot.OFFHAND).ifPresent(edges::add);
+        return edges;
+    }
+
+    /** Marks an arrow with the relic bow that fired it. */
+    void tagProjectile(org.bukkit.entity.Entity projectile, String relicId) {
+        tags.write(projectile, MODULE + "_shot", relicId);
+    }
+
+    /** The family edge carried by an arrow fired from a relic bow. */
+    List<BoostRules.Edge> projectileEdges(org.bukkit.entity.Entity projectile) {
+        return tags.read(projectile, MODULE + "_shot").flatMap(id -> banners.get().findRelic(id))
+                .map(def -> List.of(new BoostRules.Edge(def.id(), def.family(), def.edgePercent()))).orElse(List.of());
+    }
+
+    /** A relic's edge when it is used in the slot it is meant for; inert relics give none. */
+    private Optional<BoostRules.Edge> edge(ItemStack item, RelicDefinition.Slot usedAs) {
+        if (item == null || item.isEmpty()) {
+            return Optional.empty();
+        }
+        return relicId(item).flatMap(id -> banners.get().findRelic(id)).filter(def -> def.slot() == usedAs)
+                .map(def -> new BoostRules.Edge(def.id(), def.family(), def.edgePercent()));
+    }
+
     /** The relic id on an item, or empty for anything else. */
     Optional<String> relicId(ItemStack item) {
         return tags.read(item, MODULE).map(text -> RewardKey.parse(text, RewardKey.BANNER))

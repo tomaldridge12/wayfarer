@@ -90,7 +90,7 @@ public final class BannersModule implements Module {
                 BannerFeedback.UPDATE_TICKS, BannerFeedback.UPDATE_TICKS);
         dropListener = new DropListener(this);
         plugin.getServer().getPluginManager().registerEvents(dropListener, plugin);
-        boostListener = new BoostListener(new BoostGlue(placed, this::banners), feedback, this::banners);
+        boostListener = new BoostListener(new BoostGlue(placed, this::banners, relics), feedback, this::banners);
         plugin.getServer().getPluginManager().registerEvents(boostListener, plugin);
         placed.loadAll(plugin.getServer());
         core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "

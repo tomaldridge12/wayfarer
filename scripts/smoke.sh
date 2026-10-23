@@ -16,8 +16,20 @@ trap 'rm -f "$CFG"' EXIT
 
 # Starts the server, waits for its "Done" line (not a fixed sleep), sends each console command a second apart,
 # then stops it. Boots take about 15 seconds instead of a minute.
+# Ends any leftover smoke server still holding this throwaway world (never touches server/).
+clear_stale() {
+  local lock="$RUN/world/session.lock" n=0 pids
+  while pids=$(lsof -t "$lock" 2>/dev/null) && [ -n "$pids" ] && [ "$n" -lt 40 ]; do
+    [ "$n" -eq 20 ] && kill $pids 2>/dev/null
+    sleep 0.5
+    n=$((n + 1))
+  done
+}
+trap '' PIPE # a server that died early must not kill the script; its checks fail instead
+
 boot() { # log file, then console commands to run once the server is up
   local log=$1; shift
+  clear_stale
   local fifo
   fifo=$(mktemp -u)
   mkfifo "$fifo"
@@ -30,14 +42,13 @@ boot() { # log file, then console commands to run once the server is up
     ticks=$((ticks + 1))
     if ! kill -0 "$pid" 2>/dev/null || [ "$ticks" -gt 360 ]; then break; fi
   done
-  for c in "$@"; do echo "$c" >&3; sleep "${CMD_WAIT:-1}"; done
-  echo stop >&3
+  for c in "$@"; do echo "$c" >&3 2>/dev/null || true; sleep "${CMD_WAIT:-1}"; done
+  echo stop >&3 2>/dev/null || true
   exec 3>&-
   wait "$pid" || true
   rm -f "$fifo"
-  # Gradle returns a moment before the server process lets go of the world; wait so the next boot can start.
-  local lock="$RUN/world/session.lock" n=0
-  while [ -f "$lock" ] && lsof -t "$lock" >/dev/null 2>&1 && [ "$n" -lt 60 ]; do sleep 0.5; n=$((n + 1)); done
+  # Gradle returns a moment before the server process lets go of the world; wait (or end it) before the next boot.
+  clear_stale
 }
 check() { # log file, pattern
   grep -qF "$2" "$1" && echo "PASS: $2" || { echo "FAIL: $2 (log: $1)"; fail=1; }
