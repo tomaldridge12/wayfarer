@@ -8,36 +8,36 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class SpawnRulesTest {
-    private static final SpawnRules.BossSpawn WARLORD = new SpawnRules.BossSpawn("zombie", Set.of("plains"), false,
+    private static final SpawnRules.BossSpawn WARLORD = new SpawnRules.BossSpawn("zombie", Set.of("minecraft:plains"), false,
             0.001, true, Set.of());
-    private static final SpawnRules.BossSpawn PHARAOH = new SpawnRules.BossSpawn("husk", Set.of("desert"), false,
-            0.001, false, Set.of("desert_pyramid"));
+    private static final SpawnRules.BossSpawn PHARAOH = new SpawnRules.BossSpawn("husk", Set.of("minecraft:desert"), false,
+            0.001, false, Set.of("minecraft:desert_pyramid"));
 
     @Test
     void naturalSpawnNeedsEntityBiomeNightRoomAndLuck() {
-        assertTrue(SpawnRules.naturalSpawn(WARLORD, "zombie", "plains", true, false, 0, () -> 0.0005));
-        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "plains", true, false, 0, () -> 0.002)); // unlucky
-        assertFalse(SpawnRules.naturalSpawn(WARLORD, "skeleton", "plains", true, false, 0, () -> 0)); // wrong mob
-        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "desert", true, false, 0, () -> 0)); // wrong biome
-        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "plains", false, false, 0, () -> 0)); // daytime
-        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "plains", true, true, 0, () -> 0)); // one alive
-        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "plains", true, false, 5000, () -> 0)); // cooling
+        assertTrue(SpawnRules.naturalSpawn(WARLORD, "zombie", "minecraft:plains", true, false, 0, () -> 0.0005));
+        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "minecraft:plains", true, false, 0, () -> 0.002)); // unlucky
+        assertFalse(SpawnRules.naturalSpawn(WARLORD, "skeleton", "minecraft:plains", true, false, 0, () -> 0)); // wrong mob
+        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "minecraft:desert", true, false, 0, () -> 0)); // wrong biome
+        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "minecraft:plains", false, false, 0, () -> 0)); // daytime
+        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "minecraft:plains", true, true, 0, () -> 0)); // one alive
+        assertFalse(SpawnRules.naturalSpawn(WARLORD, "zombie", "minecraft:plains", true, false, 5000, () -> 0)); // cooling
     }
 
     @Test
     void anyBiomeMeansAnywhere() {
         SpawnRules.BossSpawn prophet = new SpawnRules.BossSpawn("creeper", Set.of(), true, 0.001, true, Set.of());
-        assertTrue(SpawnRules.naturalSpawn(prophet, "creeper", "badlands", true, false, 0, () -> 0));
-        assertFalse(SpawnRules.naturalSpawn(SpawnRules.BossSpawn.none(), "creeper", "badlands", true, false, 0, () -> 0));
+        assertTrue(SpawnRules.naturalSpawn(prophet, "creeper", "minecraft:badlands", true, false, 0, () -> 0));
+        assertFalse(SpawnRules.naturalSpawn(SpawnRules.BossSpawn.none(), "creeper", "minecraft:badlands", true, false, 0, () -> 0));
     }
 
     @Test
     void guardiansNeedTheirStructureAndBothCooldowns() {
-        assertTrue(SpawnRules.guardian(PHARAOH, "desert_pyramid", false, 0, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "jungle_pyramid", false, 0, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "desert_pyramid", true, 0, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "desert_pyramid", false, 1, 0));
-        assertFalse(SpawnRules.guardian(PHARAOH, "desert_pyramid", false, 0, 1));
+        assertTrue(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 0, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:jungle_pyramid", false, 0, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", true, 0, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 1, 0));
+        assertFalse(SpawnRules.guardian(PHARAOH, "minecraft:desert_pyramid", false, 0, 1));
     }
 
     @Test
@@ -56,5 +56,13 @@ class SpawnRulesTest {
         assertEquals(60_000, SpawnRules.cooldownLeft(1_000_000, 2, 1_060_000));
         assertEquals(0, SpawnRules.cooldownLeft(1_000_000, 2, 1_200_000));
         assertEquals(0, SpawnRules.cooldownLeft(0, 60, 1_800_000_000_000L)); // never spawned
+    }
+
+    @Test
+    void datapackBiomesMatchByTheirFullName() {
+        SpawnRules.BossSpawn pharaoh = new SpawnRules.BossSpawn("husk", Set.of("terralith:desert_canyon"), false,
+                1, false, Set.of());
+        assertTrue(SpawnRules.naturalSpawn(pharaoh, "husk", "terralith:desert_canyon", false, false, 0, () -> 0));
+        assertFalse(SpawnRules.naturalSpawn(pharaoh, "husk", "minecraft:desert_canyon", false, false, 0, () -> 0));
     }
 }

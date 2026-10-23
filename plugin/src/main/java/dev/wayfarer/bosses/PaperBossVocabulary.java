@@ -30,14 +30,34 @@ final class PaperBossVocabulary implements BossVocabulary {
     }
 
     @Override
-    public boolean isBiome(String name) {
-        NamespacedKey key = NamespacedKey.fromString(name);
-        return key != null && Registry.BIOME.get(key) != null;
+    public boolean isBiome(String key) {
+        NamespacedKey k = NamespacedKey.fromString(key);
+        return k != null && Registry.BIOME.get(k) != null;
     }
 
     @Override
-    public boolean isStructure(String name) {
-        NamespacedKey key = NamespacedKey.fromString(name);
-        return key != null && Registry.STRUCTURE.get(key) != null;
+    public java.util.Set<String> biomeTag(String key) {
+        NamespacedKey k = NamespacedKey.fromString(key);
+        if (k == null) {
+            return null;
+        }
+        var tag = io.papermc.paper.registry.tag.TagKey.create(io.papermc.paper.registry.RegistryKey.BIOME, k);
+        if (!Registry.BIOME.hasTag(tag)) {
+            return null;
+        }
+        java.util.Set<String> keys = new java.util.LinkedHashSet<>();
+        for (var biome : Registry.BIOME.getTagValues(tag)) {
+            NamespacedKey biomeKey = Registry.BIOME.getKey(biome);
+            if (biomeKey != null) {
+                keys.add(biomeKey.asString());
+            }
+        }
+        return keys;
+    }
+
+    @Override
+    public boolean isStructure(String key) {
+        NamespacedKey k = NamespacedKey.fromString(key);
+        return k != null && Registry.STRUCTURE.get(k) != null;
     }
 }

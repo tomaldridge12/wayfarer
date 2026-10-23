@@ -13,6 +13,7 @@ public final class BossConfigParser {
 
     private final BossVocabulary vocabulary;
     private final List<String> problems = new ArrayList<>();
+    private final List<String> notices = new ArrayList<>();
 
     private BossConfigParser(BossVocabulary vocabulary) {
         this.vocabulary = vocabulary;
@@ -31,7 +32,8 @@ public final class BossConfigParser {
                 bosses.put(id, boss);
             }
         });
-        return new BossRoster(bosses, stars, parseSpawning(asMap(root.get("spawning"))), List.copyOf(problems));
+        return new BossRoster(bosses, stars, parseSpawning(asMap(root.get("spawning"))), List.copyOf(problems),
+                List.copyOf(notices));
     }
 
     private SpawnRules.Settings parseSpawning(Map<String, Object> m) {
@@ -104,9 +106,17 @@ public final class BossConfigParser {
         java.util.Set<String> biomes = new java.util.LinkedHashSet<>();
         if (m.get("biomes") instanceof List<?> list) {
             for (Object b : list) {
-                String biome = String.valueOf(b).toLowerCase(Locale.ROOT);
-                if (vocabulary.isBiome(biome)) {
-                    biomes.add(biome);
+                String entry = String.valueOf(b).toLowerCase(Locale.ROOT);
+                if (entry.startsWith("#")) {
+                    String tag = fullKey(entry.substring(1));
+                    java.util.Set<String> members = vocabulary.biomeTag(tag);
+                    if (members == null) {
+                        notices.add("Boss " + bossId + ": biome tag #" + tag + " is not on this server; skipped");
+                    } else {
+                        biomes.addAll(members);
+                    }
+                } else if (vocabulary.isBiome(fullKey(entry))) {
+                    biomes.add(fullKey(entry));
                 } else {
                     problems.add("Boss " + bossId + ": unknown biome '" + b + "' ignored");
                 }
@@ -115,7 +125,7 @@ public final class BossConfigParser {
         java.util.Set<String> structures = new java.util.LinkedHashSet<>();
         if (m.get("structures") instanceof List<?> list) {
             for (Object st : list) {
-                String structure = String.valueOf(st).toLowerCase(Locale.ROOT);
+                String structure = fullKey(String.valueOf(st).toLowerCase(Locale.ROOT));
                 if (vocabulary.isStructure(structure)) {
                     structures.add(structure);
                 } else {
@@ -180,6 +190,11 @@ public final class BossConfigParser {
             }
         }
         return new int[] {0xFFE7A0, 0xFF5E3A};
+    }
+
+    /** "plains" means "minecraft:plains"; "terralith:desert_canyon" stays as written. */
+    static String fullKey(String name) {
+        return name.indexOf(':') < 0 ? "minecraft:" + name : name;
     }
 
     private Double positive(Object value, String name) {

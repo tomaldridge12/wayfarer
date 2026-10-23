@@ -7,9 +7,9 @@ import java.util.function.DoubleSupplier;
 
 /** Every valid boss from one config load, the star scale, and a message for everything rejected. */
 public record BossRoster(Map<String, BossDefinition> bosses, StarScale stars, SpawnRules.Settings spawning,
-        List<String> problems) {
+        List<String> problems, List<String> notices) {
     public BossRoster(Map<String, BossDefinition> bosses, StarScale stars, List<String> problems) {
-        this(bosses, stars, SpawnRules.Settings.defaults(), problems);
+        this(bosses, stars, SpawnRules.Settings.defaults(), problems, List.of());
     }
 
     public static BossRoster empty() {

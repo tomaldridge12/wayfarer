@@ -81,6 +81,11 @@ public final class BossesModule implements Module {
     private void load() throws IOException {
         BossRoster r = BossConfigParser.parse(core.config().load(id()), new PaperBossVocabulary());
         r.problems().forEach(p -> core.logger().warning("[bosses] " + p));
+        r.notices().forEach(n -> core.logger().info("[bosses] " + n));
+        core.logger().info("[bosses] Spawn biomes: " + String.join(", ", r.bosses().values().stream()
+                .filter(b -> b.spawn().chance() > 0)
+                .map(b -> b.id() + " " + (b.spawn().anyBiome() ? "any" : String.valueOf(b.spawn().biomes().size())))
+                .toList()));
         roster = r;
         int variants = r.bosses().values().stream().mapToInt(b -> b.variants().size()).sum();
         core.logger().info("Bosses loaded: " + r.bosses().size() + " bosses, " + variants + " variants, "

@@ -11,13 +11,21 @@ public interface BossVocabulary {
     /** A named text colour such as dark_green, for the glow. */
     boolean isGlowColour(String name);
 
-    /** A biome key such as plains or the_end. */
-    default boolean isBiome(String name) {
+    /** A full biome key such as minecraft:plains or terralith:desert_canyon. */
+    default boolean isBiome(String key) {
         return true;
     }
 
-    /** A structure key such as desert_pyramid. */
-    default boolean isStructure(String name) {
+    /**
+     * The full keys of every biome in a biome tag such as minecraft:is_forest, or null when the server has no such
+     * tag (common with c: tags that only datapacks like Terralith define).
+     */
+    default java.util.Set<String> biomeTag(String key) {
+        return null;
+    }
+
+    /** A full structure key such as minecraft:desert_pyramid. */
+    default boolean isStructure(String key) {
         return true;
     }
 }

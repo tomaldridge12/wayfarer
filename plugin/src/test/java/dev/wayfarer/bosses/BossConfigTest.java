@@ -19,6 +19,9 @@ class BossConfigTest {
         public boolean isBossEntity(String n) { return !n.equals("armor_stand") && !n.isEmpty(); }
         public boolean isItem(String n) { return !n.equals("not_an_item"); }
         public boolean isGlowColour(String n) { return !n.equals("plaid"); }
+        @Override public java.util.Set<String> biomeTag(String key) {
+            return key.startsWith("minecraft:") ? java.util.Set.of(key.replace("minecraft:", "minecraft:tagged_")) : null;
+        }
     };
 
     private static BossRoster shipped() throws Exception {
@@ -40,7 +43,7 @@ class BossConfigTest {
         assertEquals(8, roster.bosses().values().stream().filter(b -> b.spawn().chance() > 0).count());
         assertEquals(7, roster.bosses().values().stream().filter(b -> !b.spawn().structures().isEmpty()).count());
         assertTrue(roster.find("blast_prophet").orElseThrow().spawn().anyBiome());
-        assertEquals(Set.of("desert_pyramid"), roster.find("sand_pharaoh").orElseThrow().spawn().structures());
+        assertEquals(Set.of("minecraft:desert_pyramid"), roster.find("sand_pharaoh").orElseThrow().spawn().structures());
     }
 
     @Test
@@ -85,5 +88,19 @@ class BossConfigTest {
     void nameShowsStars() {
         BossVariant v = new BossVariant("p", "Plague Bearer", "zombie", "green", 1.4, Map.of(), List.of(), 0xD6FF8A, 0x5E8C2A);
         assertEquals("Plague Bearer ★★★", PlainTextComponentSerializer.plainText().serialize(BossText.name(v, 3)));
+    }
+
+    @Test
+    void biomeNamesGetTheirNamespaceAndTagsExpand() {
+        Map<String, Object> root = Map.of("bosses", Map.of("b", Map.of("health", 1, "damage", 1,
+                "variants", Map.of("v", Map.of("entity", "zombie")),
+                "spawn", Map.of("chance", 0.1, "biomes", List.of("plains", "terralith:desert_canyon",
+                        "#minecraft:is_forest", "#c:is_cave"), "structures", List.of("desert_pyramid")))));
+        BossRoster roster = BossConfigParser.parse(root, ANY);
+        var spawn = roster.find("b").orElseThrow().spawn();
+        assertEquals(Set.of("minecraft:plains", "terralith:desert_canyon", "minecraft:tagged_is_forest"), spawn.biomes());
+        assertEquals(Set.of("minecraft:desert_pyramid"), spawn.structures());
+        assertEquals(List.of(), roster.problems());
+        assertEquals(List.of("Boss b: biome tag #c:is_cave is not on this server; skipped"), roster.notices());
     }
 }

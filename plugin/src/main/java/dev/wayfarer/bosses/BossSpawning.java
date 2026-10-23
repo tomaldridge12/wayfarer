@@ -52,7 +52,8 @@ final class BossSpawning implements Listener {
         }
         Location at = event.getLocation();
         String entity = event.getEntityType().getKey().getKey();
-        String biome = at.getBlock().getBiome().getKey().getKey();
+        NamespacedKey biomeKey = org.bukkit.Registry.BIOME.getKey(at.getBlock().getBiome());
+        String biome = biomeKey == null ? "" : biomeKey.asString(); // full key: datapack biomes are not minecraft:
         long now = System.currentTimeMillis();
         for (BossDefinition boss : roster.get().bosses().values()) {
             if (SpawnRules.naturalSpawn(boss.spawn(), entity, biome, night(at.getWorld()), alive(boss),
@@ -82,7 +83,7 @@ final class BossSpawning implements Listener {
                 if (structureKey == null) {
                     continue;
                 }
-                String key = structureKey.getKey();
+                String key = structureKey.asString();
                 for (BossDefinition boss : roster.get().bosses().values()) {
                     long structureLeft = SpawnRules.cooldownLeft(structureLast(structure), boss.cooldownMinutes(), now);
                     if (SpawnRules.guardian(boss.spawn(), key, alive(boss),
@@ -90,7 +91,7 @@ final class BossSpawning implements Listener {
                             structureLeft)) {
                         int stars = SpawnRules.stars(at.distance(at.getWorld().getSpawnLocation()), true,
                                 roster.get().spawning(), ThreadLocalRandom.current()::nextDouble);
-                        if (appear(boss, stars, spotNear(player, box), "guardian of " + key)) {
+                        if (appear(boss, stars, spotNear(player, box), "guardian of " + structureKey.getKey())) {
                             structure.getPersistentDataContainer().set(GUARDIAN_LAST, PersistentDataType.LONG, now);
                         }
                         return; // one guardian per check is plenty

@@ -20,6 +20,9 @@ spawning:
 # chest, legs, feet, hand, offhand), colours (name gradient, two #hex values) and abilities from the library:
 # charge, ground_slam, summon_minions, poison_cloud, arrow_volley, blink, fire_ring, pull, shield, enrage.
 # spawn: entity (whose natural spawn can become the boss), biomes (a list, or any), chance per natural spawn,
+# biomes may be names (plains, terralith:desert_canyon) or biome tags (#minecraft:is_forest). Tags make lists work with
+# datapacks like Terralith, which adds its biomes to the vanilla tags; a tag the server lacks (e.g. #c:is_cave without
+# Terralith) is skipped with a note.
 # night-only, and structures it guards (it appears when a player goes inside, at most once per cooldown).
 bosses:
   rotting_warlord:
@@ -29,7 +32,7 @@ bosses:
     cooldown-minutes: 60
     spawn:
       entity: zombie
-      biomes: [plains, forest, birch_forest, dark_forest, meadow]
+      biomes: ["#minecraft:is_forest", "#minecraft:has_structure/village_plains", meadow]
       chance: 0.0004
       night-only: true
     variants:
@@ -65,7 +68,7 @@ bosses:
     cooldown-minutes: 60
     spawn:
       entity: skeleton
-      biomes: [soul_sand_valley, snowy_slopes, frozen_peaks, jagged_peaks]
+      biomes: ["#minecraft:is_mountain", soul_sand_valley, "#c:is_snowy"]
       chance: 0.0005
       structures: [trial_chambers]
     variants:
@@ -101,7 +104,7 @@ bosses:
     cooldown-minutes: 60
     spawn:
       entity: spider
-      biomes: [dripstone_caves, lush_caves, dark_forest]
+      biomes: [dripstone_caves, lush_caves, dark_forest, "#c:is_cave"]
       chance: 0.0004
       structures: [mineshaft]
     variants:
@@ -167,7 +170,7 @@ bosses:
     cooldown-minutes: 90
     spawn:
       entity: enderman
-      biomes: [the_end, end_highlands, end_midlands, end_barrens]
+      biomes: ["#minecraft:is_end"]
       chance: 0.001
       structures: [stronghold, end_city]
     variants:
@@ -200,7 +203,7 @@ bosses:
     cooldown-minutes: 90
     spawn:
       entity: witch
-      biomes: [swamp, mangrove_swamp]
+      biomes: ["#minecraft:has_structure/swamp_hut", mangrove_swamp]
       chance: 0.003
       structures: [swamp_hut]
     variants:
@@ -226,7 +229,7 @@ bosses:
     cooldown-minutes: 120
     spawn:
       entity: husk
-      biomes: [desert]
+      biomes: ["#minecraft:has_structure/desert_pyramid", desert]
       chance: 0.0005
       structures: [desert_pyramid]
     variants:
@@ -254,7 +257,7 @@ bosses:
     cooldown-minutes: 120
     spawn:
       entity: drowned
-      biomes: [ocean, deep_ocean, lukewarm_ocean, deep_lukewarm_ocean, cold_ocean, deep_cold_ocean]
+      biomes: ["#minecraft:is_ocean", "#minecraft:is_deep_ocean"]
       chance: 0.0005
       structures: [monument, shipwreck]
     variants:
