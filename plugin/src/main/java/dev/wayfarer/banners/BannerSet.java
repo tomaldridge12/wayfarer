@@ -5,6 +5,7 @@ import java.util.Map;
 
 /** The valid families and banners from one load, plus a clear message for everything rejected. */
 public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
+        Map<String, HeadDefinition> heads, Map<String, RelicDefinition> relics,
         CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems) {
 
     /** A chance (0 to 1) that killing this mob type awards the banner. */
@@ -12,22 +13,35 @@ public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefin
     }
 
     public BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
+            CountingSettings counting, Map<String, List<Drop>> drops, List<String> problems) {
+        this(families, banners, Map.of(), Map.of(), counting, drops, problems);
+    }
+
+    public BannerSet(Map<String, MobFamily> families, Map<String, BannerDefinition> banners,
             CountingSettings counting, List<String> problems) {
         this(families, banners, counting, Map.of(), problems);
     }
 
-    /** Every reward in config order. Only banners so far; heads and gear will add theirs here. */
+    /** Every reward: banners, trophy heads and relics, ordered by kill count (stable within equal counts). */
     public List<Reward> rewards() {
-        return banners.values().stream().map(BannerSet::asReward).toList();
+        List<Reward> all = new java.util.ArrayList<>();
+        banners.values().forEach(d -> all.add(new Reward(RewardKey.banner(d.id()), d.name(), d.family(), d.kills())));
+        heads.values().forEach(d -> all.add(new Reward(new RewardKey(RewardKey.HEAD, d.id()), d.name(), d.family(), d.kills())));
+        relics.values().forEach(d -> all.add(new Reward(new RewardKey(RewardKey.RELIC, d.id()), d.name(), d.family(), d.kills())));
+        all.sort(java.util.Comparator.comparingInt(Reward::kills));
+        return all;
     }
 
     public java.util.Optional<Reward> findReward(RewardKey wanted) {
-        return RewardKey.BANNER.equals(wanted.type())
-                ? find(wanted.id()).map(BannerSet::asReward) : java.util.Optional.empty();
+        return rewards().stream().filter(r -> r.rewardKey().equals(wanted)).findFirst();
     }
 
-    private static Reward asReward(BannerDefinition def) {
-        return new Reward(RewardKey.banner(def.id()), def.name(), def.family(), def.kills());
+    public java.util.Optional<HeadDefinition> findHead(String id) {
+        return java.util.Optional.ofNullable(heads.get(id));
+    }
+
+    public java.util.Optional<RelicDefinition> findRelic(String id) {
+        return java.util.Optional.ofNullable(relics.get(id));
     }
 
     /** The drop chances for a mob type, in config order. */

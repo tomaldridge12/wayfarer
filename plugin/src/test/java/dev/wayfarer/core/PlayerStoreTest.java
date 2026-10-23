@@ -43,7 +43,7 @@ class PlayerStoreTest {
 
     @Test
     void fileCarriesAVersionAndMissingKeysDefault() throws IOException {
-        Files.writeString(dir.resolve(ID + ".json"), "{\"version\":2}");
+        Files.writeString(dir.resolve(ID + ".json"), "{\"version\":3}");
         PlayerData data = store().load(ID).join();
         assertEquals(0, data.kills("zombie"));
         assertEquals(java.util.Set.of(), data.earnedView());
@@ -78,6 +78,16 @@ class PlayerStoreTest {
         store.markDirty(ID);
         store.close();
         String saved = Files.readString(dir.resolve(ID + ".json"));
-        assertTrue(saved.contains("\"version\":2") && saved.contains("\"banner:zombie\""), saved);
+        assertTrue(saved.contains("\"version\":3") && saved.contains("\"banner:zombie\""), saved);
+    }
+
+    @Test
+    void claimTimesSurviveSaveAndReload() {
+        PlayerStore<PlayerData> first = store();
+        PlayerData data = first.load(ID).join();
+        data.setLastClaim(dev.wayfarer.banners.RewardKey.banner("zombie"), 1234L);
+        first.markDirty(ID);
+        first.close();
+        assertEquals(1234L, store().load(ID).join().lastClaim(dev.wayfarer.banners.RewardKey.banner("zombie")));
     }
 }

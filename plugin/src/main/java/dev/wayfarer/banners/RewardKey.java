@@ -5,6 +5,8 @@ import java.util.Locale;
 /** Names one reward: its type (banner for now; heads and gear later) and its id within that type. */
 public record RewardKey(String type, String id) {
     public static final String BANNER = "banner";
+    public static final String HEAD = "head";
+    public static final String RELIC = "relic";
 
     public static RewardKey banner(String id) {
         return new RewardKey(BANNER, id);

@@ -9,6 +9,7 @@ import java.util.Set;
 public final class PlayerData {
     private final Map<String, Integer> kills = new LinkedHashMap<>();
     private final Set<String> earned = new LinkedHashSet<>();
+    private final Map<String, Long> lastClaim = new LinkedHashMap<>();
 
     public int kills(String family) {
         return kills.getOrDefault(family, 0);
@@ -25,6 +26,19 @@ public final class PlayerData {
     /** @return true if newly earned */
     public boolean markEarned(RewardKey reward) {
         return earned.add(reward.toString());
+    }
+
+    /** When the player last claimed this reward, in epoch milliseconds, or 0 if never. */
+    public long lastClaim(RewardKey reward) {
+        return lastClaim.getOrDefault(reward.toString(), 0L);
+    }
+
+    public void setLastClaim(RewardKey reward, long epochMillis) {
+        lastClaim.put(reward.toString(), epochMillis);
+    }
+
+    public Map<String, Long> lastClaimView() {
+        return Map.copyOf(lastClaim);
     }
 
     public Map<String, Integer> killsView() {

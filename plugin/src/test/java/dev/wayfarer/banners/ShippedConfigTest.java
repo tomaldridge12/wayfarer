@@ -58,6 +58,12 @@ class ShippedConfigTest {
             assertEquals(10, b.damageReductionPercent());
             assertEquals(16, b.radius());
         });
+        assertEquals(5, set.heads().size());
+        assertEquals(21, set.relics().size());
+        assertEquals(400, set.findRelic("zombie_weapon").orElseThrow().kills());
+        assertEquals(240, set.findRelic("creeper_weapon").orElseThrow().kills());
+        assertEquals(MobFamily.ALL, set.findRelic("wayfarers_blade").orElseThrow().family());
+        assertEquals(RelicDefinition.Slot.OFFHAND, set.findRelic("enderman_armour").orElseThrow().slot());
         List<String> problems = new java.util.ArrayList<>();
         FeedbackSettings feedback = FeedbackSettings.parse(root.get("feedback"), ANY, problems);
         assertEquals(List.of(), problems);

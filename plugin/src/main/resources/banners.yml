@@ -89,3 +89,156 @@ banners:
     damage-bonus: 10
     damage-reduction: 10
     radius: 16
+
+# Trophy heads on each family's ladder. Placed, a head shows its earner's live kill count.
+heads:
+  zombie:
+    name: "Zombie Trophy"
+    family: zombie
+    kills: 250
+  skeleton:
+    name: "Skeleton Trophy"
+    family: skeleton
+    kills: 250
+  spider:
+    name: "Spider Trophy"
+    family: spider
+    kills: 250
+  creeper:
+    name: "Creeper Trophy"
+    family: creeper
+    kills: 150
+  enderman:
+    name: "Enderman Trophy"
+    family: enderman
+    kills: 150
+
+# Relics: a themed weapon and one armour piece per family, in two tiers (I iron-level, II diamond-level).
+# kills is the family's kill count needed; the all-mobs family is written 'all'.
+relics:
+  zombie_weapon:
+    name: "Zombie Cleaver"
+    family: zombie
+    kills: 400
+    tier: 1
+    slot: weapon
+  zombie_armour:
+    name: "Rotguard Chestplate"
+    family: zombie
+    kills: 600
+    tier: 1
+    slot: chest
+  zombie_weapon_2:
+    name: "Zombie Cleaver II"
+    family: zombie
+    kills: 1200
+    tier: 2
+    slot: weapon
+  zombie_armour_2:
+    name: "Rotguard Chestplate II"
+    family: zombie
+    kills: 1800
+    tier: 2
+    slot: chest
+  skeleton_weapon:
+    name: "Bonebow"
+    family: skeleton
+    kills: 400
+    tier: 1
+    slot: weapon
+  skeleton_armour:
+    name: "Bonecrown Helm"
+    family: skeleton
+    kills: 600
+    tier: 1
+    slot: head
+  skeleton_weapon_2:
+    name: "Bonebow II"
+    family: skeleton
+    kills: 1200
+    tier: 2
+    slot: weapon
+  skeleton_armour_2:
+    name: "Bonecrown Helm II"
+    family: skeleton
+    kills: 1800
+    tier: 2
+    slot: head
+  spider_weapon:
+    name: "Spider Fang"
+    family: spider
+    kills: 400
+    tier: 1
+    slot: weapon
+  spider_armour:
+    name: "Silkstep Boots"
+    family: spider
+    kills: 600
+    tier: 1
+    slot: feet
+  spider_weapon_2:
+    name: "Spider Fang II"
+    family: spider
+    kills: 1200
+    tier: 2
+    slot: weapon
+  spider_armour_2:
+    name: "Silkstep Boots II"
+    family: spider
+    kills: 1800
+    tier: 2
+    slot: feet
+  creeper_weapon:
+    name: "Blast Maul"
+    family: creeper
+    kills: 240
+    tier: 1
+    slot: weapon
+  creeper_armour:
+    name: "Blastproof Greaves"
+    family: creeper
+    kills: 360
+    tier: 1
+    slot: legs
+  creeper_weapon_2:
+    name: "Blast Maul II"
+    family: creeper
+    kills: 720
+    tier: 2
+    slot: weapon
+  creeper_armour_2:
+    name: "Blastproof Greaves II"
+    family: creeper
+    kills: 1080
+    tier: 2
+    slot: legs
+  enderman_weapon:
+    name: "Void Edge"
+    family: enderman
+    kills: 240
+    tier: 1
+    slot: weapon
+  enderman_armour:
+    name: "Pearl Charm"
+    family: enderman
+    kills: 360
+    tier: 1
+    slot: offhand
+  enderman_weapon_2:
+    name: "Void Edge II"
+    family: enderman
+    kills: 720
+    tier: 2
+    slot: weapon
+  enderman_armour_2:
+    name: "Pearl Charm II"
+    family: enderman
+    kills: 1080
+    tier: 2
+    slot: offhand
+  wayfarers_blade:
+    name: "Wayfarer's Blade"
+    family: all
+    kills: 5000
+    tier: 2
+    slot: weapon

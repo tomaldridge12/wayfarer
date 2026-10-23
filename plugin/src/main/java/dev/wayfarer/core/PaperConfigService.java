@@ -10,7 +10,10 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/** One `<module id>.yml` per module in the plugin folder, seeded from the jar's default. */
+/**
+ * One `<module id>.yml` per module in the plugin folder, seeded from the jar's default. A top-level section
+ * missing from an older file is taken from the shipped default, so new features arrive on upgrade.
+ */
 public final class PaperConfigService implements ConfigService {
     private final JavaPlugin plugin;
 
@@ -41,7 +44,21 @@ public final class PaperConfigService implements ConfigService {
         } catch (InvalidConfigurationException e) {
             throw new IOException(moduleId + ".yml is not valid YAML: " + e.getMessage(), e);
         }
-        return plain(yaml);
+        Map<String, Object> values = plain(yaml);
+        try (var in = plugin.getResource(moduleId + ".yml")) {
+            if (in != null) {
+                YamlConfiguration shipped = YamlConfiguration.loadConfiguration(
+                        new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+                for (String key : shipped.getKeys(false)) {
+                    if (!values.containsKey(key)) {
+                        values.put(key, plainValue(shipped.get(key)));
+                        plugin.getLogger().info(moduleId + ".yml has no '" + key + "' section; using the shipped default"
+                                + " (delete the file to get a fresh copy with comments)");
+                    }
+                }
+            }
+        }
+        return values;
     }
 
     private static Map<String, Object> plain(ConfigurationSection section) {

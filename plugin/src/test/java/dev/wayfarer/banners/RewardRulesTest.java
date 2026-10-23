@@ -11,6 +11,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class RewardRulesTest {
+    private static final long NOW = 1_800_000_000_000L;
+
     private static final BannerDefinition ZOMBIE_BANNER =
             new BannerDefinition("zombie", "Zombie", "green", List.of(), "zombie", 3, 10, 10, 16);
     private static final BannerDefinition ELITE_BANNER =
@@ -112,12 +114,12 @@ class RewardRulesTest {
     @Test
     void claimNeedsAnEarnedRewardStillInConfig() {
         PlayerData data = new PlayerData();
-        assertEquals(RewardRules.ClaimResult.NOT_EARNED, RewardRules.claim(data, SET, RewardKey.banner("zombie")));
-        assertEquals(RewardRules.ClaimResult.UNKNOWN_REWARD, RewardRules.claim(data, SET, RewardKey.banner("nope")));
+        assertEquals(RewardRules.ClaimResult.NOT_EARNED, RewardRules.claim(data, SET, RewardKey.banner("zombie"), NOW));
+        assertEquals(RewardRules.ClaimResult.UNKNOWN_REWARD, RewardRules.claim(data, SET, RewardKey.banner("nope"), NOW));
         data.markEarned(RewardKey.banner("zombie"));
-        assertEquals(RewardRules.ClaimResult.OK, RewardRules.claim(data, SET, RewardKey.banner("zombie")));
+        assertEquals(RewardRules.ClaimResult.OK, RewardRules.claim(data, SET, RewardKey.banner("zombie"), NOW));
         data.markEarned(RewardKey.banner("gone"));
-        assertEquals(RewardRules.ClaimResult.UNKNOWN_REWARD, RewardRules.claim(data, SET, RewardKey.banner("gone")));
+        assertEquals(RewardRules.ClaimResult.UNKNOWN_REWARD, RewardRules.claim(data, SET, RewardKey.banner("gone"), NOW));
     }
 
     private static Reward reward(BannerDefinition def) {
@@ -157,5 +159,36 @@ class RewardRulesTest {
         assertEquals(RewardKey.banner("zombie"), RewardKey.parse("zombie", RewardKey.BANNER));
         assertEquals(new RewardKey("head", "zombie"), RewardKey.parse("HEAD:zombie", RewardKey.BANNER));
         assertEquals("banner:zombie", RewardKey.banner("zombie").toString());
+    }
+
+    @Test
+    void claimIsLimitedToOncePerDayPerReward() {
+        PlayerData data = new PlayerData();
+        RewardKey zombie = RewardKey.banner("zombie");
+        data.markEarned(zombie);
+        assertEquals(RewardRules.ClaimResult.OK, RewardRules.claim(data, SET, zombie, NOW));
+        assertEquals(RewardRules.ClaimResult.COOLDOWN, RewardRules.claim(data, SET, zombie, NOW + 1000));
+        assertEquals(RewardRules.CLAIM_COOLDOWN_MILLIS - 1000, RewardRules.claimWait(data, zombie, NOW + 1000));
+        assertEquals(RewardRules.ClaimResult.OK, RewardRules.claim(data, SET, zombie, NOW + RewardRules.CLAIM_COOLDOWN_MILLIS));
+    }
+
+    @Test
+    void headsAndRelicsAreEarnedAlongTheLadder() {
+        BannerSet ladder = new BannerSet(SET.families(), SET.banners(),
+                Map.of("zombie", new HeadDefinition("zombie", "Zombie Trophy", "zombie", 4)),
+                Map.of("zombie_weapon", new RelicDefinition("zombie_weapon", "Zombie Cleaver", "zombie", 6, 1,
+                                RelicDefinition.Slot.WEAPON),
+                        "wayfarers_blade", new RelicDefinition("wayfarers_blade", "Wayfarer's Blade", MobFamily.ALL, 7, 2,
+                                RelicDefinition.Slot.WEAPON)),
+                CountingSettings.defaults(), Map.of(), List.of());
+        PlayerData data = new PlayerData();
+        List<String> earned = new java.util.ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            RewardRules.recordKill(data, kill("zombie"), ladder).newlyEarned()
+                    .forEach(r -> earned.add(r.rewardKey().toString()));
+        }
+        assertEquals(List.of("banner:zombie", "head:zombie", "banner:zombie2", "relic:zombie_weapon",
+                "relic:wayfarers_blade"), earned);
+        assertTrue(ladder.findReward(new RewardKey("relic", "zombie_weapon")).isPresent());
     }
 }

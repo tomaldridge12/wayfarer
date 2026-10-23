@@ -12,8 +12,11 @@ public final class RewardRules {
     }
 
     public enum ClaimResult {
-        OK, UNKNOWN_REWARD, NOT_EARNED
+        OK, UNKNOWN_REWARD, NOT_EARNED, COOLDOWN
     }
+
+    /** How long a player waits between claims of the same reward. */
+    public static final long CLAIM_COOLDOWN_MILLIS = 24L * 60 * 60 * 1000;
 
     private RewardRules() {
     }
@@ -78,10 +81,23 @@ public final class RewardRules {
         return earned;
     }
 
-    public static ClaimResult claim(PlayerData data, BannerSet set, RewardKey wanted) {
+    /** Whether the player may claim a copy now; on OK, records the claim time. */
+    public static ClaimResult claim(PlayerData data, BannerSet set, RewardKey wanted, long nowMillis) {
         if (set.findReward(wanted).isEmpty()) {
             return ClaimResult.UNKNOWN_REWARD;
         }
-        return data.isEarned(wanted) ? ClaimResult.OK : ClaimResult.NOT_EARNED;
+        if (!data.isEarned(wanted)) {
+            return ClaimResult.NOT_EARNED;
+        }
+        if (nowMillis - data.lastClaim(wanted) < CLAIM_COOLDOWN_MILLIS) {
+            return ClaimResult.COOLDOWN;
+        }
+        data.setLastClaim(wanted, nowMillis);
+        return ClaimResult.OK;
+    }
+
+    /** Milliseconds until the reward can be claimed again; 0 when it can be now. */
+    public static long claimWait(PlayerData data, RewardKey wanted, long nowMillis) {
+        return Math.max(0, data.lastClaim(wanted) + CLAIM_COOLDOWN_MILLIS - nowMillis);
     }
 }

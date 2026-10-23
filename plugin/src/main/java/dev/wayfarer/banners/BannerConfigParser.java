@@ -42,8 +42,72 @@ public final class BannerConfigParser {
                 parseDrops(banner.id(), asMap(entry.getValue()).get("drops"), drops);
             }
         }
+        Map<String, HeadDefinition> heads = new LinkedHashMap<>();
+        asMap(root.get("heads")).forEach((id, value) -> {
+            Ladder l = ladder("Head " + id, value, families, false);
+            if (l != null) {
+                heads.put(id, new HeadDefinition(id, l.name(id), l.family(), l.kills()));
+            }
+        });
+        Map<String, RelicDefinition> relics = new LinkedHashMap<>();
+        asMap(root.get("relics")).forEach((id, value) -> {
+            RelicDefinition relic = parseRelic(id, value, families);
+            if (relic != null) {
+                relics.put(id, relic);
+            }
+        });
         CountingSettings counting = CountingSettings.parse(root.get("counting"), vocabulary, problems);
-        return new BannerSet(families, banners, counting, drops, List.copyOf(problems));
+        return new BannerSet(families, banners, heads, relics, counting, drops, List.copyOf(problems));
+    }
+
+    /** The fields every ladder reward shares. */
+    private record Ladder(Map<String, Object> raw, String family, int kills) {
+        String name(String id) {
+            return String.valueOf(raw.getOrDefault("name", id));
+        }
+    }
+
+    /** Family and kill count for a head or relic; null (with a problem) when unusable. */
+    private Ladder ladder(String what, Object value, Map<String, MobFamily> families, boolean allowAllMobs) {
+        String where = what + " skipped: ";
+        if (!(value instanceof Map<?, ?>)) {
+            problems.add(where + "not a section");
+            return null;
+        }
+        Map<String, Object> m = asMap(value);
+        String family = m.get("family") == null ? null : String.valueOf(m.get("family"));
+        boolean all = MobFamily.ALL.equals(family);
+        if (family == null || !(families.containsKey(family) || (all && allowAllMobs))) {
+            problems.add(where + (family == null ? "missing family"
+                    : all ? "the all-mobs count cannot give this reward"
+                    : "family '" + family + "' is not defined or was rejected"));
+            return null;
+        }
+        Integer kills = number(m, "kills", -1, 1, Integer.MAX_VALUE, where);
+        if (kills == null || kills < 0) {
+            if (kills != null) {
+                problems.add(where + "missing kills");
+            }
+            return null;
+        }
+        return new Ladder(m, family, kills);
+    }
+
+    private RelicDefinition parseRelic(String id, Object value, Map<String, MobFamily> families) {
+        Ladder l = ladder("Relic " + id, value, families, true);
+        if (l == null) {
+            return null;
+        }
+        String where = "Relic " + id + " skipped: ";
+        Integer tier = number(l.raw(), "tier", 1, 1, 2, where);
+        RelicDefinition.Slot slot;
+        try {
+            slot = RelicDefinition.Slot.parse(String.valueOf(l.raw().getOrDefault("slot", "weapon")));
+        } catch (IllegalArgumentException e) {
+            problems.add(where + "slot must be weapon, head, chest, legs, feet or offhand");
+            return null;
+        }
+        return tier == null ? null : new RelicDefinition(id, l.name(id), l.family(), l.kills(), tier, slot);
     }
 
     /** `drops: {wither: 0.5}` gives a 50% chance per kill of that mob type. Bad entries are skipped alone. */

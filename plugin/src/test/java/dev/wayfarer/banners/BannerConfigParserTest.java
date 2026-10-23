@@ -142,4 +142,23 @@ class BannerConfigParserTest {
         assertEquals(Set.of("ok"), set.banners().keySet());
         assertEquals(2, set.problems().size());
     }
+
+    @Test
+    void headsAndRelicsParseAndBadOnesAreSkipped() {
+        Map<String, Object> root = new LinkedHashMap<>(root(ordered("zombie", List.of("zombie")), ordered()));
+        root.put("heads", ordered(
+                "zombie", ordered("family", "zombie", "kills", 250, "name", "Zombie Trophy"),
+                "everyone", ordered("family", "all", "kills", 10),
+                "nokills", ordered("family", "zombie")));
+        root.put("relics", ordered(
+                "cleaver", ordered("family", "zombie", "kills", 400, "tier", 1, "slot", "weapon"),
+                "blade", ordered("family", "all", "kills", 5000, "tier", 2),
+                "badslot", ordered("family", "zombie", "kills", 1, "slot", "tail"),
+                "badtier", ordered("family", "zombie", "kills", 1, "tier", 3)));
+        BannerSet set = BannerConfigParser.parse(root, VOCAB);
+        assertEquals(Set.of("zombie"), set.heads().keySet());
+        assertEquals(Set.of("cleaver", "blade"), set.relics().keySet());
+        assertEquals(RelicDefinition.Slot.WEAPON, set.findRelic("blade").orElseThrow().slot());
+        assertEquals(4, set.problems().size());
+    }
 }

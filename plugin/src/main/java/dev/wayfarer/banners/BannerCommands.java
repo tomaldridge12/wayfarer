@@ -51,14 +51,14 @@ final class BannerCommands {
                                                                 StringArgumentType.getString(ctx, "world"))))))))))
                 .then(Commands.literal("forcedrop")
                         .requires(s -> s.getSender().hasPermission(BannersModule.FORCEDROP_PERMISSION))
-                        .then(banner(m).then(player(m).executes(ctx -> run(() -> m.forceDrop(
+                        .then(player(m).then(reward(m, false).executes(ctx -> run(() -> m.forceDrop(
                                 ctx.getSource().getSender(),
-                                StringArgumentType.getString(ctx, "banner"),
-                                StringArgumentType.getString(ctx, "player")))))))
+                                StringArgumentType.getString(ctx, "player"),
+                                StringArgumentType.getString(ctx, "reward")))))))
                 .then(Commands.literal("claim")
                         .requires(s -> s.getSender().hasPermission(BannersModule.CLAIM_PERMISSION))
-                        .then(banner(m).executes(ctx -> run(() -> m.claim(ctx.getSource().getSender(),
-                                StringArgumentType.getString(ctx, "banner"))))))
+                        .then(reward(m, true).executes(ctx -> run(() -> m.claim(ctx.getSource().getSender(),
+                                StringArgumentType.getString(ctx, "reward"))))))
                 .build();
     }
 
@@ -77,6 +77,17 @@ final class BannerCommands {
     private static RequiredArgumentBuilder<CommandSourceStack, String> player(BannersModule m) {
         return Commands.argument("player", StringArgumentType.word()).suggests((ctx, builder) -> {
             m.onlineNames().forEach(builder::suggest);
+            return builder.buildFuture();
+        });
+    }
+
+    /**
+     * A reward such as "banner:zombie" or a bare "zombie" (a banner). It reads the rest of the line, because
+     * single-word arguments cannot contain ':'. Suggests the sender's earned rewards, or every reward for operators.
+     */
+    private static RequiredArgumentBuilder<CommandSourceStack, String> reward(BannersModule m, boolean earnedOnly) {
+        return Commands.argument("reward", StringArgumentType.greedyString()).suggests((ctx, builder) -> {
+            (earnedOnly ? m.earnedKeys(ctx.getSource().getSender()) : m.rewardKeys()).forEach(builder::suggest);
             return builder.buildFuture();
         });
     }

@@ -135,6 +135,17 @@ public final class BannersModule implements Module {
         return loaded;
     }
 
+    /** Reward keys the sender has earned, for claim tab-completion. */
+    List<String> earnedKeys(CommandSender sender) {
+        PlayerData data = sender instanceof Player p ? store.cached(p.getUniqueId()) : null;
+        return data == null ? List.of() : List.copyOf(data.earnedView());
+    }
+
+    /** Every reward key in config, for operator tab-completion. */
+    List<String> rewardKeys() {
+        return loaded.rewards().stream().map(r -> r.rewardKey().toString()).toList();
+    }
+
     List<String> onlineNames() {
         return plugin.getServer().getOnlinePlayers().stream().map(Player::getName).toList();
     }
@@ -210,7 +221,7 @@ public final class BannersModule implements Module {
     private void deliver(Player player, Reward reward) {
         switch (reward.rewardKey().type()) {
             case RewardKey.BANNER -> loaded.find(reward.rewardKey().id()).ifPresent(def -> items.deliver(player, def));
-            default -> core.logger().warning("[banners] No delivery for reward type " + reward.rewardKey().type());
+            default -> player.sendMessage("Your " + reward.name() + " is recorded; its item arrives in a later update.");
         }
     }
 
@@ -220,8 +231,8 @@ public final class BannersModule implements Module {
     }
 
     /** Operator tool: awards a reward as a successful drop would, without killing anything. */
-    void forceDrop(CommandSender sender, String rewardText, String targetName) {
-        Reward reward = loaded.findReward(RewardKey.parse(rewardText, RewardKey.BANNER)).orElse(null);
+    void forceDrop(CommandSender sender, String targetName, String rewardText) {
+        Reward reward = loaded.findReward(RewardKey.parse(rewardText.trim(), RewardKey.BANNER)).orElse(null);
         if (reward == null) {
             sender.sendMessage("Unknown reward '" + rewardText + "'");
             return;
@@ -348,11 +359,18 @@ public final class BannersModule implements Module {
             sender.sendMessage("Your reward data is not loaded; try again shortly");
             return;
         }
-        RewardKey wanted = RewardKey.parse(rewardText, RewardKey.BANNER);
-        switch (RewardRules.claim(data, loaded, wanted)) {
+        RewardKey wanted = RewardKey.parse(rewardText.trim(), RewardKey.BANNER);
+        long now = System.currentTimeMillis();
+        switch (RewardRules.claim(data, loaded, wanted, now)) {
             case UNKNOWN_REWARD -> sender.sendMessage("Unknown reward '" + rewardText + "'");
             case NOT_EARNED -> sender.sendMessage("You have not earned the " + wanted.id() + " " + wanted.type() + " yet");
+            case COOLDOWN -> {
+                long minutes = (RewardRules.claimWait(data, wanted, now) + 59_999) / 60_000;
+                sender.sendMessage("You can claim another copy in " + (minutes >= 60
+                        ? (minutes / 60) + "h " + (minutes % 60) + "m" : minutes + "m"));
+            }
             case OK -> {
+                store.markDirty(player.getUniqueId());
                 Reward reward = loaded.findReward(wanted).orElseThrow();
                 deliver(player, reward);
                 sender.sendMessage("Here is your " + reward.name());
@@ -427,5 +445,6 @@ public final class BannersModule implements Module {
         core.logger().info("Banner items built: " + built + " of " + set.banners().size());
         core.logger().info("Banners loaded: " + set.banners().size() + " banners, "
                 + set.families().size() + " families, " + set.problems().size() + " problems");
+        core.logger().info("Ladder loaded: " + set.heads().size() + " trophy heads, " + set.relics().size() + " relics");
     }
 }
