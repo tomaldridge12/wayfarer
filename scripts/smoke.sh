@@ -16,11 +16,14 @@ check() { # log file, pattern
 
 fail=0
 rm -f "$CFG"
-LOG1=$(mktemp); boot "$LOG1" "mobbanners reload"
+LOG1=$(mktemp); boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Wayfarer enabled"
 check "$LOG1" "Banners loaded: 5 banners, 5 families, 0 problems"
+check "$LOG1" "Banner items built: 5 of 5"
 check "$LOG1" "Banners reloaded: 5 banners, 0 problems"
+check "$LOG1" "Unknown banner 'nope'"
+check "$LOG1" "No online player named 'nobody'"
 
 printf 'version: 1\nenabled: false\n' >"$CFG"
 LOG2=$(mktemp); boot "$LOG2"

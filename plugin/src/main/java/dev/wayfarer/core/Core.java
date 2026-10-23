@@ -7,4 +7,6 @@ public interface Core {
     Logger logger();
 
     ConfigService config();
+
+    ItemTagService itemTags();
 }

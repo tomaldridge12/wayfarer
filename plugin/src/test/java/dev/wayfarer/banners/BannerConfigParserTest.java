@@ -88,4 +88,13 @@ class BannerConfigParserTest {
         assertTrue(set.problems().stream().anyMatch(p -> p.contains("unknown mob type 'ghast_of_nowhere'")));
         assertTrue(set.problems().stream().anyMatch(p -> p.contains("badpattern") && p.contains("bad pattern 'nope:black'")));
     }
+
+    @Test
+    void bannerMissingFromConfigIsInertUntilItsIdReturns() {
+        Map<String, Object> families = ordered("zombie", List.of("zombie"));
+        BannerSet without = BannerConfigParser.parse(root(families, ordered()), VOCAB);
+        assertTrue(without.find("z").isEmpty());
+        BannerSet with = BannerConfigParser.parse(root(families, ordered("z", ordered("family", "zombie"))), VOCAB);
+        assertTrue(with.find("z").isPresent());
+    }
 }

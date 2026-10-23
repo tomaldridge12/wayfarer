@@ -6,3 +6,6 @@ permissions:
   wayfarer.banners.reload:
     description: Reload the banners config
     default: op
+  wayfarer.banners.give:
+    description: Give a banner item to a player
+    default: op

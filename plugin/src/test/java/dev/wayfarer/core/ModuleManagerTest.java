@@ -31,6 +31,11 @@ class ModuleManagerTest {
             }
 
             @Override
+            public ItemTagService itemTags() {
+                return null;
+            }
+
+            @Override
             public ConfigService config() {
                 return new ConfigService() {
                     @Override
