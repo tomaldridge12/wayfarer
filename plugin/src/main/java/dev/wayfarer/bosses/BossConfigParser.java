@@ -31,7 +31,21 @@ public final class BossConfigParser {
                 bosses.put(id, boss);
             }
         });
-        return new BossRoster(bosses, stars, List.copyOf(problems));
+        return new BossRoster(bosses, stars, parseSpawning(asMap(root.get("spawning"))), List.copyOf(problems));
+    }
+
+    private SpawnRules.Settings parseSpawning(Map<String, Object> m) {
+        SpawnRules.Settings d = SpawnRules.Settings.defaults();
+        List<Integer> bands = d.starBands();
+        if (m.get("star-distances") instanceof List<?> list && list.stream().allMatch(v -> v instanceof Number)) {
+            bands = list.stream().map(v -> ((Number) v).intValue()).sorted().toList();
+        } else if (m.get("star-distances") != null) {
+            problems.add("spawning.star-distances must be a list of block distances; using defaults");
+        }
+        int min = m.get("guardian-min-stars") instanceof Number n ? StarScale.clamp(n.intValue()) : d.guardianMinStars();
+        double extra = m.get("extra-star-chance") instanceof Number n ? Math.max(0, Math.min(1, n.doubleValue()))
+                : d.extraStarChance();
+        return new SpawnRules.Settings(bands, min, extra);
     }
 
     private StarScale parseStars(Map<String, Object> m) {
@@ -77,7 +91,42 @@ public final class BossConfigParser {
             return null;
         }
         return new BossDefinition(id, String.valueOf(m.getOrDefault("name", id)), health, damage,
-                List.copyOf(variants), cooldown);
+                List.copyOf(variants), cooldown, parseSpawn(id, m.get("spawn"), variants.getFirst().entity()));
+    }
+
+    private SpawnRules.BossSpawn parseSpawn(String bossId, Object value, String defaultEntity) {
+        if (!(value instanceof Map<?, ?>)) {
+            return SpawnRules.BossSpawn.none();
+        }
+        Map<String, Object> m = asMap(value);
+        String entity = String.valueOf(m.getOrDefault("entity", defaultEntity)).toLowerCase(Locale.ROOT);
+        boolean any = "any".equals(m.get("biomes"));
+        java.util.Set<String> biomes = new java.util.LinkedHashSet<>();
+        if (m.get("biomes") instanceof List<?> list) {
+            for (Object b : list) {
+                String biome = String.valueOf(b).toLowerCase(Locale.ROOT);
+                if (vocabulary.isBiome(biome)) {
+                    biomes.add(biome);
+                } else {
+                    problems.add("Boss " + bossId + ": unknown biome '" + b + "' ignored");
+                }
+            }
+        }
+        java.util.Set<String> structures = new java.util.LinkedHashSet<>();
+        if (m.get("structures") instanceof List<?> list) {
+            for (Object st : list) {
+                String structure = String.valueOf(st).toLowerCase(Locale.ROOT);
+                if (vocabulary.isStructure(structure)) {
+                    structures.add(structure);
+                } else {
+                    problems.add("Boss " + bossId + ": unknown structure '" + st + "' ignored");
+                }
+            }
+        }
+        double chance = m.get("chance") instanceof Number n ? Math.max(0, Math.min(1, n.doubleValue())) : 0;
+        boolean night = Boolean.TRUE.equals(m.get("night-only"));
+        return new SpawnRules.BossSpawn(entity, java.util.Set.copyOf(biomes), any, chance, night,
+                java.util.Set.copyOf(structures));
     }
 
     private BossVariant parseVariant(String bossId, String id, Object value) {

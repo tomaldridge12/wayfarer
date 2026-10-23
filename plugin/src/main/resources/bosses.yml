@@ -7,17 +7,31 @@ stars:
   health: [1.0, 1.5, 2.2, 3.0, 4.0]
   damage: [1.0, 1.2, 1.45, 1.75, 2.1]
 
+# Bosses appear on their own (see each boss's spawn section). Stars come from distance to world spawn: one more
+# star beyond each distance below, sometimes one extra; structure guardians are never below guardian-min-stars.
+spawning:
+  star-distances: [750, 2000, 4000, 7000]
+  guardian-min-stars: 3
+  extra-star-chance: 0.25
+
 # Each boss is its own mob family on the ladder. health and damage are at one star (a one-star boss is meant to be
 # beatable in iron gear with some preparation). cooldown-minutes: how long before it can appear again in a world.
 # Variants: entity (a vanilla mob), glow (a text colour name), scale (size, 1 = normal), equipment by slot (head,
 # chest, legs, feet, hand, offhand), colours (name gradient, two #hex values) and abilities from the library:
 # charge, ground_slam, summon_minions, poison_cloud, arrow_volley, blink, fire_ring, pull, shield, enrage.
+# spawn: entity (whose natural spawn can become the boss), biomes (a list, or any), chance per natural spawn,
+# night-only, and structures it guards (it appears when a player goes inside, at most once per cooldown).
 bosses:
   rotting_warlord:
     name: "Rotting Warlord"
     health: 100
     damage: 6
     cooldown-minutes: 60
+    spawn:
+      entity: zombie
+      biomes: [plains, forest, birch_forest, dark_forest, meadow]
+      chance: 0.0004
+      night-only: true
     variants:
       rotting_warlord:
         name: "Rotting Warlord"
@@ -49,6 +63,11 @@ bosses:
     health: 90
     damage: 6
     cooldown-minutes: 60
+    spawn:
+      entity: skeleton
+      biomes: [soul_sand_valley, snowy_slopes, frozen_peaks, jagged_peaks]
+      chance: 0.0005
+      structures: [trial_chambers]
     variants:
       bone_marshal:
         name: "Bone Marshal"
@@ -80,6 +99,11 @@ bosses:
     health: 90
     damage: 6
     cooldown-minutes: 60
+    spawn:
+      entity: spider
+      biomes: [dripstone_caves, lush_caves, dark_forest]
+      chance: 0.0004
+      structures: [mineshaft]
     variants:
       brood_mother:
         name: "Brood Mother"
@@ -108,6 +132,11 @@ bosses:
     health: 80
     damage: 7
     cooldown-minutes: 90
+    spawn:
+      entity: creeper
+      biomes: any
+      chance: 0.0002
+      night-only: true
     variants:
       blast_prophet:
         name: "Blast Prophet"
@@ -136,6 +165,11 @@ bosses:
     health: 110
     damage: 7
     cooldown-minutes: 90
+    spawn:
+      entity: enderman
+      biomes: [the_end, end_highlands, end_midlands, end_barrens]
+      chance: 0.001
+      structures: [stronghold, end_city]
     variants:
       void_stalker:
         name: "Void Stalker"
@@ -164,6 +198,11 @@ bosses:
     health: 120
     damage: 6
     cooldown-minutes: 90
+    spawn:
+      entity: witch
+      biomes: [swamp, mangrove_swamp]
+      chance: 0.003
+      structures: [swamp_hut]
     variants:
       bog_witch_queen:
         name: "Bog Witch Queen"
@@ -185,6 +224,11 @@ bosses:
     health: 140
     damage: 7
     cooldown-minutes: 120
+    spawn:
+      entity: husk
+      biomes: [desert]
+      chance: 0.0005
+      structures: [desert_pyramid]
     variants:
       sand_pharaoh:
         name: "Sand Pharaoh"
@@ -208,6 +252,11 @@ bosses:
     health: 140
     damage: 7
     cooldown-minutes: 120
+    spawn:
+      entity: drowned
+      biomes: [ocean, deep_ocean, lukewarm_ocean, deep_lukewarm_ocean, cold_ocean, deep_cold_ocean]
+      chance: 0.0005
+      structures: [monument, shipwreck]
     variants:
       drowned_captain:
         name: "Drowned Captain"
@@ -231,6 +280,8 @@ bosses:
     health: 160
     damage: 8
     cooldown-minutes: 120
+    spawn:
+      structures: [bastion_remnant]
     variants:
       piglin_warlord:
         name: "Piglin Warlord"

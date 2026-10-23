@@ -28,4 +28,16 @@ final class PaperBossVocabulary implements BossVocabulary {
     public boolean isGlowColour(String name) {
         return NamedTextColor.NAMES.value(name.toLowerCase(Locale.ROOT)) != null;
     }
+
+    @Override
+    public boolean isBiome(String name) {
+        NamespacedKey key = NamespacedKey.fromString(name);
+        return key != null && Registry.BIOME.get(key) != null;
+    }
+
+    @Override
+    public boolean isStructure(String name) {
+        NamespacedKey key = NamespacedKey.fromString(name);
+        return key != null && Registry.STRUCTURE.get(key) != null;
+    }
 }

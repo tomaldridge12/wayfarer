@@ -10,4 +10,14 @@ public interface BossVocabulary {
 
     /** A named text colour such as dark_green, for the glow. */
     boolean isGlowColour(String name);
+
+    /** A biome key such as plains or the_end. */
+    default boolean isBiome(String name) {
+        return true;
+    }
+
+    /** A structure key such as desert_pyramid. */
+    default boolean isStructure(String name) {
+        return true;
+    }
 }

@@ -37,6 +37,10 @@ class BossConfigTest {
         roster.bosses().values().forEach(b -> b.variants().forEach(v ->
                 assertTrue(v.abilities().size() >= 2, b.id() + "/" + v.id() + " needs two abilities")));
         assertEquals("rotting_warlord", roster.find("rotting_warlord").orElseThrow().family());
+        assertEquals(8, roster.bosses().values().stream().filter(b -> b.spawn().chance() > 0).count());
+        assertEquals(7, roster.bosses().values().stream().filter(b -> !b.spawn().structures().isEmpty()).count());
+        assertTrue(roster.find("blast_prophet").orElseThrow().spawn().anyBiome());
+        assertEquals(Set.of("desert_pyramid"), roster.find("sand_pharaoh").orElseThrow().spawn().structures());
     }
 
     @Test

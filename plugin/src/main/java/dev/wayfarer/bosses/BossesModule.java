@@ -28,6 +28,8 @@ public final class BossesModule implements Module {
     private BossSpawner spawner;
     private BossController controller;
     private BukkitTask tick;
+    private BukkitTask guardianTask;
+    private BossSpawning spawning;
 
     public BossesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -47,6 +49,14 @@ public final class BossesModule implements Module {
         plugin.getServer().getPluginManager().registerEvents(controller, plugin);
         controller.attachLoaded();
         tick = plugin.getServer().getScheduler().runTaskTimer(plugin, controller::tick, BossController.PERIOD, BossController.PERIOD);
+        spawning = new BossSpawning(plugin, () -> roster, controller, (boss, variant, stars, at, why) -> {
+            controller.attach(spawner.spawn(boss, variant, stars, roster.stars(), at));
+            core.logger().info("[bosses] " + boss.id() + "/" + variant.id() + " ★" + stars + " appeared (" + why + ") at "
+                    + at.getBlockX() + "," + at.getBlockY() + "," + at.getBlockZ() + " in " + at.getWorld().getName());
+            return true;
+        }, core.logger());
+        plugin.getServer().getPluginManager().registerEvents(spawning, plugin);
+        guardianTask = plugin.getServer().getScheduler().runTaskTimer(plugin, spawning::checkGuardians, 40, 40);
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
                 event.registrar().register(commands()));
     }
@@ -55,6 +65,12 @@ public final class BossesModule implements Module {
     public void disable() {
         if (tick != null) {
             tick.cancel();
+        }
+        if (guardianTask != null) {
+            guardianTask.cancel();
+        }
+        if (spawning != null) {
+            HandlerList.unregisterAll(spawning);
         }
         if (controller != null) {
             HandlerList.unregisterAll(controller);
@@ -68,7 +84,8 @@ public final class BossesModule implements Module {
         roster = r;
         int variants = r.bosses().values().stream().mapToInt(b -> b.variants().size()).sum();
         core.logger().info("Bosses loaded: " + r.bosses().size() + " bosses, " + variants + " variants, "
-                + r.problems().size() + " problems");
+                + r.problems().size() + " problems; " + BossSpawning.countRules(r, false) + " spawn naturally, "
+                + BossSpawning.countRules(r, true) + " guard structures");
     }
 
     private com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> commands() {

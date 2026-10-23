@@ -57,12 +57,12 @@ check() { # log file, pattern
 fail=0
 LOGS=build/smoke-logs
 rm -rf "$LOGS" && mkdir -p "$LOGS"
-rm -f "$CFG"
+rm -f "$CFG" "$RUN/plugins/Wayfarer/bosses.yml" # start from the shipped configs
 rm -rf "$DATA"
 LOG1=$LOGS/log1.log; boot "$LOG1" "mobbanners reload" "mobbanners give nobody nope" "mobbanners give nobody zombie" "mobbanners setkills $PLAYER zombie 400" "mobbanners setkills $PLAYER all 250" "mobbanners progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "mobbanners place zombie 0 100 0 world" "mobbanners placehead $PLAYER zombie 2 100 0" "mobbanners forcedrop $PLAYER2 skeleton" "mobbanners forcedrop $PLAYER2 relic:zombie_weapon_2" "mobbanners progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "forceload remove ~-16 ~-16 ~112 ~16"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Module bosses enabled"
-check "$LOG1" "Bosses loaded: 9 bosses, 23 variants, 0 problems"
+check "$LOG1" "Bosses loaded: 9 bosses, 23 variants, 0 problems; 8 spawn naturally, 7 guard structures"
 check "$LOG1" "Spawned 23 boss variants at ★1"
 check "$LOG1" "Spawned 23 boss variants at ★5"
 check "$LOG1" "Removed 23 bosses"
