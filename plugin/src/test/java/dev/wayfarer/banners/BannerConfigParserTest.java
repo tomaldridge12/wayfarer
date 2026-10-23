@@ -24,6 +24,16 @@ class BannerConfigParserTest {
         }
 
         @Override
+        public boolean isParticle(String name) {
+            return name.equals("HAPPY_VILLAGER") || name.equals("FLAME");
+        }
+
+        @Override
+        public boolean isEffect(String name) {
+            return name.equals("luck") || name.equals("glowing");
+        }
+
+        @Override
         public boolean isSpawnReason(String name) {
             return Set.of("SPAWNER", "CUSTOM", "NATURAL").contains(name);
         }
@@ -101,5 +111,24 @@ class BannerConfigParserTest {
         assertTrue(without.find("z").isEmpty());
         BannerSet with = BannerConfigParser.parse(root(families, ordered("z", ordered("family", "zombie"))), VOCAB);
         assertTrue(with.find("z").isPresent());
+    }
+
+    @Test
+    void feedbackDefaultsHaveParticlesAndMarkerOffAndBadValuesFallBack() {
+        assertEquals(FeedbackSettings.defaults(), FeedbackSettings.parse(null, VOCAB, new java.util.ArrayList<>()));
+        FeedbackSettings d = FeedbackSettings.defaults();
+        assertFalse(d.edgeParticles());
+        assertFalse(d.markerEffect());
+        assertEquals(25, d.indicatorMax());
+        java.util.List<String> problems = new java.util.ArrayList<>();
+        FeedbackSettings s = FeedbackSettings.parse(Map.of(
+                "marker-effect", Map.of("enabled", true, "effect", "glowing"),
+                "edge-particles", Map.of("particle", "nope"),
+                "indicator", Map.of("max-active", 0)), VOCAB, problems);
+        assertTrue(s.markerEffect());
+        assertEquals("glowing", s.effect());
+        assertEquals("HAPPY_VILLAGER", s.particle());
+        assertEquals(25, s.indicatorMax());
+        assertEquals(2, problems.size());
     }
 }

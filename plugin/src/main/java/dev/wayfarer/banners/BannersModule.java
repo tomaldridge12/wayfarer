@@ -5,7 +5,9 @@ import dev.wayfarer.core.Module;
 import dev.wayfarer.core.PlayerStore;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import org.bukkit.OfflinePlayer;
@@ -41,6 +43,9 @@ public final class BannersModule implements Module {
     private PlacedBanners placed;
     private PlacedBannerListener placedListener;
     private BoostListener boostListener;
+    private BannerFeedback feedback;
+    private BukkitTask feedbackTask;
+    private volatile FeedbackSettings feedbackSettings = FeedbackSettings.defaults();
     private BukkitTask saveTask;
     private volatile BannerSet loaded = BannerSet.empty();
 
@@ -69,7 +74,10 @@ public final class BannersModule implements Module {
                 mainThread::execute);
         placedListener = new PlacedBannerListener(placed, items, this::banners);
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
-        boostListener = new BoostListener(new BoostGlue(placed, this::banners));
+        feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
+        feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
+                BannerFeedback.UPDATE_TICKS, BannerFeedback.UPDATE_TICKS);
+        boostListener = new BoostListener(new BoostGlue(placed, this::banners), feedback);
         plugin.getServer().getPluginManager().registerEvents(boostListener, plugin);
         placed.loadAll(plugin.getServer());
         core.logger().info("Placed banner registry loaded: " + placed.registry().chunkCount() + " chunks, "
@@ -85,6 +93,12 @@ public final class BannersModule implements Module {
     public void disable() {
         if (saveTask != null) {
             saveTask.cancel();
+        }
+        if (feedbackTask != null) {
+            feedbackTask.cancel();
+        }
+        if (feedback != null) {
+            feedback.clear();
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
@@ -124,8 +138,9 @@ public final class BannersModule implements Module {
         }
     }
 
-    void savePlayer(UUID id) {
+    void playerQuit(UUID id) {
         store.save(id);
+        feedback.forget(id);
     }
 
     void onKill(Player killer, Kill kill) {
@@ -302,10 +317,23 @@ public final class BannersModule implements Module {
         return offline == null ? null : offline.getUniqueId();
     }
 
+    private static String onOff(boolean on) {
+        return on ? "on" : "off";
+    }
+
     private void load() throws IOException {
-        BannerSet set = BannerConfigParser.parse(core.config().load(id()), vocabulary);
+        Map<String, Object> raw = core.config().load(id());
+        BannerSet set = BannerConfigParser.parse(raw, vocabulary);
         set.problems().forEach(p -> core.logger().warning("[banners] " + p));
+        List<String> feedbackProblems = new ArrayList<>();
+        FeedbackSettings feedbackNow = FeedbackSettings.parse(raw.get("feedback"), vocabulary, feedbackProblems);
+        feedbackProblems.forEach(p -> core.logger().warning("[banners] " + p));
         loaded = set;
+        feedbackSettings = feedbackNow;
+        core.logger().info("Banner feedback: action bar " + onOff(feedbackNow.actionBar()) + ", indicator "
+                + onOff(feedbackNow.indicator()) + " (max " + feedbackNow.indicatorMax() + "), edge particles "
+                + onOff(feedbackNow.edgeParticles()) + ", marker effect " + onOff(feedbackNow.markerEffect())
+                + " (" + feedbackNow.effect() + ")");
         int built = 0;
         for (BannerDefinition def : set.banners().values()) {
             try {

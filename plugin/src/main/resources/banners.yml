@@ -18,6 +18,22 @@ counting:
   exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
 
+# How players are told a boost is active. There is deliberately no sound.
+feedback:
+  action-bar: true            # message on entering and leaving a boost zone
+  indicator:                  # small bold green ▲ floating off a mob on a boosted hit
+    enabled: true
+    max-active: 25            # new ones are skipped while this many exist
+    lifetime-ticks: 20        # about one second (at most 59)
+    view-distance: 16         # only players this close see it
+  edge-particles:             # rings marking each zone's edge, drawn every half second
+    enabled: false
+    particle: happy_villager
+    max-per-update: 64        # cap on particles drawn per update, across all players
+  marker-effect:              # a potion effect while in any zone, so the HUD shows an icon
+    enabled: false
+    effect: luck              # careful: Luck raises loot quality (chests, fishing), so it is a real buff
+
 # Per banner: name, colour (base dye colour), patterns (list of pattern:colour), family, kills,
 # damage-bonus and damage-reduction (whole percent), radius (blocks). Omitted numbers use the values below.
 banners:

@@ -40,4 +40,20 @@ final class PaperVocabulary implements Vocabulary {
             return false;
         }
     }
+
+    @Override
+    public boolean isParticle(String name) {
+        try {
+            org.bukkit.Particle.valueOf(name);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isEffect(String name) {
+        NamespacedKey key = NamespacedKey.fromString(name);
+        return key != null && Registry.MOB_EFFECT.get(key) != null;
+    }
 }

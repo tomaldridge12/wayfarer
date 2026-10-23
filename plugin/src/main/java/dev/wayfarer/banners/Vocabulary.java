@@ -10,4 +10,10 @@ public interface Vocabulary {
 
     /** An upper-case spawn reason name such as SPAWNER. */
     boolean isSpawnReason(String name);
+
+    /** An upper-case particle name such as HAPPY_VILLAGER. */
+    boolean isParticle(String name);
+
+    /** A lower-case potion effect key such as luck. */
+    boolean isEffect(String name);
 }

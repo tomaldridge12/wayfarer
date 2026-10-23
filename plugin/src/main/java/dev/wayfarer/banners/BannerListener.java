@@ -27,7 +27,7 @@ final class BannerListener implements Listener {
 
     @EventHandler
     void onQuit(PlayerQuitEvent event) {
-        module.savePlayer(event.getPlayer().getUniqueId());
+        module.playerQuit(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
