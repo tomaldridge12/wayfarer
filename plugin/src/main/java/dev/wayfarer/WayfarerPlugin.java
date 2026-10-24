@@ -1,5 +1,6 @@
 package dev.wayfarer;
 
+import dev.wayfarer.alloys.AlloysModule;
 import dev.wayfarer.banners.BannersModule;
 import dev.wayfarer.bosses.BossesModule;
 import dev.wayfarer.core.ChunkDataService;
@@ -36,6 +37,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         pack.enable();
         modules.register(new BannersModule(this));
         modules.register(new BossesModule(this));
+        modules.register(new AlloysModule(this));
         modules.enableAll(this);
         // Fires after every module has enabled (and again on a datapack reload), so the tree is complete.
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {

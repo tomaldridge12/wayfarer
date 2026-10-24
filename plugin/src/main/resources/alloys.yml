@@ -1,0 +1,141 @@
+# Alloys module: six metals melted in a crucible (a cauldron on a heat source), made into gear at the smithing
+# table with each alloy's template. Set enabled: false to skip the module (relics then use their vanilla items).
+# Every number here is a first pass, to be tuned from the stage snapshots (progression.yml).
+version: 1
+enabled: true
+
+# A crucible is an empty cauldron on one of these blocks. Heats from coolest to hottest: low, high, soul; a hotter
+# heat melts every cooler recipe too. Campfires count only while lit.
+crucible:
+  heat:
+    campfire: low
+    lava: high
+    magma_block: high
+    soul_campfire: soul
+    soul_fire: soul
+  max-contents: 64   # items a crucible holds at most
+  max-ingots: 8      # ingots one melt gives at most (loading 2 or 3 times a recipe gives 2 or 3 times the ingots)
+
+# Endless repair: an anvil's cost stops growing at the cap (levels) instead of becoming "Too Expensive!".
+anvil:
+  endless: true
+  cap: 30
+
+# Each alloy:
+#   recipe: items for one batch (one batch gives `yield` ingots); heat: the coolest heat that melts it
+#   material: the vanilla tier its gear is built on (sets what its pickaxe can mine and its base attack values)
+#   upgrades: the vanilla tier of gear its template upgrades at the smithing table (any other alloy's gear works too)
+#   tools: durability, mining speed (pickaxe, axe, shovel, hoe), damage-bonus (added to the material's attack
+#          damage), enchantability. Spears and swords use durability and damage-bonus.
+#   armour: points per piece [helmet, chestplate, leggings, boots], toughness, knockback-resistance, durability
+#           (multiplier: helmet 11x, chestplate 16x, leggings 15x, boots 13x), enchantability
+#   bonuses: identity attributes; to: held, tools, weapons, armour or all; operation: add (default) or multiply
+#            (a share of the base value: movement_speed -0.025 is 2.5% slower per piece)
+#   repair: what repairs it on an anvil (ingot = its own ingot, or vanilla items) and the share of durability per item
+#   molten-block: the block shown as the molten surface while it melts
+#   template: the structure guardian (boss id) whose defeat gives each damager the template, the chance per damager,
+#             and the block that duplicates it at a crafting table (template + 7 ingots + this block -> 2 templates)
+# Vanilla for comparison: iron tools 250 durability, speed 6; diamond 1561, 8; netherite 2031, 9. Iron armour
+# 2/6/5/2, toughness 0, x15; diamond 3/8/6/3, toughness 2, x33; netherite 3/8/6/3, toughness 3, x37, knockback 0.1.
+alloys:
+  steel:
+    name: "Steel"
+    colour: "#B4BEC8"
+    heat: low
+    melt-seconds: 30
+    recipe: {iron_ingot: 4, coal_block: 1}
+    yield: 1
+    material: iron
+    upgrades: iron
+    tools: {durability: 1000, speed: 5.5, damage-bonus: 0, enchantability: 14}
+    armour: {points: [2, 6, 5, 2], toughness: 1, knockback-resistance: 0, durability: 30, enchantability: 9}
+    repair: {items: [ingot], share: 0.125}   # durable, but slow to repair
+    molten-block: orange_concrete
+    template: {boss: bone_marshal, chance: 1.0, duplicate-block: tuff_bricks}
+
+  bronze:
+    name: "Bronze"
+    colour: "#D08A4C"
+    heat: low
+    melt-seconds: 30
+    recipe: {copper_ingot: 4, amethyst_shard: 1}
+    yield: 1
+    material: iron
+    upgrades: iron
+    tools: {durability: 400, speed: 6.5, damage-bonus: 0, enchantability: 18}
+    armour: {points: [2, 5, 5, 2], toughness: 0, knockback-resistance: 0, durability: 18, enchantability: 12}
+    repair: {items: [ingot, copper_ingot], share: 0.25}   # cheap: plain copper repairs it
+    molten-block: copper_block
+    template: {boss: brood_mother, chance: 1.0, duplicate-block: cobweb}
+
+  shakudo:
+    name: "Shakudo"
+    colour: "#4E5A8C"
+    heat: high
+    melt-seconds: 45
+    recipe: {copper_ingot: 4, gold_ingot: 2, lapis_lazuli: 2}
+    yield: 1
+    material: diamond
+    upgrades: diamond
+    tools: {durability: 1000, speed: 8, damage-bonus: 0, enchantability: 22}
+    armour: {points: [3, 7, 6, 3], toughness: 1, knockback-resistance: 0, durability: 25, enchantability: 18}
+    bonuses:
+      - {attribute: luck, amount: 1, to: armour}
+    luck: {fortune-bonus: 1, extra-loot-chance: 0.33}   # tools mine as if Fortune were 1 higher
+    repair: {items: [ingot], share: 0.25}
+    molten-block: lapis_block
+    template: {boss: sand_pharaoh, chance: 1.0, duplicate-block: sandstone}
+
+  electrum:
+    name: "Electrum"
+    colour: "#E8D27A"
+    heat: high
+    melt-seconds: 45
+    recipe: {gold_ingot: 4, prismarine_crystals: 2, turtle_scute: 1}
+    yield: 1
+    material: diamond
+    upgrades: diamond
+    tools: {durability: 900, speed: 8, damage-bonus: 0, enchantability: 16}
+    armour: {points: [3, 7, 5, 2], toughness: 1, knockback-resistance: 0, durability: 25, enchantability: 14}
+    bonuses:
+      - {attribute: submerged_mining_speed, amount: 0.8, to: tools}   # full speed underwater
+      - {attribute: oxygen_bonus, amount: 1, to: armour}
+      - {attribute: water_movement_efficiency, amount: 0.25, to: armour}
+    repair: {items: [ingot], share: 0.25}
+    molten-block: gold_block
+    template: {boss: drowned_captain, chance: 1.0, duplicate-block: prismarine}
+
+  hepatizon:
+    name: "Hepatizon"
+    colour: "#8C5A82"
+    heat: soul
+    melt-seconds: 60
+    recipe: {copper_ingot: 2, gold_ingot: 2, blaze_rod: 1}
+    yield: 1
+    material: diamond
+    upgrades: diamond
+    tools: {durability: 500, speed: 14, damage-bonus: 1, enchantability: 12}
+    armour: {points: [3, 7, 6, 3], toughness: 2, knockback-resistance: 0, durability: 15, enchantability: 12}
+    bonuses:
+      - {attribute: burning_time, amount: -0.25, to: armour}   # four pieces: you stop burning as you leave fire
+    fireproof: true   # its items survive fire and lava, like netherite
+    repair: {items: [ingot], share: 0.25}
+    molten-block: magenta_concrete
+    template: {boss: piglin_warlord, chance: 1.0, duplicate-block: blackstone}
+
+  adamant:
+    name: "Adamant"
+    colour: "#7FD6C8"
+    heat: soul
+    melt-seconds: 60
+    recipe: {diamond: 1, netherite_scrap: 2, echo_shard: 1}
+    yield: 1
+    material: netherite
+    upgrades: diamond
+    tools: {durability: 3000, speed: 9, damage-bonus: 0, enchantability: 10}
+    armour: {points: [3, 8, 6, 3], toughness: 4, knockback-resistance: 0.1, durability: 45, enchantability: 10}
+    bonuses:
+      - {attribute: movement_speed, amount: -0.025, operation: multiply, to: armour}   # heavy
+    repair: {items: [ingot], share: 0.25}
+    molten-block: diamond_block
+    template: {boss: void_stalker, chance: 1.0, duplicate-block: purpur_block}

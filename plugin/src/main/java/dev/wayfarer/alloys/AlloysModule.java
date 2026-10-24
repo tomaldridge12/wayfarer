@@ -1,0 +1,131 @@
+package dev.wayfarer.alloys;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.wayfarer.core.Core;
+import dev.wayfarer.core.Module;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+
+/** Alloys: the crucible, alloy ingots, templates and gear, smithing upgrades, repair and endless repair. */
+public final class AlloysModule implements Module {
+    static final String ADMIN_PERMISSION = "wayfarer.alloys.admin";
+
+    private final JavaPlugin plugin;
+    private final AlloyVocabulary vocabulary = new PaperAlloyVocabulary();
+    private final List<Listener> listeners = new ArrayList<>();
+    private Core core;
+    private volatile AlloyRules rules = AlloyRules.empty();
+    private AlloyItems items;
+
+    public AlloysModule(JavaPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public String id() {
+        return "alloys";
+    }
+
+    @Override
+    public void enable(Core core) throws Exception {
+        this.core = core;
+        items = new AlloyItems(core.itemTags(), () -> rules);
+        load();
+        listen(new AlloyGuard(items));
+        listen(new AlloyRefreshListener(items));
+        core.commands().register(id(), commands());
+    }
+
+    @Override
+    public void disable() {
+        listeners.forEach(HandlerList::unregisterAll);
+        listeners.clear();
+    }
+
+    private void listen(Listener listener) {
+        plugin.getServer().getPluginManager().registerEvents(listener, plugin);
+        listeners.add(listener);
+    }
+
+    /** Reads alloys.yml; throws if the file is unreadable, which skips only this module at start. */
+    private int load() throws IOException {
+        AlloyConfigParser.Result r = AlloyConfigParser.parse(core.config().load(id()), vocabulary);
+        r.problems().forEach(p -> core.logger().warning("[alloys] " + p));
+        rules = r.rules();
+        core.logger().info("Alloys loaded: " + rules.alloys().size() + " alloys ("
+                + String.join(", ", rules.alloys().stream().map(AlloyDefinition::id).toList()) + "), "
+                + r.problems().size() + " problems");
+        return r.problems().size();
+    }
+
+    AlloyRules rules() {
+        return rules;
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> commands() {
+        return Commands.literal("alloys")
+                .requires(s -> s.getSender().hasPermission(ADMIN_PERMISSION))
+                .then(Commands.literal("list").executes(ctx -> {
+                    list(ctx.getSource().getSender());
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("reload").executes(ctx -> {
+                    CommandSender sender = ctx.getSource().getSender();
+                    try {
+                        int problems = load();
+                        sender.sendMessage("Alloys reloaded: " + rules.alloys().size() + " alloys, " + problems + " problems");
+                    } catch (IOException e) {
+                        sender.sendMessage("Alloys reload failed, keeping the old config: " + e.getMessage());
+                    }
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("give")
+                        .then(Commands.argument("player", StringArgumentType.word()).suggests((ctx, b) -> {
+                            plugin.getServer().getOnlinePlayers().forEach(p -> b.suggest(p.getName()));
+                            return b.buildFuture();
+                        }).then(Commands.argument("item", StringArgumentType.greedyString()).suggests((ctx, b) -> {
+                            items.names().stream().filter(n -> n.startsWith(b.getRemaining())).forEach(b::suggest);
+                            return b.buildFuture();
+                        }).executes(ctx -> {
+                            give(ctx.getSource().getSender(), StringArgumentType.getString(ctx, "player"),
+                                    StringArgumentType.getString(ctx, "item").trim());
+                            return Command.SINGLE_SUCCESS;
+                        }))));
+    }
+
+    private void list(CommandSender sender) {
+        for (AlloyDefinition a : rules.alloys()) {
+            List<String> parts = new ArrayList<>();
+            a.recipe().forEach((item, n) -> parts.add(n + " " + item));
+            sender.sendMessage(a.name() + ": " + String.join(" + ", parts) + " at " + a.heat().label() + " heat, "
+                    + a.meltSeconds() + "s -> " + a.yield() + " ingot; upgrades " + a.upgrades() + " gear; template from "
+                    + a.template().boss());
+        }
+    }
+
+    private void give(CommandSender sender, String playerName, String name) {
+        Player player = plugin.getServer().getPlayerExact(playerName);
+        if (player == null) {
+            sender.sendMessage("No online player named '" + playerName + "'");
+            return;
+        }
+        ItemStack item = items.byName(name, 1).orElse(null);
+        if (item == null) {
+            sender.sendMessage("Unknown alloy item '" + name + "' (try ingot:steel, template:steel or steel_pickaxe)");
+            return;
+        }
+        player.getInventory().addItem(item).values().forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+        sender.sendMessage("Gave " + name + " to " + player.getName());
+    }
+}

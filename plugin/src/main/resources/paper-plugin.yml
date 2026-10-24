@@ -36,3 +36,6 @@ permissions:
   wayfarer.bosses.admin:
     description: Spawn, list and remove bosses (testing tools)
     default: op
+  wayfarer.alloys.admin:
+    description: List alloys, give alloy items and reload alloys.yml (testing tools)
+    default: op
