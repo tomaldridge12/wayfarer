@@ -93,9 +93,17 @@ final class MarkItems {
         return read(item).filter(t -> !t.startsWith(TEMPLATE)).flatMap(MarkRules.OnTool::parse);
     }
 
-    /** Templates and marked tools: never ingredients of vanilla recipes. */
-    boolean isOurs(ItemStack item) {
-        return read(item).isPresent();
+    /** Whether one more use would break the tool (unbreakable tools never do; no tool always would). */
+    static boolean wouldBreak(ItemStack tool) {
+        if (tool == null || tool.isEmpty()) {
+            return true;
+        }
+        if (tool.hasData(DataComponentTypes.UNBREAKABLE)) {
+            return false;
+        }
+        Integer max = tool.getData(DataComponentTypes.MAX_DAMAGE);
+        int damage = tool.getDataOrDefault(DataComponentTypes.DAMAGE, 0);
+        return max != null && damage + 1 >= max;
     }
 
     private Optional<String> read(ItemStack item) {

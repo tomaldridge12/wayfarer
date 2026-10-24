@@ -59,11 +59,12 @@ final class FlockAndRodMarks implements Listener {
         int r = rank.radius();
         Collection<Sheep> flock = first.getLocation().getNearbyEntitiesByType(Sheep.class, r, r, r);
         for (Sheep sheep : flock) {
-            if (sheep == first || !sheep.isAdult() || !sheep.readyToBeSheared()) {
+            if (sheep == first || !sheep.isAdult() || !sheep.readyToBeSheared()
+                    || sheep.getLocation().distanceSquared(first.getLocation()) > (double) r * r) {
                 continue;
             }
             ItemStack shears = player.getInventory().getItem(event.getHand());
-            if (wouldBreak(shears)) {
+            if (MarkItems.wouldBreak(shears)) {
                 return;
             }
             sheep.shear(Sound.Source.PLAYER);
@@ -98,7 +99,7 @@ final class FlockAndRodMarks implements Listener {
             hook.setMaxWaitTime(Math.max(hook.getMinWaitTime(), (int) Math.round(hook.getMaxWaitTime() * rank.biteWait())));
         } else if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH && event.getCaught() instanceof Item caught
                 && rank.chance() > 0 && ThreadLocalRandom.current().nextDouble() < rank.chance()) {
-            treasure(hook, event.getPlayer()).ifPresent(caught::setItemStack);
+            treasure().ifPresent(caught::setItemStack);
         }
     }
 
@@ -110,10 +111,6 @@ final class FlockAndRodMarks implements Listener {
     }
 
     /** One roll of vanilla's fishing treasure; empty (keeping the real catch) if it cannot be made. */
-    private Optional<ItemStack> treasure(FishHook hook, Player player) {
-        return treasure();
-    }
-
     /**
      * Vanilla's fishing treasure pool, rolled here because the server's loot API cannot pass the rod the table needs:
      * one of six, equally likely; the bow and rod enchanted at level 30 and worn down to a quarter or less, the book
@@ -144,15 +141,4 @@ final class FlockAndRodMarks implements Listener {
     private static final List<Material> TREASURE = List.of(Material.BOW, Material.ENCHANTED_BOOK, Material.FISHING_ROD,
             Material.NAME_TAG, Material.NAUTILUS_SHELL, Material.SADDLE);
 
-    private static boolean wouldBreak(ItemStack tool) {
-        if (tool == null || tool.isEmpty()) {
-            return true;
-        }
-        if (tool.hasData(DataComponentTypes.UNBREAKABLE)) {
-            return false;
-        }
-        Integer max = tool.getData(DataComponentTypes.MAX_DAMAGE);
-        int damage = tool.getDataOrDefault(DataComponentTypes.DAMAGE, 0);
-        return max != null && damage + 1 >= max;
-    }
 }

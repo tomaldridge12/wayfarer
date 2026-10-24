@@ -1,6 +1,5 @@
 package dev.wayfarer.marks;
 
-import io.papermc.paper.datacomponent.DataComponentTypes;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -90,7 +89,7 @@ final class AreaMarks implements Listener {
         try {
             for (Offset o : offsets) {
                 ItemStack tool = player.getInventory().getItemInMainHand();
-                if (wouldBreak(tool) || items.markOf(tool).isEmpty()) {
+                if (MarkItems.wouldBreak(tool) || items.markOf(tool).isEmpty()) {
                     return; // stop before the tool breaks (or if it is gone)
                 }
                 if (player.breakBlock(origin.getRelative(o.dx(), o.dy(), o.dz())) && wearTool
@@ -135,14 +134,6 @@ final class AreaMarks implements Listener {
                 && crop.getAge() >= crop.getMaximumAge();
     }
 
-    private static boolean wouldBreak(ItemStack tool) {
-        if (tool == null || tool.isEmpty() || tool.hasData(DataComponentTypes.UNBREAKABLE)) {
-            return tool == null || tool.isEmpty();
-        }
-        Integer max = tool.getData(DataComponentTypes.MAX_DAMAGE);
-        int damage = tool.getDataOrDefault(DataComponentTypes.DAMAGE, 0);
-        return max != null && damage + 1 >= max;
-    }
 
     private static Face face(BlockFace face) {
         return Face.parse(face.name()).orElse(Face.UP);

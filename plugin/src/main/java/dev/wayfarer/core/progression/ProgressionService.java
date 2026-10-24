@@ -231,12 +231,12 @@ public final class ProgressionService implements Progression {
 
     // --- events (called by the listener, main thread unless noted) ---
 
-    /** Async pre-login thread, so blocking file I/O is fine here. */
     /** Runs on the next tick (main thread). */
     void later(Runnable task) {
         plugin.getServer().getScheduler().runTask(plugin, task);
     }
 
+    /** Async pre-login thread, so blocking file I/O is fine here. */
     void loadBlocking(UUID id) {
         try {
             store.load(id).join();

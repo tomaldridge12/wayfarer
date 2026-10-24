@@ -118,40 +118,36 @@ final class ProgressionListener implements Listener {
     }
 
     /**
-     * Items crafted by hand. A shift-click makes as many as fit, so it is counted by what actually arrived in the
-     * inventory a tick later; a plain click takes one result onto the cursor.
+     * Items crafted by hand, counted by what actually arrived: the matching items in the inventory and on the cursor
+     * a tick later, against before the click. A click that takes nothing counts nothing; the real result (which a
+     * prepare step may have changed) is what is compared.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onCraft(org.bukkit.event.inventory.CraftItemEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player) || event.getRecipe() == null) {
+        ItemStack result = event.getCurrentItem();
+        if (!(event.getWhoClicked() instanceof Player player) || result == null || result.isEmpty()
+                || event.getAction() == org.bukkit.event.inventory.InventoryAction.NOTHING) {
             return;
         }
-        ItemStack result = event.getRecipe().getResult();
-        if (result.isEmpty()) {
-            return;
-        }
-        String item = target(result.getType());
-        if (event.isShiftClick()) {
-            int before = count(player, result);
-            service.later(() -> {
-                int made = count(player, result) - before;
-                service.act(player, (engine, data) -> engine.craft(data, item, made));
-            });
-        } else {
-            ItemStack taken = event.getCurrentItem();
-            int made = taken == null || taken.isEmpty() ? result.getAmount() : taken.getAmount();
+        ItemStack like = result.clone();
+        String item = target(like.getType());
+        int before = held(player, like);
+        service.later(() -> {
+            int made = held(player, like) - before;
             service.act(player, (engine, data) -> engine.craft(data, item, made));
-        }
+        });
     }
 
-    private static int count(Player player, ItemStack like) {
+    /** How many items like this the player holds: inventory and cursor. */
+    private static int held(Player player, ItemStack like) {
         int n = 0;
         for (ItemStack s : player.getInventory().getStorageContents()) {
             if (s != null && s.isSimilar(like)) {
                 n += s.getAmount();
             }
         }
-        return n;
+        ItemStack cursor = player.getItemOnCursor();
+        return n + (cursor.isSimilar(like) ? cursor.getAmount() : 0);
     }
 
     private static String target(Keyed type) {

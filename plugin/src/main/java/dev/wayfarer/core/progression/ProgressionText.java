@@ -67,8 +67,7 @@ public final class ProgressionText {
         return line;
     }
 
-    /** "1 kill", "1,342 kills". */
-    /** "3 kills"; a unit written {@code catch|catches} gives its own plural. */
+    /** "1 kill", "1,342 kills"; a unit written {@code catch|catches} gives its own plural. */
     static String count(long n, String unit) {
         int bar = unit.indexOf('|');
         String word = bar < 0 ? unit + (n == 1 ? "" : "s") : n == 1 ? unit.substring(0, bar) : unit.substring(bar + 1);

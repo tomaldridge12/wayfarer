@@ -95,6 +95,19 @@ final class MarkRecipes implements Listener {
                 material.getType().getKey().getKey()).flatMap(mark -> items.marked(tool, mark)).orElse(null));
     }
 
+    /** The grid's repair-by-combining makes a fresh tool, which would lose the mark: marked tools are never combined there. */
+    @EventHandler(priority = EventPriority.HIGH)
+    void onCraft(org.bukkit.event.inventory.PrepareItemCraftEvent event) {
+        if (!dev.wayfarer.core.RecipeGuard.ours(event.getRecipe())) {
+            for (ItemStack s : event.getInventory().getMatrix()) {
+                if (items.markOf(s).isPresent()) {
+                    event.getInventory().setResult(null);
+                    return;
+                }
+            }
+        }
+    }
+
     /** Vanilla smithing uses the template up; a mark template stays, so it goes back once the result is taken. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onTake(SmithItemEvent event) {

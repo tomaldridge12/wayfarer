@@ -50,7 +50,8 @@ public final class MarksModule implements Module {
         items = new MarkItems(core.itemTags(), () -> rules);
         recipes = new MarkRecipes(plugin, () -> rules, items);
         load();
-        listen(new RecipeGuard(items::isOurs));
+        // Templates are never bricks. Marked tools stay vanilla tools (a netherite upgrade keeps the mark).
+        listen(new RecipeGuard(i -> items.templateOf(i).isPresent()));
         listen(recipes);
         listen(new AreaMarks(() -> rules, items));
         FlockAndRodMarks flockAndRod = new FlockAndRodMarks(() -> rules, items,
