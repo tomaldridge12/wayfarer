@@ -381,6 +381,39 @@ goal-pool:
   quartz_rush: {name: "Quartz Rush", text: "Mine {n} nether quartz ore", counts: [mine:nether_quartz_ore], target: 1500, stage: nether, table: nether}
   end_of_days: {name: "End of Days", text: "Defeat {n} endermen and shulkers", counts: [kill:enderman, kill:shulker], target: 500, stage: end, table: end}
 
+# Weekend events, from schedule.event-start to event-end: one per weekend, in rotation order. Each switches on a
+# modifier (double_catch: every fish caught twice; crop_growth: tick-speed raised in the Overworld; ore_xp: ores give
+# multiplier times the experience; mob_drops: mobs drop multiplier times their loot), has its own goal for everyone,
+# and pays every contributor a roll from table's event tier when the goal is met. Modifiers undo themselves when the
+# event ends or the plugin stops.
+events:
+  rotation: [drowned_tide, harvest_moon, deep_rush, bone_night]
+  list:
+    drowned_tide:
+      name: "The Drowned Tide"
+      blurb: "The water's thick with fish: every catch comes up twice."
+      modifier: double_catch
+      goal: {name: "The Tide's Bounty", text: "Catch {n} fish between you", counts: ["catch:*"], target: 400}
+    harvest_moon:
+      name: "Harvest Moon"
+      blurb: "Crops grow like they've been told a secret."
+      modifier: crop_growth
+      tick-speed: 12
+      goal: {name: "Moonlit Harvest", text: "Harvest {n} crops between you", counts: ["harvest:*"], target: 2500}
+    deep_rush:
+      name: "Deep Rush"
+      blurb: "Every seam glitters: ores give twice the experience."
+      modifier: ore_xp
+      multiplier: 2
+      goal: {name: "Down the Seams", text: "Mine {n} ore between you", counts: ["mine:#minecraft:coal_ores", "mine:#minecraft:iron_ores", "mine:#minecraft:copper_ores", "mine:#minecraft:gold_ores", "mine:#minecraft:redstone_ores", "mine:#minecraft:lapis_ores", "mine:#minecraft:diamond_ores", "mine:#minecraft:emerald_ores"], target: 1500}
+    bone_night:
+      name: "Bone Night"
+      blurb: "The dead walk with full pockets: skeletons drop twice the loot."
+      modifier: mob_drops
+      mobs: [skeleton, stray, bogged, parched, wither_skeleton]
+      multiplier: 2
+      goal: {name: "Rattle Their Bones", text: "Defeat {n} skeletons between you", counts: [kill:skeleton, kill:stray, kill:bogged, kill:parched, kill:wither_skeleton], target: 500}
+
 # Reward tables: per theme, per tier (daily, weekly, goal for the server goal, event), weighted lines. reward: tokens
 # (amount a-b), supply:<id>, curio:<id>, gear:<id>, cosmetic:<id>, item:<vanilla item> (amount), or
 # enchant:<key> (level a-b, an enchanted book that also unlocks it in the shop). Between them, the tables reach every

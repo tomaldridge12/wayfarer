@@ -41,6 +41,8 @@ final class ServerGoalState {
     boolean eventCompleted;
     final Set<String> eventPaid = new LinkedHashSet<>();
     boolean eventForced;
+    /** What a running event changed and must put back (world name -> its random tick speed before). */
+    final Map<String, Long> eventRestore = new LinkedHashMap<>();
 
     @SuppressWarnings("unchecked")
     static ServerGoalState read(Path file, Logger log) {
@@ -73,6 +75,7 @@ final class ServerGoalState {
             s.eventCompleted = Boolean.TRUE.equals(raw.get("eventCompleted"));
             strings(raw.get("eventPaid"), s.eventPaid);
             s.eventForced = Boolean.TRUE.equals(raw.get("eventForced"));
+            longs(raw.get("eventRestore"), s.eventRestore);
         } catch (IOException | RuntimeException e) {
             Path moved = file.resolveSibling(file.getFileName() + ".corrupt-" + System.currentTimeMillis());
             log.log(Level.SEVERE, "Unreadable server goal state " + file + ", moved to " + moved.getFileName() + " and starting fresh", e);
@@ -106,6 +109,7 @@ final class ServerGoalState {
         out.put("eventCompleted", eventCompleted);
         out.put("eventPaid", eventPaid);
         out.put("eventForced", eventForced);
+        out.put("eventRestore", eventRestore);
         return GSON.toJson(out);
     }
 

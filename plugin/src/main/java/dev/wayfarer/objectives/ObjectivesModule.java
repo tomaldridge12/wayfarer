@@ -37,6 +37,8 @@ public final class ObjectivesModule implements Module {
     private volatile ObjectivesService.State pools;
     private ObjectivesService service;
     private ServerGoals goals;
+    private Events events;
+    private volatile Events.Config eventConfig = Events.Config.empty();
 
     public ObjectivesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -63,6 +65,9 @@ public final class ObjectivesModule implements Module {
         goals = new ServerGoals(plugin, core, () -> pools, () -> pools.goal(), service, loot);
         goals.start();
         listen(goals);
+        events = new Events(plugin, core, () -> pools, () -> eventConfig, goals, service, loot);
+        events.start();
+        listen(events);
         core.services().get(JournalPages.class).ifPresent(journal -> {
             journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page());
             journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals).page());
@@ -72,6 +77,9 @@ public final class ObjectivesModule implements Module {
 
     @Override
     public void disable() {
+        if (events != null) {
+            events.stop();
+        }
         if (goals != null) {
             goals.stop();
         }
@@ -112,6 +120,11 @@ public final class ObjectivesModule implements Module {
         pool.problems().forEach(p -> core.logger().warning("[objectives] " + p));
         problems.addAll(pool.problems());
         pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.goal(), pool.tables());
+        Map<String, Object> root = core.config().load(id());
+        EventConfigParser.Result ev = EventConfigParser.parse(root.get("events"), vocabulary, pool.tables());
+        ev.problems().forEach(p -> core.logger().warning("[objectives] " + p));
+        problems.addAll(ev.problems());
+        eventConfig = new Events.Config(ev.rotation(), ev.events());
         Map<String, Integer> enchants = new LinkedHashMap<>(pool.tables().enchants());
         feats.values().forEach(f -> f.rewards().stream().filter(x -> x.startsWith("enchant:")).forEach(x -> enchantOf(x, enchants)));
         core.rewardEnchants().register(id(), enchants);
@@ -312,6 +325,27 @@ public final class ObjectivesModule implements Module {
                                 loot().give(uuid, data, rolled, "admin roll " + parts[0] + " " + parts[1]);
                                 sender.sendMessage("Rolled " + parts[0] + " " + parts[1] + " for " + uuid + ": " + rolled);
                             });
+                            return Command.SINGLE_SUCCESS;
+                        })))
+                .then(Commands.literal("event")
+                        .then(Commands.literal("start").then(Commands.argument("event", StringArgumentType.word()).suggests((ctx, b) -> {
+                            eventConfig.events().keySet().forEach(b::suggest);
+                            return b.buildFuture();
+                        }).executes(ctx -> {
+                            String id = StringArgumentType.getString(ctx, "event");
+                            EventDefinition e = eventConfig.events().get(id);
+                            if (e == null) {
+                                ctx.getSource().getSender().sendMessage("Unknown event '" + id + "' (" + eventConfig.events().keySet() + ")");
+                            } else {
+                                events.begin(e, System.currentTimeMillis(), true);
+                                ctx.getSource().getSender().sendMessage("Started " + e.name() + " until /wayfarer objectives event stop");
+                            }
+                            return Command.SINGLE_SUCCESS;
+                        })))
+                        .then(Commands.literal("stop").executes(ctx -> {
+                            EventDefinition e = events.running();
+                            events.end("stopped by command");
+                            ctx.getSource().getSender().sendMessage(e == null ? "No event is running" : "Stopped " + e.name());
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(Commands.literal("goal")
