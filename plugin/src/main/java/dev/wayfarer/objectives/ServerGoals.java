@@ -4,7 +4,6 @@ import dev.wayfarer.core.Core;
 import dev.wayfarer.core.ItemLook;
 import dev.wayfarer.core.progression.ProgressChangedEvent;
 import dev.wayfarer.core.progression.Progression;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +40,7 @@ final class ServerGoals implements Listener {
     private final Supplier<Map<String, ObjectiveDefinition>> goalPool;
     private final ObjectivesService service;
     private final Loot loot;
-    private final Path file;
+    private final dev.wayfarer.core.StateFile file;
     private ServerGoalState state;
     private boolean dirty;
     private BukkitTask tick;
@@ -54,7 +53,7 @@ final class ServerGoals implements Listener {
         this.goalPool = goalPool;
         this.service = service;
         this.loot = loot;
-        this.file = plugin.getDataFolder().toPath().resolve("data").resolve("server-goal.json");
+        this.file = new dev.wayfarer.core.StateFile(plugin.getDataFolder().toPath().resolve("data").resolve("server-goal.json"), core.logger());
     }
 
     ServerGoalState state() {
@@ -66,7 +65,7 @@ final class ServerGoals implements Listener {
     }
 
     void start() {
-        state = ServerGoalState.read(file, core.logger());
+        state = ServerGoalState.read(file.path(), core.logger());
         rollover(false);
         plugin.getServer().getOnlinePlayers().forEach(this::seen);
         tick = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
@@ -83,22 +82,17 @@ final class ServerGoals implements Listener {
             tick.cancel();
         }
         if (state != null) {
-            save(true);
+            file.close(state.json());
         }
     }
 
-    /** Writes the state if it changed: off the main thread, or right now while shutting down. */
+    /** Queues a write of the state (taken here, written in order off the main thread); {@code now} even if unchanged. */
     void save(boolean now) {
         if (!dirty && !now) {
             return;
         }
         dirty = false;
-        String json = state.json();
-        if (now) {
-            ServerGoalState.write(file, json, core.logger());
-        } else {
-            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> ServerGoalState.write(file, json, core.logger()));
-        }
+        file.save(state.json());
     }
 
     ObjectiveDefinition goal() {

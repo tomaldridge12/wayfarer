@@ -144,7 +144,7 @@ public final class ObjectivesModule implements Module {
         core.logger().info("Shop loaded: " + prices.cosmetics().size() + " cosmetics, " + prices.supplies().size()
                 + " supplies, books at " + prices.enchantPerLevel() + " tokens a level, " + shop.problems().size() + " problems");
         Map<String, Integer> enchants = new LinkedHashMap<>(pool.tables().enchants());
-        feats.values().forEach(f -> f.rewards().stream().filter(x -> x.startsWith("enchant:")).forEach(x -> enchantOf(x, enchants)));
+        feats.values().forEach(f -> f.rewards().stream().filter(x -> x.startsWith("enchant:")).forEach(x -> dev.wayfarer.core.RewardEnchants.addReward(x, enchants)));
         core.rewardEnchants().register(id(), enchants);
         core.logger().info("Objectives loaded: " + pool.daily().size() + " dailies, " + pool.weekly().size() + " weeklies, "
                 + pool.goal().size() + " server goals, "
@@ -157,14 +157,6 @@ public final class ObjectivesModule implements Module {
         return problems.size();
     }
 
-    /** "enchant:excellentenchants:wisdom_3" adds excellentenchants:wisdom at level 3. */
-    static void enchantOf(String reward, Map<String, Integer> into) {
-        String id = reward.substring("enchant:".length());
-        int cut = id.lastIndexOf('_');
-        if (cut > 0 && id.substring(cut + 1).matches("\\d+")) {
-            into.merge(id.substring(0, cut), Integer.parseInt(id.substring(cut + 1)), Math::max);
-        }
-    }
 
     /** The feat itself: no item, just its name on the title card and in the announcement. */
     private final class FeatMarker implements RewardType {
@@ -325,12 +317,12 @@ public final class ObjectivesModule implements Module {
                     });
                     return Command.SINGLE_SUCCESS;
                 })))
-                .then(Commands.literal("roll").then(Commands.argument("table tier player", StringArgumentType.greedyString())
+                .then(Commands.literal("table").then(Commands.literal("roll").then(Commands.argument("table tier player", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             CommandSender sender = ctx.getSource().getSender();
                             String[] parts = StringArgumentType.getString(ctx, "table tier player").trim().split("\\s+");
                             if (parts.length != 3) {
-                                sender.sendMessage("Usage: /wayfarer objectives roll <table> <tier> <player>");
+                                sender.sendMessage("Usage: /wayfarer objectives table roll <table> <tier> <player>");
                                 return Command.SINGLE_SUCCESS;
                             }
                             withPlayer(sender, parts[2], (uuid, data, snap) -> {
@@ -344,7 +336,7 @@ public final class ObjectivesModule implements Module {
                                 sender.sendMessage("Rolled " + parts[0] + " " + parts[1] + " for " + uuid + ": " + rolled);
                             });
                             return Command.SINGLE_SUCCESS;
-                        })))
+                        }))))
                 .then(Commands.literal("event")
                         .then(Commands.literal("start").then(Commands.argument("event", StringArgumentType.word()).suggests((ctx, b) -> {
                             eventConfig.events().keySet().forEach(b::suggest);

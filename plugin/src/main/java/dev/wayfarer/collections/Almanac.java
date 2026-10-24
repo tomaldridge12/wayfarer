@@ -120,13 +120,16 @@ final class Almanac implements Listener {
     void onCatch(PlayerFishEvent event) {
         State s = state.get();
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH || !(event.getCaught() instanceof Item caught)
-                || !VANILLA_FISH.contains(caught.getItemStack().getType()) || tags.readId(caught.getItemStack()) != null
-                || ThreadLocalRandom.current().nextDouble() >= s.settings().chance()) {
+                || !VANILLA_FISH.contains(caught.getItemStack().getType()) || tags.readId(caught.getItemStack()) != null) {
             return;
         }
         Player player = event.getPlayer();
-        Location at = event.getHook().getLocation();
+        // Bait: each fish caught uses one charge, which doubles both the chance of a Wayfarer species and the rare odds.
         double baitFactor = bait.get().map(b -> b.useCast(player.getUniqueId())).orElse(1.0);
+        if (ThreadLocalRandom.current().nextDouble() >= Math.min(1, s.settings().chance() * baitFactor)) {
+            return;
+        }
+        Location at = event.getHook().getLocation();
         FishRules.Facts facts = facts(at);
         FishSpecies species = FishRules.pick(s.species(), facts, s.settings().rarityWeights(), baitFactor, ThreadLocalRandom.current());
         if (species == null) {

@@ -14,3 +14,4 @@ GLOSSARY.md
 TASKS.md
 docs/adr/
 docs/agents/
+__pycache__/

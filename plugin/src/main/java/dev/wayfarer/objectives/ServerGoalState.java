@@ -3,11 +3,9 @@ package dev.wayfarer.objectives;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -111,19 +109,6 @@ final class ServerGoalState {
         out.put("eventForced", eventForced);
         out.put("eventRestore", eventRestore);
         return GSON.toJson(out);
-    }
-
-    static void write(Path file, String json, Logger log) {
-        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-        try {
-            Files.createDirectories(file.getParent());
-            try (Writer writer = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-                writer.write(json);
-            }
-            Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Could not save the server goal state " + file, e);
-        }
     }
 
     private static long num(Object o) {

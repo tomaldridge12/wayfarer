@@ -39,6 +39,15 @@ public final class RewardEnchants {
         byOwner.put(owner, excellent);
     }
 
+    /** Adds the enchant an {@code enchant:<key>_<level>} reward gives ({@code enchant:excellentenchants:wisdom_3}). */
+    public static void addReward(String reward, Map<String, Integer> into) {
+        String id = reward.substring(reward.indexOf(':') + 1);
+        int cut = id.lastIndexOf('_');
+        if (reward.startsWith("enchant:") && cut > 0 && id.substring(cut + 1).matches("\\d+")) {
+            into.merge(id.substring(0, cut), Integer.parseInt(id.substring(cut + 1)), Math::max);
+        }
+    }
+
     public void drop(String owner) {
         byOwner.remove(owner);
     }

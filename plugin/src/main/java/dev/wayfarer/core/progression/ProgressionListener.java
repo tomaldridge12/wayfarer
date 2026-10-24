@@ -29,6 +29,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 
 /** Turns server events into activities with their facts for the progression engine. */
 final class ProgressionListener implements Listener {
+    private static final NamespacedKey BRUSHED = new NamespacedKey("wayfarer", "brushed");
     private final ProgressionService service;
 
     ProgressionListener(ProgressionService service) {
@@ -131,9 +132,12 @@ final class ProgressionListener implements Listener {
         if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK || block == null
                 || event.getItem() == null || event.getItem().getType() != Material.BRUSH
                 || !(block.getState(false) instanceof org.bukkit.block.BrushableBlock brushable)
-                || !brushable.hasLootTable()) {
+                || !brushable.hasLootTable()
+                || brushable.getPersistentDataContainer().has(BRUSHED, org.bukkit.persistence.PersistentDataType.BYTE)) {
             return;
         }
+        // Vanilla rolls the loot a few ticks into brushing, so taps before then would count again without this mark.
+        brushable.getPersistentDataContainer().set(BRUSHED, org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
         if (service.act(event.getPlayer(), (engine, data) -> engine.brush(data, target(block.getType()))) != null) {
             org.bukkit.Bukkit.getPluginManager().callEvent(new dev.wayfarer.core.SuspiciousBrushEvent(event.getPlayer(), block));
         }

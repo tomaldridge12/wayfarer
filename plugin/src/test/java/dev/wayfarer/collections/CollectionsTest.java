@@ -98,9 +98,9 @@ class CollectionsTest {
     @Test
     void enchantRewardsRegisterTheirHighestLevel() {
         Map<String, Integer> into = new java.util.LinkedHashMap<>();
-        CollectionsModule.enchantOf("enchant:excellentenchants:decapitator_1", into);
-        CollectionsModule.enchantOf("enchant:excellentenchants:decapitator_3", into);
-        CollectionsModule.enchantOf("enchant:broken", into);
+        dev.wayfarer.core.RewardEnchants.addReward("enchant:excellentenchants:decapitator_1", into);
+        dev.wayfarer.core.RewardEnchants.addReward("enchant:excellentenchants:decapitator_3", into);
+        dev.wayfarer.core.RewardEnchants.addReward("enchant:broken", into);
         assertEquals(Map.of("excellentenchants:decapitator", 3), into);
     }
 }

@@ -3,11 +3,9 @@ package dev.wayfarer.exploration;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -50,18 +48,5 @@ final class ExplorationState {
         out.put("safeSurface", safeSurface);
         out.put("charges", Map.copyOf(charges));
         return GSON.toJson(out);
-    }
-
-    static void write(Path file, String json, Logger log) {
-        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-        try {
-            Files.createDirectories(file.getParent());
-            try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-                w.write(json);
-            }
-            Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Could not save the exploration state " + file, e);
-        }
     }
 }

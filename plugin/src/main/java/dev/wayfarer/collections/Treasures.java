@@ -157,12 +157,18 @@ final class Treasures implements Listener {
             player.sendActionBar(ItemLook.text("The chart's markings mean nothing yet. (Wayfinding is switched off.)", Journal.FADED));
             return;
         }
-        if (!service.get().pointToStructure(player, chart.chart(), state.get().settings().chartSeconds())) {
-            player.sendActionBar(ItemLook.text("The chart's coastline matches nothing near here.", Journal.FADED));
-            return;
-        }
-        held.setAmount(held.getAmount() - 1);
-        player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1f, 0.8f);
-        log.info("[collections] " + player.getName() + " followed a " + chart.id());
+        player.sendActionBar(ItemLook.text("You turn the chart this way and that...", Journal.FADED));
+        service.get().pointToStructure(player, chart.chart(), state.get().settings().chartSeconds(), found -> {
+            ItemStack now = player.getInventory().getItemInMainHand();
+            if (!found) {
+                player.sendActionBar(ItemLook.text("The chart's coastline matches nothing near here.", Journal.FADED));
+                return;
+            }
+            if (now.isSimilar(held)) {
+                now.setAmount(now.getAmount() - 1);
+            }
+            player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1f, 0.8f);
+            log.info("[collections] " + player.getName() + " followed a " + chart.id());
+        });
     }
 }

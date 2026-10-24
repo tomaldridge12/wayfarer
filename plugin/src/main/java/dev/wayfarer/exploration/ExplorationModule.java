@@ -10,7 +10,6 @@ import dev.wayfarer.core.Wayfinding;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,7 @@ public final class ExplorationModule implements Module {
     private Core core;
     private volatile ExplorationConfigParser.Settings settings;
     private ExplorationState state;
-    private Path stateFile;
+    private dev.wayfarer.core.StateFile stateFile;
     private Wayfinder wayfinder;
     private BeaconKindling kindling;
 
@@ -45,8 +44,9 @@ public final class ExplorationModule implements Module {
     public void enable(Core core) throws Exception {
         this.core = core;
         load();
-        stateFile = plugin.getDataFolder().toPath().resolve("data").resolve("exploration.json");
-        state = ExplorationState.read(stateFile, core.logger());
+        stateFile = new dev.wayfarer.core.StateFile(plugin.getDataFolder().toPath().resolve("data").resolve("exploration.json"),
+                core.logger());
+        state = ExplorationState.read(stateFile.path(), core.logger());
         wayfinder = new Wayfinder(plugin, core, () -> settings, state, this::save);
         kindling = new BeaconKindling(plugin, core.itemTags(), () -> settings, core.logger());
         listen(wayfinder);
@@ -71,7 +71,7 @@ public final class ExplorationModule implements Module {
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
         if (state != null) {
-            ExplorationState.write(stateFile, state.json(), core.logger());
+            stateFile.close(state.json());
         }
     }
 
@@ -88,10 +88,9 @@ public final class ExplorationModule implements Module {
                 + settings.rangeBlocks() + " blocks, " + settings.cooldownSeconds() + "s between searches; " + r.problems().size() + " problems");
     }
 
-    /** Taken as JSON here on the main thread, written off it. */
+    /** Taken as JSON here on the main thread, written in order off it. */
     private void save() {
-        String json = state.json();
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> ExplorationState.write(stateFile, json, core.logger()));
+        stateFile.save(state.json());
     }
 
     /** The first dragon down: safe surface comes on (once; an admin can turn it off again). */

@@ -66,7 +66,7 @@ class ServerGoalTest {
         s.playerStages.put("a", "iron");
         s.event = "drowned_tide";
         Path file = dir.resolve("server-goal.json");
-        ServerGoalState.write(file, s.json(), log);
+        new dev.wayfarer.core.StateFile(file, log).close(s.json());
         ServerGoalState back = ServerGoalState.read(file, log);
         assertEquals(123, back.weekStart);
         assertEquals("great_harvest", back.goal);

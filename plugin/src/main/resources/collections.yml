@@ -295,7 +295,7 @@ collections:
     blurb: "Every fish in Wayfarer's waters, where they bite, and your heaviest of each."
     unit: "species|species"
     milestones:
-      "10": [supply:wayfarers_bait*2]
+      "5": [supply:wayfarers_bait*2]
       "25%": [curio:mermaids_comb]
       "50%": [gear:tidecaller]
       "100%": ["enchant:excellentenchants:river_master_1"]
@@ -411,7 +411,7 @@ collections:
     blurb: "Gems, fossils, coins and stranger things, brushed from the earth or found in old chests."
     unit: "treasure"
     milestones:
-      "5": [supply:mushy_bundle]
+      "3": [supply:mushy_bundle]
       "25%": [curio:north_mitten]
       "50%": [gear:glassblowers_spade]
       "100%": ["enchant:excellentenchants:silk_spawner_1"]

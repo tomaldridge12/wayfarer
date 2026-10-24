@@ -175,7 +175,7 @@ public final class CollectionsModule implements Module {
         core.progression().setLadders(id(), ladders);
         Map<String, Integer> enchants = new LinkedHashMap<>();
         r.collections().values().forEach(def -> def.milestones().forEach(m -> m.rewards().stream()
-                .filter(x -> x.startsWith("enchant:")).forEach(x -> enchantOf(x, enchants))));
+                .filter(x -> x.startsWith("enchant:")).forEach(x -> dev.wayfarer.core.RewardEnchants.addReward(x, enchants))));
         core.rewardEnchants().register(id(), enchants);
         core.logger().info("Collections loaded: " + r.collections().size() + " collections (" + String.join(", ", sizes)
                 + "), " + r.problems().size() + " problems");
@@ -217,14 +217,6 @@ public final class CollectionsModule implements Module {
         }
     }
 
-    /** "enchant:excellentenchants:decapitator_1" adds excellentenchants:decapitator at level 1. */
-    static void enchantOf(String reward, Map<String, Integer> into) {
-        String id = reward.substring("enchant:".length());
-        int cut = id.lastIndexOf('_');
-        if (cut > 0 && id.substring(cut + 1).matches("\\d+")) {
-            into.merge(id.substring(0, cut), Integer.parseInt(id.substring(cut + 1)), Math::max);
-        }
-    }
 
     /** The Journal item: right-click opens it. */
     ItemStack journalItem() {

@@ -37,7 +37,14 @@ public final class ServerGoalRules {
                 return here.get(random.nextInt(here.size()));
             }
         }
-        return pool.isEmpty() ? null : pool.iterator().next();
+        // Nothing at or below the stage: the earliest stage that has any, never a later one than needed.
+        for (String at : stages) {
+            List<ObjectiveDefinition> here = pool.stream().filter(d -> d.stage().equals(at)).toList();
+            if (!here.isEmpty()) {
+                return here.get(random.nextInt(here.size()));
+            }
+        }
+        return null;
     }
 
     public static long total(Map<String, Long> contributions) {

@@ -288,7 +288,8 @@ final class ObjectivesService implements Listener {
         }
         if (reward.startsWith("curio:")) {
             String found = "find:wayfarer:curio/" + reward.substring(6);
-            return core.progression().snapshot(id).map(s -> s.count(found) > 0).orElse(false);
+            return data.pending.contains(reward)
+                    || core.progression().snapshot(id).map(s -> s.count(found) > 0 || s.earned().containsKey(reward)).orElse(false);
         }
         return false;
     }
@@ -312,8 +313,8 @@ final class ObjectivesService implements Listener {
         if (slot < 0 || slot >= data.dailies.size() || data.dailies.get(slot).done) {
             return -1;
         }
-        int paid = Math.max(0, data.rerollsUsed - s.freeRerolls());
-        return data.rerollsUsed < s.freeRerolls() + extraFree(data) ? 0 : ObjectiveRules.rerollCost(s.rerollBase(), s.rerollStep(), paid);
+        int free = s.freeRerolls() + extraFree(data);
+        return data.rerollsUsed < free ? 0 : ObjectiveRules.rerollCost(s.rerollBase(), s.rerollStep(), data.rerollsUsed - free);
     }
 
     /** One more free reroll today when bought in the shop. */

@@ -163,11 +163,12 @@ final class Shop {
                 player.sendMessage(ItemLook.text("That can't be bought right now.", ObjectivesService.INK));
                 return;
             }
-            if (id.equals("wayfinder") && !core.services().get(Wayfinding.class).map(w -> w.offerFree(player)).orElse(false)) {
-                player.sendMessage(ItemLook.text("The Wayfinder can't point anywhere right now; nothing was spent.", ObjectivesService.INK));
+            if (!service.tokens(player.getUniqueId(), data, -offer.get().price(), "shop " + id)) {
                 return;
             }
-            if (!service.tokens(player.getUniqueId(), data, -offer.get().price(), "shop " + id)) {
+            if (id.equals("wayfinder") && !core.services().get(Wayfinding.class).map(w -> w.offerFree(player)).orElse(false)) {
+                service.tokens(player.getUniqueId(), data, offer.get().price(), "shop refund " + id);
+                player.sendMessage(ItemLook.text("The Wayfinder can't point anywhere right now; your tokens are back.", ObjectivesService.INK));
                 return;
             }
             switch (id) {

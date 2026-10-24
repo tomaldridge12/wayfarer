@@ -160,7 +160,14 @@ final class Wayfinder implements Listener, Wayfinding {
 
     private void structures(Player player, boolean free) {
         List<Menus.Button> buttons = new ArrayList<>();
-        settings.get().structures().forEach((key, name) -> {
+        Map<String, String> offered = new LinkedHashMap<>(settings.get().structures());
+        core.progression().snapshot(player.getUniqueId()).ifPresent(s -> s.counters().forEach((k, v) -> {
+            String structure = k.startsWith("discover:structure/") ? k.substring("discover:structure/".length()) : null;
+            if (v > 0 && structure != null && structure.contains(":")) {
+                offered.putIfAbsent(structure, title(structure)); // a datapack structure you have stepped inside
+            }
+        }));
+        offered.forEach((key, name) -> {
             int cost = free ? 0 : settings.get().prices().of(key, true);
             buttons.add(new Menus.Button(ItemLook.text(name, PAPER), ItemLook.text(free ? "Free" : cost + " levels", INK), 110,
                     p -> buy(p, free, cost, List.of(key), null, name, "wayfinder_compass")));
@@ -331,21 +338,18 @@ final class Wayfinder implements Listener, Wayfinding {
     // --- charts and showing the way ---
 
     @Override
-    public boolean pointToStructure(Player player, String structure, int seconds) {
-        NamespacedKey k = NamespacedKey.fromString(structure);
-        Structure s = k == null ? null : Registry.STRUCTURE.get(k);
-        if (s == null) {
-            return false;
-        }
-        int range = settings.get().rangeBlocks();
-        StructureSearchResult r = player.getWorld().locateNearestStructure(player.getLocation(), s, Math.max(1, range / 16), false);
-        if (r == null || r.getLocation().distanceSquared(player.getLocation()) > (double) range * range) {
-            return false;
-        }
-        needles.put(player.getUniqueId(), new Needle(r.getLocation(), title(structure), System.currentTimeMillis() + seconds * 1000L));
-        core.logger().info("[exploration] " + player.getName() + " follows a chart to " + structure + " at " + r.getLocation().getBlockX()
-                + "," + r.getLocation().getBlockZ() + " for " + seconds + "s");
-        return true;
+    public void pointToStructure(Player player, String structure, int seconds, Consumer<Boolean> done) {
+        search(new Search(player, List.of(structure), null, found -> {
+            if (found.isEmpty() || !player.isOnline()) {
+                done.accept(false);
+                return;
+            }
+            Location at = found.get().at();
+            needles.put(player.getUniqueId(), new Needle(at, title(structure), System.currentTimeMillis() + seconds * 1000L));
+            core.logger().info("[exploration] " + player.getName() + " follows a chart to " + structure + " at " + at.getBlockX()
+                    + "," + at.getBlockZ() + " for " + seconds + "s");
+            done.accept(true);
+        }));
     }
 
     /** Twice a second: the distance on the action bar for a held Wayfinder, and any chart's needle. */

@@ -25,6 +25,11 @@ public final class ModuleManager {
                 running.add(module);
                 core.logger().info("Module " + id + " enabled");
             } catch (Exception | LinkageError e) {
+                try {
+                    module.disable(); // cancels whatever it started before failing (timers, stores)
+                } catch (Exception | LinkageError cleanup) {
+                    core.logger().log(Level.WARNING, "Module " + id + " did not clean up after failing", cleanup);
+                }
                 core.commands().drop(id);
                 core.progression().drop(id);
                 core.itemMakers().drop(id);

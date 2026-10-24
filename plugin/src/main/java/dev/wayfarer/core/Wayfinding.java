@@ -9,7 +9,7 @@ public interface Wayfinding {
 
     /**
      * Points the player at the nearest structure of this key ({@code minecraft:shipwreck}) for a while, as a used-up
-     * chart does; false if none was found within range.
+     * chart does. The search waits its turn in the Wayfinder's queue; {@code done} hears whether one was found in range.
      */
-    boolean pointToStructure(Player player, String structure, int seconds);
+    void pointToStructure(Player player, String structure, int seconds, java.util.function.Consumer<Boolean> done);
 }
