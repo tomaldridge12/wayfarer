@@ -1,0 +1,50 @@
+---
+// Each alloy's crucible recipe as a card: the ingredients in slots, the heat it needs, the ingot it gives, and
+// what its gear is good at. Generated from alloys.yml.
+import ItemIcon from './ItemIcon.astro';
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { title } from '../data/text';
+
+const { alloys } = guide().config;
+const HEAT = {
+  low: { name: 'Low heat', under: 'campfire' },
+  high: { name: 'High heat', under: 'lava_bucket' },
+  soul: { name: 'Soul heat', under: 'soul_campfire' },
+};
+---
+<div class="alloys">
+  {alloys.map((a) => (
+    <section class="alloy">
+      <div class="recipe">
+        <div class="slots">
+          {a.recipe.map((r) => (
+            <span class="ingredient" title={`${r.count} × ${title(r.item)}`}>
+              <ItemIcon item={r.item} size={32} />
+              <span class="count">{r.count}</span>
+            </span>
+          ))}
+        </div>
+        <span class="heat"><ItemIcon item={HEAT[a.heat].under} size={24} slot={false} /><span>{HEAT[a.heat].name} · {a.meltSeconds}s</span></span>
+        <span class="arrow" aria-hidden="true">→</span>
+        <span class="ingredient">
+          <ItemIcon item={`wayfarer:${a.id}_ingot`} size={32} />
+          {a.yield > 1 && <span class="count">{a.yield}</span>}
+        </span>
+      </div>
+      <ItemCard item={`wayfarer:${a.id}_pickaxe`} name={a.name} colour={a.colour}
+        lines={[{ text: `Upgrades ${a.upgrades} gear, or any other alloy's`, colour: 'var(--mc-gray)' },
+          ...a.identity.map((text) => ({ text, colour: 'var(--mc-blue)' }))]} />
+    </section>
+  ))}
+</div>
+<style>
+  .alloys { display: grid; gap: 26px; margin: 1.5rem 0 2rem; }
+  .alloy { display: grid; gap: 12px; }
+  .recipe { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .slots { display: flex; gap: 4px; }
+  .ingredient { position: relative; display: inline-block; }
+  .count { position: absolute; right: 4px; bottom: 2px; font-family: var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; font-size: 0.95rem; }
+  .heat { display: inline-flex; align-items: center; gap: 6px; font-style: italic; color: var(--ink-soft); }
+  .arrow { font-family: var(--pixel); font-size: 1.6rem; color: var(--ink-soft); }
+</style>

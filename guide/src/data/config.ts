@@ -20,7 +20,23 @@ export interface RelicRow {
   reward: string; id: string; name: string; family: string; kills: number | null; dropOnly: boolean;
   tier: number; slot: Slot; item: string; edge: number; dye: string | null; trim: string | null;
   enchants: { id: string; level: number; excellent: boolean }[]; perks: string[];
+  /** The alloy it is made of (alloy-shaped relics at tiers I, II and Ascended), and the art to draw. */
+  alloy: string | null; art: string;
 }
+
+export type Heat = 'low' | 'high' | 'soul';
+
+export interface AlloyRow {
+  id: string; name: string; colour: string; heat: Heat; meltSeconds: number;
+  recipe: { item: string; count: number }[]; yield: number;
+  /** Vanilla tier of the gear its template upgrades (any other alloy's gear works too). */
+  upgrades: string;
+  template: { boss: string | null; duplicateBlock: string };
+  /** What it is good at, as players read it: durability, armour, identity attributes, repair. */
+  identity: string[];
+}
+
+export interface AlloyRules { heatBlocks: Record<string, Heat>; maxIngots: number; endless: boolean; cap: number }
 
 export interface WayfarerSet { families: number; reduction: number; hearts: number }
 
@@ -51,6 +67,8 @@ export interface Config {
   bossRules: BossRules | null;
   pity: PityRow[];
   excludedSpawns: string[];
+  alloys: AlloyRow[];
+  alloyRules: AlloyRules | null;
 }
 
 function read(files: GuideFiles, dir: string, file: string): any {
@@ -98,6 +116,42 @@ export function describePerk(p: { type: string; amount?: number; family?: string
   return perk.text(p.amount ?? perk.amount, (p.family ?? '').replace(/_/g, ' '));
 }
 
+const ALLOY_SHAPES = ['sword', 'pickaxe', 'axe', 'shovel', 'hoe', 'spear', 'helmet', 'chestplate', 'leggings', 'boots'];
+/** The alloy shape of a vanilla item (diamond_axe -> axe), or null; mirrors RelicDefinition.alloyShape. */
+export const alloyShape = (item: string) => { const s = item.split('_').pop() ?? ''; return ALLOY_SHAPES.includes(s) ? s : null; };
+
+const percent = (x: number) => `${+(Math.abs(x) * 100).toFixed(1)}%`;
+const per = (to: string) => (to === 'armour' ? ' per armour piece' : '');
+// Mirrors the attributes alloys.yml uses; anything else reads as its own name.
+const BONUSES: Record<string, (a: number, multiply: boolean, to: string) => string> = {
+  luck: (a, _, to) => `+${a} luck${per(to)} (better fishing and chest loot)`,
+  oxygen_bonus: (a, _, to) => `+${a} breath${per(to)}`,
+  water_movement_efficiency: (a, _, to) => `${percent(a)} faster swimming${per(to)}`,
+  submerged_mining_speed: () => 'Tools mine at full speed underwater',
+  burning_time: (a, _, to) => `${percent(a)} shorter burning${per(to)}`,
+  movement_speed: (a, _, to) => `${percent(a)} ${a < 0 ? 'slower' : 'faster'}${per(to)}`,
+};
+
+function identity(a: any): string[] {
+  const t = a.tools ?? {}; const ar = a.armour ?? {};
+  const points: number[] = ar.points ?? [2, 6, 5, 2];
+  const out = [`Tools: ${t.durability ?? 250} durability, mining speed ${t.speed ?? 6}`
+    + (t['damage-bonus'] ? `, +${t['damage-bonus']} damage` : '')];
+  out.push(`Armour: ${points.reduce((x, y) => x + y, 0)} points, toughness ${ar.toughness ?? 0}`
+    + (ar['knockback-resistance'] ? `, knockback resistance ${ar['knockback-resistance']}` : ''));
+  for (const b of a.bonuses ?? []) {
+    const text = BONUSES[b.attribute];
+    out.push(text ? text(b.amount, b.operation === 'multiply', b.to ?? 'all') : `${b.attribute} ${b.amount}`);
+  }
+  if (a.luck?.['fortune-bonus']) out.push(`Tools mine as if Fortune were ${a.luck['fortune-bonus']} higher`);
+  if (a.luck?.['extra-loot-chance']) out.push(`${percent(a.luck['extra-loot-chance'])} chance of extra loot on weapon kills`);
+  if (a.fireproof) out.push('Survives fire and lava');
+  const repair = a.repair ?? {};
+  const items: string[] = (repair.items ?? ['ingot']).map((i: string) => (i === 'ingot' ? `${a.name ?? 'its'} ingots` : i.replace(/_/g, ' ') + 's'));
+  out.push(`Repaired with ${items.join(' or ')}, ${percent(repair.share ?? 0.25)} each`);
+  return out;
+}
+
 /** The pity rule from core: the ceil(1 / chance)-th counted kill in a row without the item drops it. */
 export const pityKills = (chance: number) => Math.ceil(1 / chance - 1e-9);
 
@@ -105,6 +159,7 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   const banners = read(files, dir, 'banners.yml');
   const bosses = read(files, dir, 'bosses.yml');
   const progression = read(files, dir, 'progression.yml');
+  const alloysYml = read(files, dir, 'alloys.yml');
 
   const families = entries(banners.families).map(([id, mobs]) => ({ id, mobs: mobs as string[] }));
 
@@ -134,6 +189,8 @@ export function readConfig(dir: string, files: GuideFiles): Config {
         id: e.replace(/^excellentenchants:/, ''), level: level as number, excellent: e.startsWith('excellentenchants:'),
       })),
       perks: (r.perks ?? []).map((p: any) => describePerk(p)),
+      alloy: r.alloy ?? null,
+      art: r.alloy && alloyShape(r.item) ? `wayfarer:${r.alloy}_${alloyShape(r.item)}` : r.item,
     };
   });
 
@@ -167,7 +224,21 @@ export function readConfig(dir: string, files: GuideFiles): Config {
     id, item: p.item, mobs: p.mobs ?? [], heldItem: p['held-item'] ?? null, chance: p.chance, kills: pityKills(p.chance),
   }));
 
+  const alloys: AlloyRow[] = entries(alloysYml.alloys).map(([id, a]) => ({
+    id, name: a.name ?? id, colour: a.colour ?? '#ffffff', heat: a.heat, meltSeconds: a['melt-seconds'] ?? 30,
+    recipe: entries(a.recipe).map(([item, count]) => ({ item, count: count as number })), yield: a.yield ?? 1,
+    upgrades: a.upgrades ?? a.material ?? 'iron',
+    template: { boss: a.template?.boss ?? null, duplicateBlock: a.template?.['duplicate-block'] ?? 'cobblestone' },
+    identity: identity(a),
+  }));
+  const crucible = alloysYml.crucible ?? {};
+  const alloyRules: AlloyRules | null = alloysYml.alloys ? {
+    heatBlocks: crucible.heat ?? {}, maxIngots: crucible['max-ingots'] ?? 8,
+    endless: alloysYml.anvil?.endless ?? true, cap: alloysYml.anvil?.cap ?? 30,
+  } : null;
+
   return {
+    alloys, alloyRules,
     families, allMobs: banners.counting?.['all-mobs'] ?? null,
     banners: bannerRows, heads, relics,
     wayfarerSet: set ? { families: set.families, reduction: set['damage-reduction'], hearts: set.hearts } : null,

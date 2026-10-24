@@ -1,21 +1,43 @@
 import Crucible from '../components/Crucible.astro';
+import AlloyRecipes from '../components/AlloyRecipes.astro';
+import AlloyTemplates from '../components/AlloyTemplates.astro';
+import { guide } from '../data/repo';
+export const rules = guide().config.alloyRules;
 
-New metals are coming, and they don't come out of a furnace. Each **alloy** is melted in a **crucible** from a base metal and a **catalyst**: something that ties it to a place or a creature in the world. Every alloy has its own tools and armour.
+New metals don't come out of a furnace. Each **alloy** is melted in a **crucible** from a base metal and a **catalyst**: something that ties it to a place or a creature in the world. Every alloy has its own tools and armour, in every vanilla shape from sword to boots.
 
 ## The crucible
 
-A crucible is a cauldron set over a heat source. What's underneath decides its **heat**:
+A crucible is an empty cauldron set over a heat source. What's underneath decides its **heat**, and a hotter crucible melts everything a cooler one can:
 
 <Crucible />
 
-Drop the base metal and the catalyst in at the right heat and a **melt** begins. Wait, and ingots come out.
+- **Load it** by right-clicking with an ingredient; sneak to drop in the whole stack. A label above it shows what's inside and what it's doing.
+- **The melt starts by itself** once the contents match a recipe and the heat is high enough. The order you add things doesn't matter.
+- **Batch it.** Two or three times a recipe gives two or three times the ingots{rules && <>, up to <strong>{rules.maxIngots}</strong> in one melt</>}.
+- **Mistakes cost nothing.** A wrong mix just sits there. Sneak and right-click with an empty hand to take everything back, even mid-melt; breaking the cauldron drops it all too.
+- **Walk away if you like.** A melt pauses if the fire goes out and carries on when it's back, and it keeps going while you're far away, as long as the heat is still there.
+
+Every ingot you forge is counted for whoever started the melt.
 
 ## The six alloys
 
-**Steel** and **bronze** come first, around the time you have iron. **Shakudo** and **electrum** are for the diamond age. **Hepatizon** and **adamant** are the deep end of it.
+**Steel** and **bronze** come first, around the time you have iron. **Shakudo** and **electrum** are for the diamond age. **Hepatizon** needs the Nether's soul fire, and **adamant** the deep dark too.
 
-None of them beat netherite outright; like relics, they're sidegrades, each with its own strengths. The recipes, heats and catalysts will appear here as recipe cards once they're on the server.
+None of them beat netherite outright. Like relics, they're sidegrades, each with one thing it does best.
+
+<AlloyRecipes />
+
+## From ingot to gear
+
+At the smithing table, put in the alloy's **template**, a piece of gear and one of its ingots. Steel and bronze upgrade iron gear; the others upgrade diamond gear. Any piece of alloy gear can also move onto a different alloy the same way, so a favourite pickaxe can follow you through the stages. Enchantments, trims, names and durability all carry over.
 
 ## Alloy templates
 
-To turn your existing gear into an alloy's gear at the smithing table, you need that alloy's **template**. Templates are won from **structure guardians**.
+Templates are won from **structure guardians**: everyone who helped beat one gets its alloy's template. Roaming bosses don't carry them. Once you have one, copy it at a crafting table, the way you would a netherite template: the template in the top middle, seven of its ingots around it, and the block below in the centre, for two templates.
+
+<AlloyTemplates />
+
+## Repairs
+
+Alloy gear repairs on an anvil with its **own ingots** (bronze takes plain copper too); plain iron or diamond won't touch it, and it won't combine with gear of another metal. And the anvil never says "Too Expensive!" any more: {rules && rules.endless ? <>its cost stops growing at <strong>{rules.cap} levels</strong>, so your best gear can be repaired for as long as you can pay.</> : <>it charges what it always has.</>}

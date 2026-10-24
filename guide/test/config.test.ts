@@ -62,6 +62,67 @@ describe('ladders from config', () => {
   });
 });
 
+describe('alloys from config', () => {
+  const ALLOYS = `
+crucible: {heat: {campfire: low}, max-ingots: 8}
+anvil: {endless: true, cap: 30}
+alloys:
+  steel:
+    name: Steel
+    heat: low
+    recipe: {iron_ingot: 4, coal_block: 1}
+    upgrades: iron
+    tools: {durability: 1000, speed: 5.5}
+    armour: {points: [2, 6, 5, 2], toughness: 1}
+    repair: {items: [ingot], share: 0.125}
+    template: {boss: bone_marshal, duplicate-block: tuff_bricks}
+  electrum:
+    name: Electrum
+    heat: high
+    recipe: {gold_ingot: 4}
+    upgrades: diamond
+    bonuses: [{attribute: oxygen_bonus, amount: 1, to: armour}]
+`;
+  const RELICS = `
+families:
+  zombie: [zombie]
+relics:
+  cleaver: { name: Cleaver, family: zombie, kills: 400, tier: 1, item: iron_axe, alloy: steel }
+  bow: { name: Bow, family: zombie, kills: 500, tier: 1, item: bow }
+`;
+  const files = () => ({
+    'config/alloys.yml': ALLOYS, 'config/banners.yml': RELICS,
+    'data/stages.yml': STAGES.replace('rewards: {}', 'rewards:\n  relic:cleaver: iron\n  relic:bow: iron'),
+    'textures/minecraft/item/iron_axe.png': '', 'textures/minecraft/item/bow.png': '',
+    'textures/minecraft/item/coal_block.png': '', 'textures/minecraft/item/gold_ingot.png': '',
+    'textures/wayfarer/item/steel_axe.png': '', 'textures/wayfarer/item/steel_ingot.png': '',
+    'textures/wayfarer/item/steel_template.png': '', 'textures/wayfarer/item/electrum_ingot.png': '',
+    'textures/wayfarer/item/electrum_template.png': '',
+  });
+
+  it('give recipes, heats, template sources and identities', () => {
+    const g = loadFixture(fixture(files()));
+    const [steel, electrum] = g.config.alloys;
+    expect([steel.heat, steel.recipe, steel.upgrades]).toEqual(['low', [{ item: 'iron_ingot', count: 4 }, { item: 'coal_block', count: 1 }], 'iron']);
+    expect(steel.template).toEqual({ boss: 'bone_marshal', duplicateBlock: 'tuff_bricks' });
+    expect(steel.identity).toContain('Tools: 1000 durability, mining speed 5.5');
+    expect(steel.identity).toContain('Repaired with Steel ingots, 12.5% each');
+    expect(electrum.identity).toContain('+1 breath per armour piece');
+    expect(g.config.alloyRules).toEqual({ heatBlocks: { campfire: 'low' }, maxIngots: 8, endless: true, cap: 30 });
+  });
+
+  it('draw relics made of an alloy with the alloy piece', () => {
+    const g = loadFixture(fixture(files()));
+    expect(g.config.relics.map((r) => [r.alloy, r.art])).toEqual([['steel', 'wayfarer:steel_axe'], [null, 'bow']]);
+  });
+
+  it('fail when an alloy ingot has no art', () => {
+    const f = files();
+    delete (f as any)['textures/wayfarer/item/electrum_ingot.png'];
+    expect(() => loadFixture(fixture(f))).toThrow(/wayfarer:electrum_ingot/);
+  });
+});
+
 describe('pity drops', () => {
   it('guarantee the drop at ceil(1 / chance) kills', () => {
     expect(pityKills(0.025)).toBe(40);

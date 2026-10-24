@@ -1,0 +1,35 @@
+---
+// Where each alloy template comes from (its structure guardian) and how to duplicate it. Generated from alloys.yml
+// and bosses.yml.
+import ItemIcon from './ItemIcon.astro';
+import { guide } from '../data/repo';
+import { title, place } from '../data/text';
+
+const { alloys, bosses } = guide().config;
+const rows = alloys.map((a) => {
+  const boss = bosses.find((b) => b.id === a.template.boss);
+  return { a, boss: boss?.name ?? (a.template.boss ? title(a.template.boss) : 'no guardian yet'),
+    where: boss?.structures.map((s) => place(s)).join(' or ') ?? '' };
+});
+---
+<table class="templates">
+  <thead><tr><th>Template</th><th>Won from</th><th>Duplicate with</th></tr></thead>
+  <tbody>
+    {rows.map(({ a, boss, where }) => (
+      <tr>
+        <td><span class="cell"><ItemIcon item={`wayfarer:${a.id}_template`} size={24} />{a.name}</span></td>
+        <td>{boss}{where && <span class="where"> · guardian of the {where.toLowerCase()}</span>}</td>
+        <td><span class="cell">7 <ItemIcon item={`wayfarer:${a.id}_ingot`} size={20} slot={false} /> + 1
+          <ItemIcon item={a.template.duplicateBlock} size={20} slot={false} /> {title(a.template.duplicateBlock)}</span></td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+<style>
+  .templates { width: 100%; border-collapse: collapse; margin: 1rem 0 1.8rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  th { font-family: var(--pixel); font-weight: 400; }
+  .cell { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .where { color: var(--ink-soft); font-style: italic; }
+  @media (max-width: 640px) { th:nth-child(3), td:nth-child(3) { display: none; } }
+</style>

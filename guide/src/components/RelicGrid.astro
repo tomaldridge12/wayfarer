@@ -16,7 +16,7 @@ const TIER_COLOURS = ['var(--mc-white)', 'var(--mc-aqua)', 'var(--mc-purple)', '
 const SLOT = { weapon: 'Weapon', head: 'Helmet', chest: 'Chestplate', legs: 'Leggings', feet: 'Boots', offhand: 'Off-hand charm' };
 
 function lines(r: RelicRow) {
-  const out = [{ text: `${TIER_NAMES[r.tier]} · ${SLOT[r.slot]}`, colour: TIER_COLOURS[r.tier] }];
+  const out = [{ text: `${TIER_NAMES[r.tier]} · ${SLOT[r.slot]}${r.alloy ? ` · ${title(r.alloy)}` : ''}`, colour: TIER_COLOURS[r.tier] }];
   if (r.edge) {
     const who = r.family === 'all' ? 'all mobs' : title(r.family);
     out.push({ text: r.slot === 'weapon' ? `+${r.edge}% damage to ${who}` : `−${r.edge}% damage from ${who}`, colour: 'var(--mc-blue)' });
@@ -42,7 +42,7 @@ const groups: { label: string | null; rows: RelicRow[] }[] =
     <div class="relics">
       {grp.rows.map((r) => (
         <div class="relic">
-          <ItemCard item={r.item} dye={r.dye} name={r.name} colour={TIER_COLOURS[r.tier]} lines={lines(r)} />
+          <ItemCard item={r.art} dye={r.dye} name={r.name} colour={TIER_COLOURS[r.tier]} lines={lines(r)} />
           <StageChip stage={g.stageOf(r.reward)} />
         </div>
       ))}
