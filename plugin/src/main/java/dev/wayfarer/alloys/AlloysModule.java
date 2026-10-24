@@ -50,6 +50,8 @@ public final class AlloysModule implements Module {
         listen(recipes);
         listen(new AlloyGuard(items));
         listen(new AlloyAnvil(() -> rules, items));
+        listen(new ShakudoLuck(() -> rules, items));
+        listen(new GuardianTemplates(plugin.getServer(), () -> rules, items, core.logger()));
         listen(new AlloyRefreshListener(items));
         crucibles = new Crucibles(plugin.getServer(), core.chunkData(), () -> rules, items,
                 (player, activity) -> core.progression().record(player, activity, "crucible"), core.logger());

@@ -28,7 +28,7 @@ final class BossSpawning implements Listener {
 
     /** Spawns a boss and starts tracking it; returns false if it could not. */
     interface Spawn {
-        boolean spawn(BossDefinition boss, BossVariant variant, int stars, Location at, String why);
+        boolean spawn(BossDefinition boss, BossVariant variant, int stars, Location at, String why, boolean guardian);
     }
 
     private final Plugin plugin;
@@ -101,7 +101,7 @@ final class BossSpawning implements Listener {
 
     private boolean appear(BossDefinition boss, int stars, Location at, String why, boolean roaming) {
         BossVariant variant = BossRoster.pickVariant(boss, ThreadLocalRandom.current()::nextDouble);
-        if (!spawn.spawn(boss, variant, stars, at, why)) {
+        if (!spawn.spawn(boss, variant, stars, at, why, !roaming)) {
             return false;
         }
         if (roaming) {

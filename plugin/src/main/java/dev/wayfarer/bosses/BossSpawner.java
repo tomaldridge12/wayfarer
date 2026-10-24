@@ -36,7 +36,7 @@ final class BossSpawner {
         this.scoreboard = scoreboard;
     }
 
-    LivingEntity spawn(BossDefinition boss, BossVariant variant, int stars, StarScale scale, Location at) {
+    LivingEntity spawn(BossDefinition boss, BossVariant variant, int stars, StarScale scale, Location at, boolean guardian) {
         EntityType type = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(variant.entity()));
         Class<? extends LivingEntity> cls = type.getEntityClass().asSubclass(LivingEntity.class);
         int s = StarScale.clamp(stars);
@@ -67,7 +67,7 @@ final class BossSpawner {
             }
             equip(e, variant);
             glow(e, variant.glow());
-            new BossMark(boss.id(), boss.family(), variant.id(), s, at.getBlockX(), at.getBlockY(), at.getBlockZ()).write(e);
+            new BossMark(boss.id(), boss.family(), variant.id(), s, at.getBlockX(), at.getBlockY(), at.getBlockZ(), guardian).write(e);
         });
     }
 

@@ -49,8 +49,8 @@ public final class BossesModule implements Module {
         plugin.getServer().getPluginManager().registerEvents(controller, plugin);
         controller.attachLoaded();
         tick = plugin.getServer().getScheduler().runTaskTimer(plugin, controller::tick, BossController.PERIOD, BossController.PERIOD);
-        spawning = new BossSpawning(plugin, () -> roster, controller, (boss, variant, stars, at, why) -> {
-            controller.attach(spawner.spawn(boss, variant, stars, roster.stars(), at));
+        spawning = new BossSpawning(plugin, () -> roster, controller, (boss, variant, stars, at, why, guardian) -> {
+            controller.attach(spawner.spawn(boss, variant, stars, roster.stars(), at, guardian));
             core.logger().info("[bosses] " + boss.id() + "/" + variant.id() + " ★" + stars + " appeared (" + why + ") at "
                     + at.getBlockX() + "," + at.getBlockY() + "," + at.getBlockZ() + " in " + at.getWorld().getName());
             return true;
@@ -160,7 +160,12 @@ public final class BossesModule implements Module {
                                                 .executes(ctx -> spawn(ctx.getSource().getSender(),
                                                         StringArgumentType.getString(ctx, "boss"),
                                                         StringArgumentType.getString(ctx, "variant"),
-                                                        IntegerArgumentType.getInteger(ctx, "stars")))))));
+                                                        IntegerArgumentType.getInteger(ctx, "stars")))
+                                                .then(Commands.literal("guardian")
+                                                        .executes(ctx -> spawn(ctx.getSource().getSender(),
+                                                                StringArgumentType.getString(ctx, "boss"),
+                                                                StringArgumentType.getString(ctx, "variant"),
+                                                                IntegerArgumentType.getInteger(ctx, "stars"), true)))))));
     }
 
     private void reload(CommandSender sender) {
@@ -183,6 +188,11 @@ public final class BossesModule implements Module {
     }
 
     private int spawn(CommandSender sender, String bossId, String variantId, int stars) {
+        return spawn(sender, bossId, variantId, stars, false);
+    }
+
+    /** {@code guardian}: as if it appeared guarding a structure (for testing guardian-only loot). */
+    private int spawn(CommandSender sender, String bossId, String variantId, int stars, boolean guardian) {
         BossDefinition boss = roster.find(bossId).orElse(null);
         if (boss == null) {
             sender.sendMessage("Unknown boss '" + bossId + "'");
@@ -197,9 +207,9 @@ public final class BossesModule implements Module {
         }
         int s = stars == 0 ? 1 + ThreadLocalRandom.current().nextInt(StarScale.MAX) : stars;
         Location at = spawnPoint(sender);
-        var entity = spawner.spawn(boss, variant, s, roster.stars(), at);
+        var entity = spawner.spawn(boss, variant, s, roster.stars(), at, guardian);
         controller.attach(entity);
-        String text = "Spawned " + boss.id() + "/" + variant.id() + " ★" + s + " at "
+        String text = "Spawned " + boss.id() + "/" + variant.id() + " ★" + s + (guardian ? " as a guardian" : "") + " at "
                 + at.getBlockX() + "," + at.getBlockY() + "," + at.getBlockZ();
         core.logger().info("[bosses] " + text);
         if (sender instanceof Player) {
@@ -216,7 +226,7 @@ public final class BossesModule implements Module {
             for (BossVariant variant : boss.variants()) {
                 Location at = base.clone().add(n * 4, 0, 0);
                 at.setY(at.getWorld().getHighestBlockYAt(at) + 1);
-                controller.attach(spawner.spawn(boss, variant, stars, roster.stars(), at));
+                controller.attach(spawner.spawn(boss, variant, stars, roster.stars(), at, false));
                 n++;
             }
         }
