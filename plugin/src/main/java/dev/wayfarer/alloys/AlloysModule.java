@@ -1,6 +1,7 @@
 package dev.wayfarer.alloys;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.wayfarer.core.Core;
@@ -27,6 +28,8 @@ public final class AlloysModule implements Module {
     private Core core;
     private volatile AlloyRules rules = AlloyRules.empty();
     private AlloyItems items;
+    private Crucibles crucibles;
+    private org.bukkit.scheduler.BukkitTask clock;
 
     public AlloysModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -44,11 +47,22 @@ public final class AlloysModule implements Module {
         load();
         listen(new AlloyGuard(items));
         listen(new AlloyRefreshListener(items));
+        crucibles = new Crucibles(plugin.getServer(), core.chunkData(), () -> rules, items,
+                (player, activity) -> core.progression().record(player, activity, "crucible"), core.logger());
+        listen(crucibles);
+        core.logger().info("Crucibles loaded: " + crucibles.loadAll() + " in loaded chunks");
+        clock = plugin.getServer().getScheduler().runTaskTimer(plugin, crucibles::tick, Crucibles.PERIOD_TICKS, Crucibles.PERIOD_TICKS);
         core.commands().register(id(), commands());
     }
 
     @Override
     public void disable() {
+        if (clock != null) {
+            clock.cancel();
+        }
+        if (crucibles != null) {
+            crucibles.clear();
+        }
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
     }
@@ -108,6 +122,20 @@ public final class AlloysModule implements Module {
                     }
                     return Command.SINGLE_SUCCESS;
                 }))
+                .then(Commands.literal("load")
+                        .then(Commands.argument("x", IntegerArgumentType.integer())
+                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                        .then(Commands.argument("z", IntegerArgumentType.integer())
+                        .then(Commands.argument("world", StringArgumentType.word())
+                        .then(Commands.argument("item", StringArgumentType.word())
+                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
+                        .then(Commands.argument("starter", StringArgumentType.word()).executes(ctx -> {
+                            load(ctx.getSource().getSender(), IntegerArgumentType.getInteger(ctx, "x"),
+                                    IntegerArgumentType.getInteger(ctx, "y"), IntegerArgumentType.getInteger(ctx, "z"),
+                                    StringArgumentType.getString(ctx, "world"), StringArgumentType.getString(ctx, "item"),
+                                    IntegerArgumentType.getInteger(ctx, "count"), StringArgumentType.getString(ctx, "starter"));
+                            return Command.SINGLE_SUCCESS;
+                        })))))))))
                 .then(Commands.literal("give")
                         .then(Commands.argument("player", StringArgumentType.word()).suggests((ctx, b) -> {
                             plugin.getServer().getOnlinePlayers().forEach(p -> b.suggest(p.getName()));
@@ -120,6 +148,27 @@ public final class AlloysModule implements Module {
                                     StringArgumentType.getString(ctx, "item").trim());
                             return Command.SINGLE_SUCCESS;
                         }))));
+    }
+
+    /** Testing tool: loads a crucible as the starter's right-click would (the starter may be offline, by UUID). */
+    private void load(CommandSender sender, int x, int y, int z, String worldName, String item, int count, String starter) {
+        org.bukkit.World world = plugin.getServer().getWorld(worldName);
+        java.util.UUID who;
+        try {
+            who = java.util.UUID.fromString(starter);
+        } catch (IllegalArgumentException e) {
+            Player p = plugin.getServer().getPlayerExact(starter);
+            if (p == null) {
+                sender.sendMessage("No online player named '" + starter + "' (a UUID works for offline players)");
+                return;
+            }
+            who = p.getUniqueId();
+        }
+        if (world == null) {
+            sender.sendMessage("No world named '" + worldName + "'");
+            return;
+        }
+        sender.sendMessage(crucibles.load(world.getBlockAt(x, y, z), item.toLowerCase(java.util.Locale.ROOT), count, who));
     }
 
     private void list(CommandSender sender) {
