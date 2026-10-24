@@ -1,14 +1,23 @@
-# Making reward enchants exclusive (ExcellentEnchants)
+# ExcellentEnchants is rewards only
 
-Wayfarer hands out ExcellentEnchants enchants as rewards: on relics, and as the Veinminer and Treefeller books the mark
-ladders pay. Out of the box, ExcellentEnchants also gives these enchants out through enchanting tables, librarians, mob
-equipment and loot, so a reward would not be special. Wayfarer never edits ExcellentEnchants' files; this page says what to
-change, and Wayfarer warns at startup (and on `/wayfarer reload` or `/wayfarer marks reload`) about any reward enchant that is
-still obtainable elsewhere, or whose max level is below the level a reward gives.
+On this server, no ExcellentEnchants enchant comes from enchanting tables, librarians, mob gear, traders, chests or fishing:
+they come only from Wayfarer's rewards (relics, the Veinminer and Treefeller books from the mark ladders, and later quests
+and the shop). Out of the box ExcellentEnchants gives them out everywhere, so its files need changing once.
 
-## For each enchant below
+## The quick way
 
-Open `plugins/ExcellentEnchants/enchants/<name>.yml` and, under `Distribution:`, set:
+```
+python3 scripts/ee_lockdown.py server/plugins/ExcellentEnchants/enchants
+```
+
+then restart. `scripts/remote.sh sync` does the same on the remote host (once ExcellentEnchants has booted there and
+written its files). The script is idempotent and keeps the files' comments. The Wayfarer plugin itself never edits
+ExcellentEnchants' files; it warns at startup (and on `/wayfarer reload` or `/wayfarer marks reload`) about any ExcellentEnchants enchant
+that is still obtainable elsewhere, and any reward whose max level is below the level it gives.
+
+## What the script sets (by hand, if you prefer)
+
+For every enchant, open `plugins/ExcellentEnchants/enchants/<name>.yml` and, under `Distribution:`, set:
 
 | Setting | Value | Stops it coming from |
 |---|---|---|
@@ -20,11 +29,12 @@ Open `plugins/ExcellentEnchants/enchants/<name>.yml` and, under `Distribution:`,
 | `Discoverable` | `false` | other discovery (e.g. loot tables that pick any enchant) |
 
 Then restart the server (ExcellentEnchants reads these only on boot). The startup log line
-`All N reward enchants are exclusive to Wayfarer` confirms it.
+`All N ExcellentEnchants enchants are reward-only (M given by Wayfarer)` confirms it.
 
 ## Veinminer and Treefeller (the mark books)
 
-Besides the distribution settings above, both books come in three levels, so in `veinminer.yml` and `treefeller.yml`:
+Besides the distribution settings above, both books come in three levels, so the script also sets, in `veinminer.yml` and
+`treefeller.yml`:
 
 | File | Setting | Value | Why |
 |---|---|---|---|
@@ -35,12 +45,6 @@ Besides the distribution settings above, both books come in three levels, so in 
 
 Check the block-limit formula against ExcellentEnchants' own comments in those files when you change them; the aim is a
 small vein at I and a whole tree only at III.
-
-## Every other ExcellentEnchants enchant
-
-The owner's plan is that every ExcellentEnchants enchant is a reward only. The startup check covers the enchants Wayfarer
-already gives; for the rest, the same distribution settings apply, and they will be handed out through objectives and the
-shop (spec 5).
 
 ## Relic enchants in the default kit
 

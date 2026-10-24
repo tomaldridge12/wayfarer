@@ -11,9 +11,10 @@ import org.bukkit.Server;
 import org.bukkit.enchantments.Enchantment;
 
 /**
- * The ExcellentEnchants enchants modules hand out as rewards (relic presets, mark books), and the check that they
- * come from nowhere else: asks ExcellentEnchants how each is distributed and warns about any it still gives out from
- * tables, villagers, mobs or loot, or whose max level is below what a reward gives. Uses reflection on its public API
+ * The ExcellentEnchants enchants modules hand out as rewards (relic presets, mark books), and the check that every
+ * ExcellentEnchants enchant is a reward only (the owner's rule): asks ExcellentEnchants how each is distributed and
+ * warns about any it still gives out from tables, villagers, mobs or loot, and about rewards whose max level is below
+ * what a reward gives. Uses reflection on its public API
  * (EnchantRegistry.getById, CustomEnchantment.getDistribution), so the plugin stays optional. Never edits its files.
  * Main thread.
  */
@@ -51,8 +52,14 @@ public final class RewardEnchants {
     public void check() {
         org.bukkit.plugin.Plugin excellent = server.getPluginManager().getPlugin("ExcellentEnchants");
         Map<String, Integer> given = all();
-        if (excellent == null || given.isEmpty()) {
+        if (excellent == null) {
             return;
+        }
+        java.util.Set<String> keys = new java.util.TreeSet<>(given.keySet());
+        for (Enchantment e : Registry.ENCHANTMENT) {
+            if (e.getKey().getNamespace().equals("excellentenchants")) {
+                keys.add(e.getKey().toString());
+            }
         }
         Map<String, EnchantExclusivity.Distribution> reported = new LinkedHashMap<>();
         Map<String, Integer> max = new LinkedHashMap<>();
@@ -63,7 +70,7 @@ public final class RewardEnchants {
             Class<?> custom = Class.forName("su.nightexpress.excellentenchants.api.enchantment.CustomEnchantment", true, loader);
             Method byId = api.getMethod("getById", String.class);
             Method distribution = custom.getMethod("getDistribution");
-            for (String key : given.keySet()) {
+            for (String key : keys) {
                 Object enchant = byId.invoke(null, key.substring(key.indexOf(':') + 1));
                 if (enchant == null) {
                     continue; // the module's own config check reports unknown enchants
@@ -86,12 +93,22 @@ public final class RewardEnchants {
         EnchantExclusivity.levelProblems(given, max).forEach((key, fix) ->
                 problems.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(fix));
         if (problems.isEmpty()) {
-            log.info("All " + reported.size() + " reward enchants are exclusive to Wayfarer");
+            log.info("All " + reported.size() + " ExcellentEnchants enchants are reward-only (" + given.size()
+                    + " given by Wayfarer)");
             return;
         }
-        log.warning(problems.size() + " reward enchants can still be found outside Wayfarer or are capped too low. In "
-                + "plugins/ExcellentEnchants/enchants/<name>.yml set these, then restart (see docs/wayfarer-relic-enchants.md):");
-        problems.forEach((key, fixes) -> log.warning("  " + key + ": " + String.join(", ", fixes)));
+        log.warning(problems.size() + " ExcellentEnchants enchants can still be found outside Wayfarer rewards or are capped"
+                + " too low. Run scripts/ee_lockdown.py on plugins/ExcellentEnchants/enchants and restart"
+                + " (docs/wayfarer-relic-enchants.md). Wayfarer's own rewards:");
+        problems.forEach((key, fixes) -> {
+            if (given.containsKey(key)) {
+                log.warning("  " + key + ": " + String.join(", ", fixes));
+            }
+        });
+        List<String> others = problems.keySet().stream().filter(k -> !given.containsKey(k)).toList();
+        if (!others.isEmpty()) {
+            log.warning("  and " + others.size() + " more: " + String.join(", ", others));
+        }
     }
 
     private static boolean flag(Object distribution, String method) throws ReflectiveOperationException {

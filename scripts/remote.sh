@@ -2,7 +2,8 @@
 # Install and update the Paper server on the remote host. Usage: scripts/remote.sh <command>
 #   key      one-time: copy your default SSH key to the host (needs one from ssh-keygen; you type the password)
 #   setup    create ~/minecraft, download Paper, BlueMap, Chunky, Terralith, Incendium, Nullscape and Structory, write start.sh
-#   sync     build the Wayfarer jar and rsync it plus the other plugin jars to ~/minecraft/plugins
+#   sync     build the Wayfarer jar and rsync it plus the other plugin jars to ~/minecraft/plugins, then enchants
+#   enchants make every ExcellentEnchants enchant reward-only on the host (scripts/ee_lockdown.py; restart to apply)
 #   all      setup then sync
 # Override with REMOTE=user@host REMOTE_DIR=minecraft PAPER_VERSION=26.3
 set -euo pipefail
@@ -66,13 +67,24 @@ cmd_sync() {
   cp "$jar" "$stage/Wayfarer.jar"
   for p in "${LOCAL_PLUGINS[@]}"; do cp "server/plugins/$p" "$stage/"; done
   rsync -avz --checksum "$stage"/ "$REMOTE:$REMOTE_DIR/plugins/"
-  echo "Synced. Restart the server on the host to load new jars (plugin configs on the host are left alone)."
+  cmd_enchants
+  echo "Synced. Restart the server on the host to load new jars (Wayfarer's configs on the host are left alone)."
+}
+
+cmd_enchants() {
+  # ExcellentEnchants writes its enchant files on its first boot; until then there is nothing to lock down.
+  if rsh "test -d ~/$REMOTE_DIR/plugins/ExcellentEnchants/enchants"; then
+    rsh "python3 - ~/$REMOTE_DIR/plugins/ExcellentEnchants/enchants" < scripts/ee_lockdown.py | tail -1
+  else
+    echo "ExcellentEnchants has not booted on the host yet; run 'scripts/remote.sh enchants' after its first start"
+  fi
 }
 
 case "${1:-}" in
   key) cmd_key ;;
   setup) cmd_setup ;;
   sync) cmd_sync ;;
+  enchants) cmd_enchants ;;
   all) cmd_setup; cmd_sync ;;
-  *) sed -n '2,8p' "$0"; exit 1 ;;
+  *) sed -n '2,9p' "$0"; exit 1 ;;
 esac
