@@ -5,3 +5,12 @@ server/
 *.iml
 .DS_Store
 boot.log
+# Agent process files stay local; the GitHub repo is public and holds code and player-facing docs only.
+.scratch/
+AGENTS.md
+CLAUDE.md
+CODING_STANDARDS.md
+GLOSSARY.md
+TASKS.md
+docs/adr/
+docs/agents/
