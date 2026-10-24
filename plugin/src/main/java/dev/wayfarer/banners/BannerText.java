@@ -229,7 +229,7 @@ public final class BannerText {
     static final TextColor EARNED = TextColor.color(0xFFC94A);
 
     /**
-     * The /mobbanners progress card: a header, the all-mobs count, then each family with its rewards as
+     * The /wayfarer progress card: a header, the all-mobs count, then each family with its rewards as
      * fixed-width bars (chat is not monospaced, so bars go first to line up). Hovering a reward shows its item
      * tooltip; with {@code claimButtons}, earned rewards get a clickable claim.
      */
@@ -271,7 +271,7 @@ public final class BannerText {
                     .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(
                             plain("Get another " + reward.name() + " if you lost yours", NamedTextColor.GRAY)))
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand(
-                            "/mobbanners claim " + reward.rewardKey())));
+                            "/wayfarer claim " + reward.rewardKey())));
         }
         return line;
     }

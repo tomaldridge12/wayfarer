@@ -1,13 +1,13 @@
 package dev.wayfarer.bosses;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.Module;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.Location;
@@ -57,8 +57,7 @@ public final class BossesModule implements Module {
         }, core.logger());
         plugin.getServer().getPluginManager().registerEvents(spawning, plugin);
         guardianTask = plugin.getServer().getScheduler().runTaskTimer(plugin, spawning::checkGuardians, 40, 40);
-        plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
-                event.registrar().register(commands()));
+        core.commands().register(id(), commands());
     }
 
     @Override
@@ -93,77 +92,75 @@ public final class BossesModule implements Module {
                 + BossSpawning.countRules(r, true) + " guard structures");
     }
 
-    private com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> commands() {
-        return Commands.literal("wayfarer")
+    private LiteralArgumentBuilder<CommandSourceStack> commands() {
+        return Commands.literal("boss")
                 .requires(s -> s.getSender().hasPermission(ADMIN_PERMISSION))
-                .then(Commands.literal("boss")
-                        .then(Commands.literal("list").executes(ctx -> {
-                            ctx.getSource().getSender().sendMessage(BossText.list(roster));
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                        .then(Commands.literal("here").executes(ctx -> {
-                            if (ctx.getSource().getSender() instanceof Player p) {
-                                spawning.here(p).forEach(p::sendMessage);
-                            } else {
-                                ctx.getSource().getSender().sendMessage("Run this in game");
+                .then(Commands.literal("list").executes(ctx -> {
+                    ctx.getSource().getSender().sendMessage(BossText.list(roster));
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("here").executes(ctx -> {
+                    if (ctx.getSource().getSender() instanceof Player p) {
+                        spawning.here(p).forEach(p::sendMessage);
+                    } else {
+                        ctx.getSource().getSender().sendMessage("Run this in game");
+                    }
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("killall").executes(ctx -> {
+                    ctx.getSource().getSender().sendMessage("Removed " + controller.removeAll() + " bosses");
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("defeat")
+                        .then(Commands.argument("player", StringArgumentType.word()).executes(ctx -> {
+                            String who = StringArgumentType.getString(ctx, "player");
+                            java.util.UUID id;
+                            try {
+                                id = java.util.UUID.fromString(who);
+                            } catch (IllegalArgumentException e) {
+                                Player p = plugin.getServer().getPlayerExact(who);
+                                if (p == null) {
+                                    ctx.getSource().getSender().sendMessage("Unknown player '" + who + "'");
+                                    return 0;
+                                }
+                                id = p.getUniqueId();
                             }
+                            ctx.getSource().getSender().sendMessage("Defeated " + controller.defeatAll(id) + " bosses");
                             return Command.SINGLE_SUCCESS;
-                        }))
-                        .then(Commands.literal("killall").executes(ctx -> {
-                            ctx.getSource().getSender().sendMessage("Removed " + controller.removeAll() + " bosses");
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                        .then(Commands.literal("defeat")
-                                .then(Commands.argument("player", StringArgumentType.word()).executes(ctx -> {
-                                    String who = StringArgumentType.getString(ctx, "player");
-                                    java.util.UUID id;
-                                    try {
-                                        id = java.util.UUID.fromString(who);
-                                    } catch (IllegalArgumentException e) {
-                                        Player p = plugin.getServer().getPlayerExact(who);
-                                        if (p == null) {
-                                            ctx.getSource().getSender().sendMessage("Unknown player '" + who + "'");
-                                            return 0;
-                                        }
-                                        id = p.getUniqueId();
-                                    }
-                                    ctx.getSource().getSender().sendMessage("Defeated " + controller.defeatAll(id) + " bosses");
+                        })))
+                .then(Commands.literal("reload").executes(ctx -> {
+                    reload(ctx.getSource().getSender());
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(Commands.literal("spawnall")
+                        .then(Commands.argument("stars", IntegerArgumentType.integer(1, StarScale.MAX))
+                                .executes(ctx -> {
+                                    spawnAll(ctx.getSource().getSender(), IntegerArgumentType.getInteger(ctx, "stars"));
                                     return Command.SINGLE_SUCCESS;
                                 })))
-                        .then(Commands.literal("reload").executes(ctx -> {
-                            reload(ctx.getSource().getSender());
-                            return Command.SINGLE_SUCCESS;
-                        }))
-                        .then(Commands.literal("spawnall")
-                                .then(Commands.argument("stars", IntegerArgumentType.integer(1, StarScale.MAX))
-                                        .executes(ctx -> {
-                                            spawnAll(ctx.getSource().getSender(), IntegerArgumentType.getInteger(ctx, "stars"));
-                                            return Command.SINGLE_SUCCESS;
-                                        })))
-                        .then(Commands.literal("spawn")
-                                .then(Commands.argument("boss", StringArgumentType.word())
+                .then(Commands.literal("spawn")
+                        .then(Commands.argument("boss", StringArgumentType.word())
+                                .suggests((ctx, b) -> {
+                                    roster.bosses().keySet().forEach(b::suggest);
+                                    return b.buildFuture();
+                                })
+                                .executes(ctx -> spawn(ctx.getSource().getSender(),
+                                        StringArgumentType.getString(ctx, "boss"), "random", 0))
+                                .then(Commands.argument("variant", StringArgumentType.word())
                                         .suggests((ctx, b) -> {
-                                            roster.bosses().keySet().forEach(b::suggest);
+                                            roster.find(StringArgumentType.getString(ctx, "boss"))
+                                                    .ifPresent(boss -> boss.variants().forEach(v -> b.suggest(v.id())));
+                                            b.suggest("random");
                                             return b.buildFuture();
                                         })
                                         .executes(ctx -> spawn(ctx.getSource().getSender(),
-                                                StringArgumentType.getString(ctx, "boss"), "random", 0))
-                                        .then(Commands.argument("variant", StringArgumentType.word())
-                                                .suggests((ctx, b) -> {
-                                                    roster.find(StringArgumentType.getString(ctx, "boss"))
-                                                            .ifPresent(boss -> boss.variants().forEach(v -> b.suggest(v.id())));
-                                                    b.suggest("random");
-                                                    return b.buildFuture();
-                                                })
+                                                StringArgumentType.getString(ctx, "boss"),
+                                                StringArgumentType.getString(ctx, "variant"), 0))
+                                        .then(Commands.argument("stars", IntegerArgumentType.integer(1, StarScale.MAX))
                                                 .executes(ctx -> spawn(ctx.getSource().getSender(),
                                                         StringArgumentType.getString(ctx, "boss"),
-                                                        StringArgumentType.getString(ctx, "variant"), 0))
-                                                .then(Commands.argument("stars", IntegerArgumentType.integer(1, StarScale.MAX))
-                                                        .executes(ctx -> spawn(ctx.getSource().getSender(),
-                                                                StringArgumentType.getString(ctx, "boss"),
-                                                                StringArgumentType.getString(ctx, "variant"),
-                                                                IntegerArgumentType.getInteger(ctx, "stars"))))))))
-                .build();
+                                                        StringArgumentType.getString(ctx, "variant"),
+                                                        IntegerArgumentType.getInteger(ctx, "stars")))))));
     }
 
     private void reload(CommandSender sender) {

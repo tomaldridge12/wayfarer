@@ -7,40 +7,41 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.List;
 
-/** The /mobbanners command tree; each branch has an explicit permission and does its work in the module. */
+/** The banners subcommands under /wayfarer (and /mobbanners); each has an explicit permission and does its work in the module. */
 final class BannerCommands {
     private BannerCommands() {
     }
 
-    static LiteralCommandNode<CommandSourceStack> build(BannersModule m) {
-        return Commands.literal("mobbanners")
-                .then(Commands.literal("reload")
+    static List<LiteralArgumentBuilder<CommandSourceStack>> build(BannersModule m) {
+        return List.of(
+                Commands.literal("reload")
                         .requires(s -> s.getSender().hasPermission(BannersModule.RELOAD_PERMISSION))
-                        .executes(ctx -> run(() -> m.reload(ctx.getSource().getSender()))))
-                .then(Commands.literal("give")
+                        .executes(ctx -> run(() -> m.reload(ctx.getSource().getSender()))),
+                Commands.literal("give")
                         .requires(s -> s.getSender().hasPermission(BannersModule.GIVE_PERMISSION))
                         .then(player(m).then(banner(m).executes(ctx -> run(() -> m.give(
                                 ctx.getSource().getSender(),
                                 StringArgumentType.getString(ctx, "player"),
-                                StringArgumentType.getString(ctx, "banner")))))))
-                .then(Commands.literal("progress")
+                                StringArgumentType.getString(ctx, "banner")))))),
+                Commands.literal("progress")
                         .requires(s -> s.getSender().hasPermission(BannersModule.PROGRESS_PERMISSION))
                         .executes(ctx -> run(() -> m.progress(ctx.getSource().getSender(), null)))
                         .then(player(m)
                                 .requires(s -> s.getSender().hasPermission(BannersModule.PROGRESS_OTHERS_PERMISSION))
                                 .executes(ctx -> run(() -> m.progress(ctx.getSource().getSender(),
-                                        StringArgumentType.getString(ctx, "player"))))))
-                .then(Commands.literal("setkills")
+                                        StringArgumentType.getString(ctx, "player"))))),
+                Commands.literal("setkills")
                         .requires(s -> s.getSender().hasPermission(BannersModule.SETKILLS_PERMISSION))
                         .then(player(m).then(banner(m).then(
                                 Commands.argument("kills", IntegerArgumentType.integer(0))
                                         .executes(ctx -> run(() -> m.setKills(ctx.getSource().getSender(),
                                                 StringArgumentType.getString(ctx, "player"),
                                                 StringArgumentType.getString(ctx, "banner"),
-                                                IntegerArgumentType.getInteger(ctx, "kills"))))))))
-                .then(Commands.literal("place")
+                                                IntegerArgumentType.getInteger(ctx, "kills"))))))),
+                Commands.literal("place")
                         .requires(s -> s.getSender().hasPermission(BannersModule.PLACE_PERMISSION))
                         .then(banner(m).then(Commands.argument("x", IntegerArgumentType.integer())
                                 .then(Commands.argument("y", IntegerArgumentType.integer())
@@ -48,8 +49,8 @@ final class BannerCommands {
                                                 .executes(ctx -> run(() -> place(m, ctx, null)))
                                                 .then(Commands.argument("world", StringArgumentType.word())
                                                         .executes(ctx -> run(() -> place(m, ctx,
-                                                                StringArgumentType.getString(ctx, "world"))))))))))
-                .then(Commands.literal("placehead")
+                                                                StringArgumentType.getString(ctx, "world"))))))))),
+                Commands.literal("placehead")
                         .requires(s -> s.getSender().hasPermission(BannersModule.PLACE_PERMISSION))
                         .then(player(m).then(Commands.argument("head", StringArgumentType.word())
                                 .then(Commands.argument("x", IntegerArgumentType.integer())
@@ -61,18 +62,17 @@ final class BannerCommands {
                                                                 StringArgumentType.getString(ctx, "head"),
                                                                 IntegerArgumentType.getInteger(ctx, "x"),
                                                                 IntegerArgumentType.getInteger(ctx, "y"),
-                                                                IntegerArgumentType.getInteger(ctx, "z"))))))))))
-                .then(Commands.literal("forcedrop")
+                                                                IntegerArgumentType.getInteger(ctx, "z"))))))))),
+                Commands.literal("forcedrop")
                         .requires(s -> s.getSender().hasPermission(BannersModule.FORCEDROP_PERMISSION))
                         .then(player(m).then(reward(m, false).executes(ctx -> run(() -> m.forceDrop(
                                 ctx.getSource().getSender(),
                                 StringArgumentType.getString(ctx, "player"),
-                                StringArgumentType.getString(ctx, "reward")))))))
-                .then(Commands.literal("claim")
+                                StringArgumentType.getString(ctx, "reward")))))),
+                Commands.literal("claim")
                         .requires(s -> s.getSender().hasPermission(BannersModule.CLAIM_PERMISSION))
                         .then(reward(m, true).executes(ctx -> run(() -> m.claim(ctx.getSource().getSender(),
-                                StringArgumentType.getString(ctx, "reward"))))))
-                .build();
+                                StringArgumentType.getString(ctx, "reward"))))));
     }
 
     private static void place(BannersModule m, CommandContext<CommandSourceStack> ctx, String world) {

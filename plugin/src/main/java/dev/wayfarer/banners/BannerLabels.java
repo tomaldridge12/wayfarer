@@ -69,7 +69,7 @@ final class BannerLabels {
         shown.clear();
     }
 
-    /** Re-renders every label, for /mobbanners reload. */
+    /** Re-renders every label, for /wayfarer reload. */
     int refresh(PlacedBannerRegistry registry) {
         return refreshWhere(registry, record -> true);
     }

@@ -2,7 +2,7 @@
 
 Wayfarer's relics come with ExcellentEnchants enchants. Out of the box, ExcellentEnchants also gives these enchants out through
 enchanting tables, librarians, mob equipment and loot, so a relic's enchant would not be special. Wayfarer never edits
-ExcellentEnchants' files; this page says what to change, and Wayfarer warns at startup (and on `/mobbanners reload`) about any
+ExcellentEnchants' files; this page says what to change, and Wayfarer warns at startup (and on `/wayfarer reload`) about any
 reward enchant that is still obtainable elsewhere.
 
 ## For each enchant below

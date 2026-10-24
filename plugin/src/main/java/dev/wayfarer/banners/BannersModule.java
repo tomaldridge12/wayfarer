@@ -3,7 +3,6 @@ package dev.wayfarer.banners;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.Module;
 import dev.wayfarer.core.PlayerStore;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,8 +113,8 @@ public final class BannersModule implements Module {
             store.flush();
             drops.forgetStale(plugin.getServer().getCurrentTick());
         }, SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
-        plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
-                event.registrar().register(BannerCommands.build(this)));
+        BannerCommands.build(this).forEach(sub -> core.commands().register(id(), sub));
+        core.commands().alias(id(), "mobbanners");
     }
 
     @Override
@@ -488,7 +487,7 @@ public final class BannersModule implements Module {
     void progress(CommandSender sender, String targetName) {
         UUID target = targetName == null ? ownId(sender) : resolve(targetName);
         if (target == null) {
-            sender.sendMessage(targetName == null ? "Name a player: /mobbanners progress <player>"
+            sender.sendMessage(targetName == null ? "Name a player: /wayfarer progress <player>"
                     : "Unknown player '" + targetName + "' (use their UUID if they have not joined recently)");
             return;
         }
@@ -522,7 +521,7 @@ public final class BannersModule implements Module {
             }
             sender.sendMessage("Set " + target + " " + result.get().families().getFirst() + " kills to " + kills
                     + "; newly earned: " + result.get().newlyEarned().stream().map(BannersModule::describe).toList()
-                    + (online == null && !result.get().newlyEarned().isEmpty() ? " (offline: use /mobbanners claim)" : ""));
+                    + (online == null && !result.get().newlyEarned().isEmpty() ? " (offline: use /wayfarer claim)" : ""));
         });
     }
 
