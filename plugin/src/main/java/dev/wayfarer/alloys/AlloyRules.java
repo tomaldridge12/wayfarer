@@ -62,10 +62,14 @@ public final class AlloyRules {
             boolean fireproof) {
     }
 
-    /** The base slot of the smithing table: a vanilla item, or alloy gear (and whether it is a relic). */
-    public record SmithBase(String itemKey, Gear gear, boolean relic) {
+    /** The base slot of the smithing table: a vanilla item, or alloy gear. */
+    public record SmithBase(String itemKey, Gear gear) {
         public static SmithBase vanilla(String itemKey) {
-            return new SmithBase(itemKey, null, false);
+            return new SmithBase(itemKey, null);
+        }
+
+        public static SmithBase alloy(Gear gear) {
+            return new SmithBase(null, gear);
         }
     }
 
@@ -190,10 +194,11 @@ public final class AlloyRules {
 
     /**
      * What template + base + ingot make: the template's alloy in the base's shape, when the ingot is the same alloy
-     * and the base is vanilla gear of the tier that alloy upgrades, or another alloy's gear. Relics never upgrade.
+     * and the base is vanilla gear of the tier that alloy upgrades, or another alloy's gear. (Relics are refused by
+     * the banners module, which owns them.)
      */
     public Optional<Gear> smith(String templateAlloy, SmithBase base, String ingotAlloy) {
-        if (templateAlloy == null || !templateAlloy.equals(ingotAlloy) || base == null || base.relic()) {
+        if (templateAlloy == null || !templateAlloy.equals(ingotAlloy) || base == null) {
             return Optional.empty();
         }
         Optional<AlloyDefinition> alloy = alloy(templateAlloy);
@@ -204,7 +209,7 @@ public final class AlloyRules {
             return base.gear().alloy().equals(templateAlloy) ? Optional.empty()
                     : Optional.of(new Gear(templateAlloy, base.gear().shape()));
         }
-        return GearShape.ofVanilla(base.itemKey()).filter(v -> v.tier().equals(alloy.get().upgrades()))
+        return base.itemKey() == null ? Optional.empty() : GearShape.ofVanilla(base.itemKey()).filter(v -> v.tier().equals(alloy.get().upgrades()))
                 .map(v -> new Gear(templateAlloy, v.shape()));
     }
 

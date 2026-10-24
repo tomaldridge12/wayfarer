@@ -29,6 +29,7 @@ public final class AlloysModule implements Module {
     private volatile AlloyRules rules = AlloyRules.empty();
     private AlloyItems items;
     private Crucibles crucibles;
+    private AlloyRecipes recipes;
     private org.bukkit.scheduler.BukkitTask clock;
 
     public AlloysModule(JavaPlugin plugin) {
@@ -44,7 +45,9 @@ public final class AlloysModule implements Module {
     public void enable(Core core) throws Exception {
         this.core = core;
         items = new AlloyItems(core.itemTags(), () -> rules);
+        recipes = new AlloyRecipes(plugin.getServer(), () -> rules, items);
         load();
+        listen(recipes);
         listen(new AlloyGuard(items));
         listen(new AlloyRefreshListener(items));
         crucibles = new Crucibles(plugin.getServer(), core.chunkData(), () -> rules, items,
@@ -62,6 +65,9 @@ public final class AlloysModule implements Module {
         }
         if (crucibles != null) {
             crucibles.clear();
+        }
+        if (recipes != null) {
+            recipes.unregister();
         }
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
@@ -95,6 +101,9 @@ public final class AlloysModule implements Module {
             }
         }
         core.logger().info("Alloy gear built: " + built + " of " + all);
+        int[] made = recipes.register();
+        core.logger().info("Alloy recipes registered: " + made[0] + " smithing upgrades, " + made[1]
+                + " template duplications (" + made[2] + " live)");
         for (String sample : List.of("steel_pickaxe", "adamant_chestplate")) {
             items.byName(sample, 1).ifPresent(i -> core.logger().info("Alloy gear check: " + AlloyItems.describe(i)));
         }
