@@ -109,6 +109,26 @@ public final class ProgressionEngine {
         return firstVisit ? record(data, Activity.DISCOVER + ":structure/" + structure) : Outcome.NOT_COUNTED;
     }
 
+    /**
+     * Items a player holds (activity targets); each not held before counts once as {@code find:<item>} and stays at 1,
+     * like a biome. One outcome for the lot.
+     */
+    public Outcome find(ProgressionData data, java.util.Collection<String> items) {
+        List<String> found = new ArrayList<>();
+        for (String item : items) {
+            String activity = Activity.FIND + ":" + item;
+            if (data.count(activity) == 0 && !found.contains(activity)) {
+                found.add(activity);
+            }
+        }
+        return found.isEmpty() ? Outcome.NOT_COUNTED : record(data, found);
+    }
+
+    /** The first brush of a suspicious block whose loot was not rolled yet ({@code block} is an activity target). */
+    public Outcome brush(ProgressionData data, String block) {
+        return record(data, Activity.BRUSH + ":" + block);
+    }
+
     /** Items a player crafted: {@code craft:<item>} goes up by the amount made. */
     public Outcome craft(ProgressionData data, String item, int amount) {
         if (amount <= 0) {

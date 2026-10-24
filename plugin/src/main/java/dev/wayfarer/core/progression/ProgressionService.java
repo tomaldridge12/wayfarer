@@ -51,6 +51,7 @@ public final class ProgressionService implements Progression {
     static final String SETCOUNT_PERMISSION = "wayfarer.progression.setcount";
     private static final long SAVE_INTERVAL_TICKS = 20L * 60;
     private static final long PRESENCE_TICKS = 40;
+    private static final long FIND_SCAN_TICKS = 200;
     private static final NamespacedKey VISITORS = new NamespacedKey("wayfarer", "progression_visitors");
 
     private record OwnedType(String owner, RewardType type) {
@@ -68,6 +69,7 @@ public final class ProgressionService implements Progression {
     private ProgressionListener listener;
     private BukkitTask saveTask;
     private BukkitTask presenceTask;
+    private BukkitTask findTask;
 
     public ProgressionService(JavaPlugin plugin, Core core) {
         this.plugin = plugin;
@@ -90,6 +92,8 @@ public final class ProgressionService implements Progression {
                 SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
         presenceTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::presence,
                 PRESENCE_TICKS, PRESENCE_TICKS);
+        findTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::scanFinds,
+                FIND_SCAN_TICKS, FIND_SCAN_TICKS);
         core.commands().register(OWNER, progressCommand());
         core.commands().register(OWNER, claimCommand());
         core.commands().register(OWNER, statsCommand());
@@ -102,6 +106,9 @@ public final class ProgressionService implements Progression {
         }
         if (presenceTask != null) {
             presenceTask.cancel();
+        }
+        if (findTask != null) {
+            findTask.cancel();
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
@@ -299,6 +306,38 @@ public final class ProgressionService implements Progression {
                             StructureVisitors.with(visitors, player.getUniqueId()));
                     act(player, (e, data) -> e.discoverStructure(data, Activity.target(key.getNamespace(), key.getKey()), true));
                 }
+            }
+        }
+    }
+
+    /**
+     * The activity target an item counts under: its Wayfarer id ({@code wayfarer:fish/arapaima}) or its material
+     * ({@code cod}). Empty for an item of a module that is not running, which counts as nothing.
+     */
+    Optional<String> target(ItemStack item) {
+        String id = core.itemTags().readId(item);
+        if (id != null) {
+            return core.itemIds().target(id);
+        }
+        NamespacedKey key = item.getType().getKey();
+        return Optional.of(Activity.target(key.getNamespace(), key.getKey()));
+    }
+
+    /** Every online player's inventory, every 10 seconds: anything held for the first time counts as found. */
+    private void scanFinds() {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            ProgressionData data = store.cached(player.getUniqueId());
+            if (data == null) {
+                continue;
+            }
+            java.util.Set<String> held = new java.util.LinkedHashSet<>();
+            for (ItemStack stack : player.getInventory().getContents()) {
+                if (stack != null && !stack.isEmpty()) {
+                    target(stack).filter(t -> data.count(Activity.FIND + ":" + t) == 0).ifPresent(held::add);
+                }
+            }
+            if (!held.isEmpty()) {
+                act(player, (e, d) -> e.find(d, held));
             }
         }
     }

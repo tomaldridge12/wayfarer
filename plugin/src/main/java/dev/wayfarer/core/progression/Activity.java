@@ -11,6 +11,10 @@ public final class Activity {
     public static final String BREED = "breed";
     public static final String DISCOVER = "discover";
     public static final String CRAFT = "craft";
+    /** An item held at least once; stays at 1. */
+    public static final String FIND = "find";
+    /** Brushing started on a suspicious block whose loot was not rolled yet. */
+    public static final String BRUSH = "brush";
 
     /**
      * Blocks whose fully grown break is also a harvest. Melons and pumpkins only exist grown; stems and

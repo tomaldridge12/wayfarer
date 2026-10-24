@@ -10,6 +10,7 @@ import org.bukkit.plugin.Plugin;
 
 /** Marks items with a module-owned value in their persistent data; invisible and needs no resource pack. */
 public final class ItemTagService {
+    private static final String ID = "item_id";
     private final Plugin plugin;
 
     public ItemTagService(Plugin plugin) {
@@ -44,6 +45,19 @@ public final class ItemTagService {
         }
         ItemMeta meta = item.getItemMeta();
         return ItemTags.read(holder(meta.getPersistentDataContainer()), module);
+    }
+
+    /** Gives an item its Wayfarer id ({@code fish}, {@code arapaima}), which activities count it under (see {@link ItemIds}). */
+    public void writeId(ItemStack item, String kind, String id) {
+        item.editPersistentDataContainer(pdc -> pdc.set(new NamespacedKey(plugin, ID), PersistentDataType.STRING, kind + "/" + id));
+    }
+
+    /** The item's Wayfarer id ({@code fish/arapaima}), or null. Cheap: reads the data without copying the meta. */
+    public String readId(ItemStack item) {
+        if (item == null || item.isEmpty() || !item.hasItemMeta()) {
+            return null;
+        }
+        return item.getPersistentDataContainer().get(new NamespacedKey(plugin, ID), PersistentDataType.STRING);
     }
 
     private ItemTags.Holder holder(PersistentDataContainer pdc) {

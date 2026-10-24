@@ -29,6 +29,8 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private PackService pack;
     private final CommandTree<CommandSourceStack> commands = new CommandTree<>("wayfarer");
     private final ItemMakers<ItemStack> itemMakers = new ItemMakers<>();
+    private final dev.wayfarer.core.ItemIds itemIds = new dev.wayfarer.core.ItemIds();
+    private final dev.wayfarer.core.Services services = new dev.wayfarer.core.Services();
     private RewardEnchants rewardEnchants;
 
     @Override
@@ -101,6 +103,16 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public ItemMakers<ItemStack> itemMakers() {
         return itemMakers;
+    }
+
+    @Override
+    public dev.wayfarer.core.Services services() {
+        return services;
+    }
+
+    @Override
+    public dev.wayfarer.core.ItemIds itemIds() {
+        return itemIds;
     }
 
     @Override

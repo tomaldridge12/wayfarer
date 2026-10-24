@@ -20,6 +20,12 @@ public interface Core {
     /** Items modules make for each other by key ({@code alloy:steel_axe}). Main thread. */
     ItemMakers<org.bukkit.inventory.ItemStack> itemMakers();
 
+    /** Wayfarer ids of custom items, which activities count them under ({@code catch:wayfarer:fish/arapaima}). Main thread. */
+    ItemIds itemIds();
+
+    /** What modules offer each other by interface (curio boosts, wayfinding, tokens). Main thread. */
+    Services services();
+
     /** ExcellentEnchants enchants modules give as rewards, checked to be exclusive to Wayfarer. Main thread. */
     RewardEnchants rewardEnchants();
 

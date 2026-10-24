@@ -95,11 +95,40 @@ final class ProgressionListener implements Listener {
         service.act(event.getPlayer(), (engine, data) -> engine.mine(data, target(block.getType()), grown));
     }
 
+    /** A Wayfarer item caught (an Almanac fish) counts under its own id: {@code catch:wayfarer:fish/arapaima}. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onFish(PlayerFishEvent event) {
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH && event.getCaught() instanceof Item item) {
-            String caught = Activity.CATCH + ":" + target(item.getItemStack().getType());
-            service.act(event.getPlayer(), (engine, data) -> engine.record(data, caught));
+            service.target(item.getItemStack()).ifPresent(target -> {
+                service.act(event.getPlayer(), (engine, data) -> engine.record(data, Activity.CATCH + ":" + target));
+                service.act(event.getPlayer(), (engine, data) -> engine.find(data, List.of(target)));
+            });
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onPickup(org.bukkit.event.entity.EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            service.target(event.getItem().getItemStack())
+                    .ifPresent(target -> service.act(player, (engine, data) -> engine.find(data, List.of(target))));
+        }
+    }
+
+    /**
+     * Brushing a suspicious block whose loot is not rolled yet: counted once, then modules hear of it (treasures). Vanilla
+     * rolls the loot at the first brush tick, after this, so a later brush of the same block never counts again.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onBrush(org.bukkit.event.player.PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK || block == null
+                || event.getItem() == null || event.getItem().getType() != Material.BRUSH
+                || !(block.getState(false) instanceof org.bukkit.block.BrushableBlock brushable)
+                || !brushable.hasLootTable()) {
+            return;
+        }
+        if (service.act(event.getPlayer(), (engine, data) -> engine.brush(data, target(block.getType()))) != null) {
+            org.bukkit.Bukkit.getPluginManager().callEvent(new dev.wayfarer.core.SuspiciousBrushEvent(event.getPlayer(), block));
         }
     }
 
@@ -130,11 +159,17 @@ final class ProgressionListener implements Listener {
             return;
         }
         ItemStack like = result.clone();
-        String item = target(like.getType());
+        String item = service.target(like).orElse(null);
+        if (item == null) {
+            return;
+        }
         int before = held(player, like);
         service.later(() -> {
             int made = held(player, like) - before;
             service.act(player, (engine, data) -> engine.craft(data, item, made));
+            if (made > 0) {
+                service.act(player, (engine, data) -> engine.find(data, List.of(item)));
+            }
         });
     }
 
