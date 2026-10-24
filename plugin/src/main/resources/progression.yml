@@ -1,0 +1,8 @@
+# Wayfarer progression: what players do, counted per player as activities (kill:husk, mine:sand, ...).
+# Every module's ladders read these counters.
+version: 1
+
+# Which kills count, for every counter and ladder. Kills by non-players, and of tamed or leashed mobs, never count.
+counting:
+  exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
+  min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count

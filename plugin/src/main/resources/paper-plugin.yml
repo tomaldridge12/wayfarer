@@ -3,6 +3,12 @@ version: ${version}
 main: dev.wayfarer.WayfarerPlugin
 api-version: "26.3"
 permissions:
+  wayfarer.progression.stats:
+    description: List any player's activity counters
+    default: op
+  wayfarer.progression.setcount:
+    description: Set any player's activity counter (testing and repairs)
+    default: op
   wayfarer.banners.reload:
     description: Reload the banners config
     default: op

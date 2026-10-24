@@ -48,6 +48,11 @@ class ModuleManagerTest {
             }
 
             @Override
+            public dev.wayfarer.core.progression.ProgressionService progression() {
+                return null;
+            }
+
+            @Override
             public CommandTree<CommandSourceStack> commands() {
                 return commands;
             }
