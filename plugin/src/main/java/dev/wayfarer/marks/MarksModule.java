@@ -33,6 +33,7 @@ public final class MarksModule implements Module {
     private Core core;
     private volatile MarkRules rules = MarkRules.empty();
     private MarkItems items;
+    private MarkRecipes recipes;
 
     public MarksModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -47,8 +48,10 @@ public final class MarksModule implements Module {
     public void enable(Core core) throws Exception {
         this.core = core;
         items = new MarkItems(core.itemTags(), () -> rules);
+        recipes = new MarkRecipes(plugin, () -> rules, items);
         load();
         listen(new RecipeGuard(items::isOurs));
+        listen(recipes);
         core.progression().registerRewardType(id(), MarkRules.MARK, new Templates());
         core.progression().registerRewardType(id(), MarkRules.BOOK, new Books());
         core.commands().register(id(), commands());
@@ -56,6 +59,9 @@ public final class MarksModule implements Module {
 
     @Override
     public void disable() {
+        if (recipes != null) {
+            recipes.unregister();
+        }
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
     }
@@ -79,6 +85,7 @@ public final class MarksModule implements Module {
                 + "), " + r.problems().size() + " problems");
         core.logger().info("Mark ladders: " + rules.ladders().size() + " ("
                 + String.join(", ", rules.ladders().stream().map(l -> l.id() + " " + l.selector().size()).toList()) + ")");
+        core.logger().info("Mark recipes registered: " + recipes.register() + " live");
         return r.problems().size();
     }
 
