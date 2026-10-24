@@ -1,0 +1,36 @@
+---
+// The feats you can see before earning them, with what each pays; hidden feats are only counted. From objectives.yml.
+import ItemIcon from './ItemIcon.astro';
+import { guide } from '../data/repo';
+import { rewardLook } from '../data/rewards';
+import { num } from '../data/text';
+
+const config = guide().config;
+const visible = config.feats.filter((f) => !f.hidden);
+const hidden = config.feats.length - visible.length;
+const goal = (f: { at: number | 'all'; distinct: boolean }) => (f.at === 'all' ? 'every one' : num(f.at as number));
+---
+<div class="feats">
+  {visible.map((f) => (
+    <section class="feat">
+      <div class="head"><span class="name">{f.name}</span> <span class="goal">· {goal(f)}</span></div>
+      <div class="flavour">{f.flavour}</div>
+      <div class="pays">
+        {f.rewards.map((r) => { const l = rewardLook(config, r); return (
+          <span class="reward"><ItemIcon item={l.icon} size={20} slot={false} /> <span style={`color:${l.colour}`}>{l.name}</span></span>
+        ); })}
+      </div>
+    </section>
+  ))}
+</div>
+{hidden > 0 && <p class="hidden">And {hidden} more that stay secret until someone stumbles on them.</p>}
+<style>
+  .feats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1.2rem 0 1rem; }
+  .feat { background: var(--tooltip); padding: 10px 14px; font-family: var(--pixel); }
+  .name { color: var(--mc-gold); }
+  .goal { color: var(--mc-gray); }
+  .flavour { color: var(--mc-gray); font-style: italic; margin: 4px 0 8px; }
+  .pays { display: flex; flex-wrap: wrap; gap: 8px; }
+  .reward { display: inline-flex; align-items: center; gap: 4px; }
+  .hidden { font-style: italic; color: var(--ink-soft); }
+</style>

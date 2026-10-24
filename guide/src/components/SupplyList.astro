@@ -1,0 +1,19 @@
+---
+// Supplies: everyday reward loot, opened by right-click. Generated from curios.yml (prices from the shop).
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+
+const config = guide().config;
+---
+<div class="grid">
+  {config.supplies.map((s) => (
+    <ItemCard item={s.icon} name={s.name} colour={s.colour} lines={[
+      ...s.description.map((d) => ({ text: d, colour: 'var(--mc-white)' })),
+      { text: s.flavour, colour: '#9a9080' },
+      ...(config.shop?.supplies[s.id] ? [{ text: `${config.shop.supplies[s.id]} tokens in the shop`, colour: 'var(--mc-gold)' }] : []),
+    ]} />
+  ))}
+</div>
+<style>
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1.4rem 0 1.8rem; }
+</style>

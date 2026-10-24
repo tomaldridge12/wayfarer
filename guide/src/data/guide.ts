@@ -88,6 +88,8 @@ export function loadGuide(paths: GuidePaths, files: GuideFiles): Guide {
     ...config.relics.map((r) => r.item), ...config.relics.map((r) => r.art), ...config.pity.map((p) => p.item),
     ...config.alloys.flatMap((a) => [`wayfarer:${a.id}_ingot`, `wayfarer:${a.id}_template`, ...a.recipe.map((r) => r.item)]),
     ...config.marks.map((m) => `wayfarer:${m.id}_mark_template`),
+    ...config.curios.map((c) => c.icon), ...config.gear.map((g) => g.icon), ...config.supplies.map((s) => s.icon),
+    ...config.fish.map((f) => f.icon), ...config.treasures.map((t) => t.icon),
   ];
   for (const item of liveItems)
     if (!icon(item) && !FACES[item]) throw new GuideError(`item '${item}' has no texture (vanilla or wayfarer:)`);

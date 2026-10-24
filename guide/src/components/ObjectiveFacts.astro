@@ -1,0 +1,45 @@
+---
+// The objective rhythm in numbers: dailies, the weekly, rerolls, streaks, events and the shop. From objectives.yml.
+import { guide } from '../data/repo';
+import { num, title } from '../data/text';
+import { rewardLook } from '../data/rewards';
+
+interface Props { part: 'rhythm' | 'events' | 'shop' }
+const { part } = Astro.props;
+const config = guide().config;
+const o = config.objectives;
+const shop = config.shop;
+const day = (s: string) => title(s.split(' ')[0].toLowerCase()) + ' ' + (s.split(' ')[1] ?? '');
+---
+{part === 'rhythm' && o && (
+  <ul class="facts">
+    <li><b>{o.dailies} dailies</b> a day, new at <b>{o.dailyReset}</b> ({o.zone.replace('_', ' ')}), drawn from {o.dailyCount} so the day is varied.</li>
+    <li><b>One weekly</b>, new every {o.weeklyDay}, drawn from {o.weeklyCount}.</li>
+    <li><b>{o.freeRerolls} free reroll</b> a day; after that each costs {o.rerollLevels} levels, then {o.rerollLevels + o.rerollStep}, {o.rerollLevels + 2 * o.rerollStep} and so on.</li>
+    <li>Every <b>{o.streakEvery}th day</b> of your streak pays <b>{num(o.streakTokens)} tokens</b>{o.streakReward ? <> and a {rewardLook(config, o.streakReward).name}</> : null}.</li>
+    <li>A curio you already own, rolled again, becomes <b>{o.duplicateTokens} tokens</b> instead.</li>
+  </ul>
+)}
+{part === 'events' && o && (
+  <>
+    <p>Events run from <b>{day(o.eventStart)}</b> to <b>{day(o.eventEnd)}</b>, one per weekend, in this order:</p>
+    <ul class="facts">
+      {config.eventRotation.map((id) => { const e = config.events.find((x) => x.id === id)!; return (
+        <li><b>{e.name}</b>: {e.blurb} Together: {e.goal}.</li>
+      ); })}
+    </ul>
+  </>
+)}
+{part === 'shop' && shop && (
+  <ul class="facts">
+    <li><b>Titles and trails</b>: {Object.entries(shop.cosmetics).map(([id, p]) => `${rewardLook(config, `cosmetic:${id}`).name.replace('Title: ', '')} (${p})`).join(', ')}.</li>
+    <li><b>An extra free reroll</b>, once a day: {shop.extraReroll} tokens.</li>
+    <li><b>A copy of a template</b> you have owned, alloy or mark: {shop.templateCopy} tokens.</li>
+    <li><b>A Wayfinder pointing</b>: {shop.wayfinder} tokens. <b>Beacon kindling</b>: {shop.kindling} tokens.</li>
+    <li><b>Supplies</b>: {Object.entries(shop.supplies).map(([id, p]) => `${rewardLook(config, `supply:${id}`).name} (${p})`).join(', ')}.</li>
+    <li><b>Enchanted books</b> of any enchant a reward has unlocked for you: {shop.enchantPerLevel} tokens a level.</li>
+  </ul>
+)}
+<style>
+  .facts { display: grid; gap: 6px; }
+</style>

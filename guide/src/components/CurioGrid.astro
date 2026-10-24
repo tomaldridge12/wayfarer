@@ -1,0 +1,25 @@
+---
+// Every curio as its tooltip: what it does, its story, how it works and where it comes from. Generated from curios.yml.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { sources } from '../data/rewards';
+
+const config = guide().config;
+const duration = (s: number) => (s < 60 ? `${s}s` : s < 3600 ? `${Math.round(s / 60)} min` : `${Math.round(s / 3600)} h`);
+---
+<div class="grid">
+  {config.curios.map((c) => {
+    const from = sources(config, `curio:${c.id}`);
+    return (
+      <ItemCard item={c.icon} name={c.name} colour={c.colour} lines={[
+        ...c.description.map((d) => ({ text: d, colour: 'var(--mc-white)' })),
+        { text: c.flavour, colour: '#9a9080' },
+        { text: c.tool ? `Right-click · rests ${duration(c.cooldown)} after` : 'Works from anywhere in your pack', colour: 'var(--mc-gray)' },
+        { text: from.length ? `From ${from.join(', ')}` : 'From objectives and the reward tables', colour: 'var(--mc-gold)' },
+      ]} />
+    );
+  })}
+</div>
+<style>
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); margin: 1.4rem 0 1.8rem; }
+</style>

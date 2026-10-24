@@ -1,0 +1,26 @@
+---
+// The Almanac's species, by water, each with where and when it bites, its weight range and its story. From collections.yml.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { fishWhere, weight, RARITY_COLOURS } from '../data/rewards';
+
+const config = guide().config;
+const groups = [['fresh', 'Fresh water'], ['brackish', 'Brackish water'], ['salt', 'The seas'], ['any', 'Strange waters']];
+---
+{groups.map(([water, heading]) => (
+  <>
+    <h3>{heading}</h3>
+    <div class="grid">
+      {config.fish.filter((f) => f.water === water).map((f) => (
+        <ItemCard item={f.icon} name={f.name} colour={RARITY_COLOURS[f.rarity]} lines={[
+          { text: `${f.rarity[0].toUpperCase()}${f.rarity.slice(1)} · ${weight(f.minGrams)} to ${weight(f.maxGrams)}`, colour: RARITY_COLOURS[f.rarity] },
+          { text: fishWhere(f), colour: 'var(--mc-white)' },
+          { text: f.flavour, colour: '#9a9080' },
+        ]} />
+      ))}
+    </div>
+  </>
+))}
+<style>
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1rem 0 1.6rem; }
+</style>

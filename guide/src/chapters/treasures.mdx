@@ -1,0 +1,22 @@
+import TreasureGrid from '../components/TreasureGrid.astro';
+import CollectionMilestones from '../components/CollectionMilestones.astro';
+import { guide } from '../data/repo';
+export const rules = guide().config.treasureRules;
+
+Old things turn up for people who look: gems, statues, charms, charts, fossils and coins. They're collectibles: put them in item frames and on shelves and build yourself a cabinet of curiosities. Each one you find goes on the Journal's Treasures page.
+
+## Archaeology
+
+Brush a suspicious block at trail ruins, desert wells, desert pyramids or ocean ruins and there's a **{Math.round(rules.brushChance * 100)}% chance** it holds a treasure instead of its usual find. Unlucky? Nobody brushes more than **{rules.ceiling}** in a row without one. Treasures you don't have yet turn up three times as often as ones you do, and the **Archaeologist's Brush** curio doubles your chance.
+
+## Chests
+
+Some treasures wait in structure chests instead, so explorers who never pick up a brush still find a few.
+
+## Charts
+
+A chart, used up with a right-click, shows you the way to the nearest place of its kind for ten minutes.
+
+<CollectionMilestones only={['treasures']} />
+
+<TreasureGrid />

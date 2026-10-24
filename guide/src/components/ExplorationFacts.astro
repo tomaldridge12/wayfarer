@@ -1,0 +1,19 @@
+---
+// Wayfinder prices and limits. From exploration.yml.
+import { guide } from '../data/repo';
+import { num, title } from '../data/text';
+
+const e = guide().config.exploration;
+---
+{e && (
+  <ul class="facts">
+    <li>It searches up to <b>{num(e.range)} blocks</b> away, and needs <b>{Math.round(e.cooldown / 60)} minutes</b> to settle between searches.</li>
+    <li>A structure costs <b>{e.structureLevels} levels</b>, a land <b>{e.biomeLevels}</b>, a Guardian's Chart <b>{e.chartLevels}</b>. Rarer places cost more:
+      {' '}{Object.entries(e.rare).map(([k, v]) => `${title(k)} ${v}`).join(', ')}.</li>
+    <li>It offers {Object.keys(e.structures).length} kinds of structure: {Object.values(e.structures).join(', ')}.</li>
+    <li>Beacon kindling burns as a signal for <b>{e.kindlingSeconds} seconds</b>.</li>
+  </ul>
+)}
+<style>
+  .facts { display: grid; gap: 6px; }
+</style>

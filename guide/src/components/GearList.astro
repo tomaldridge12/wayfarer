@@ -1,0 +1,24 @@
+---
+// Special gear: named pieces with fixed enchants. Generated from curios.yml.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { roman, title } from '../data/text';
+import { sources } from '../data/rewards';
+
+const config = guide().config;
+---
+<div class="grid">
+  {config.gear.map((g) => {
+    const from = sources(config, `gear:${g.id}`);
+    return (
+      <ItemCard item={g.icon} name={g.name} colour={g.colour} lines={[
+        ...g.enchants.map((e) => ({ text: `${title(e.id)} ${roman(e.level)}`, colour: e.excellent ? 'var(--mc-aqua)' : 'var(--mc-gray)' })),
+        { text: g.flavour, colour: '#9a9080' },
+        { text: from.length ? `From ${from.join(', ')}` : 'From weekly and goal rewards', colour: 'var(--mc-gold)' },
+      ]} />
+    );
+  })}
+</div>
+<style>
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); margin: 1.4rem 0 1.8rem; }
+</style>

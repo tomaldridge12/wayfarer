@@ -1,0 +1,38 @@
+---
+// Each Journal collection and what its milestones pay. From collections.yml.
+import ItemIcon from './ItemIcon.astro';
+import { guide } from '../data/repo';
+import { rewardLook } from '../data/rewards';
+
+interface Props { only?: string[] }
+const { only } = Astro.props;
+const config = guide().config;
+const shown = config.collections.filter((c) => !only || only.includes(c.id));
+---
+<div class="cols">
+  {shown.map((c) => (
+    <section class="col">
+      <h3 style={`color:${c.colour}`}>{c.title}</h3>
+      <p class="blurb">{c.blurb}</p>
+      <ul>
+        {c.milestones.map((m) => (
+          <li>
+            <span class="at">{m.at.endsWith('%') ? `${m.at} of the page` : `${m.at} found`}</span>
+            {m.rewards.map((r) => { const l = rewardLook(config, r); return (
+              <span class="reward"><ItemIcon item={l.icon} size={20} slot={false} /> <span style={`color:${l.colour}`}>{l.name}</span></span>
+            ); })}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</div>
+<style>
+  .cols { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin: 1.2rem 0 1.8rem; }
+  .col { background: var(--tooltip); padding: 10px 14px; font-family: var(--pixel); }
+  .col h3 { margin: 0 0 4px; }
+  .blurb { color: var(--mc-gray); font-size: 0.9rem; margin: 0 0 8px; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .at { color: var(--mc-gray); margin-right: 8px; }
+  .reward { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; }
+</style>

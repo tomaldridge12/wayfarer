@@ -166,3 +166,24 @@ describe('the real repo', () => {
     expect(g.chapters[0].slug).toBe('welcome');
   });
 });
+
+describe('objectives and collections from config', () => {
+  it('give curios, fish, treasures and feats with their art required', () => {
+    const files = {
+      'config/curios.yml': `curios:\n  bone_dice: {name: Bone Dice, colour: "#E8E2D0", description: [A], flavour: F, effect: xp_bonus}\n  glow_jar: {effect: light, cooldown: 60, description: [L]}`,
+      'config/collections.yml': `collections:\n  almanac:\n    species:\n      carp: {name: Carp, rarity: common, water: fresh, temp: [temperate], weight: 800-14000}\n  treasures:\n    brush-chance: 0.25\n    list:\n      amber: {name: Amber, kind: gem, brush: [desert_well]}`,
+      'config/objectives.yml': `feats:\n  moss: {name: Moss Tender, counts: [mine:moss_block], at: 10, rewards: [curio:bone_dice]}\n  secret: {name: Unheard, counts: [kill:warden], at: 1, hidden: true, rewards: [curio:glow_jar]}`,
+      'textures/wayfarer/item/curio/bone_dice.png': '', 'textures/wayfarer/item/curio/glow_jar.png': '',
+      'textures/wayfarer/item/fish/carp.png': '', 'textures/wayfarer/item/treasure/amber.png': '',
+    };
+    const g = loadFixture(fixture(files));
+    expect(g.config.curios.map((c) => [c.id, c.tool, c.cooldown])).toEqual([['bone_dice', false, 0], ['glow_jar', true, 60]]);
+    expect(g.config.fish[0]).toMatchObject({ minGrams: 800, maxGrams: 14000, icon: 'wayfarer:fish/carp' });
+    expect(g.config.treasureRules!.ceiling).toBe(4);
+    expect(g.config.feats.filter((f) => f.hidden).map((f) => f.id)).toEqual(['secret']);
+    const missing = { ...files } as Record<string, string>;
+    delete missing['textures/wayfarer/item/fish/carp.png'];
+    expect(() => loadFixture(fixture(missing))).toThrow(/item 'wayfarer:fish\/carp' has no texture/);
+  });
+});
+

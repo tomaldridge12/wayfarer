@@ -39,4 +39,30 @@ describe('built guide', () => {
     const html = page('bosses');
     for (const b of g.config.bosses) expect(html).toContain(b.name);
   });
+
+  it('shows every curio, gear piece and supply with its story', () => {
+    const html = page('curios');
+    for (const c of g.config.curios) expect(html).toContain(c.name.replace("'", '&#39;'));
+    for (const s of g.config.supplies) expect(html).toContain(s.name.replace("'", '&#39;'));
+    expect(html).toContain('Right-click · rests 2 min after');
+  });
+
+  it('shows every Almanac fish and every treasure', () => {
+    const almanac = page('almanac');
+    for (const f of g.config.fish) expect(almanac).toContain(f.name);
+    const treasures = page('treasures');
+    for (const t of g.config.treasures) expect(treasures).toContain(t.name);
+    expect(treasures).toContain(`${g.config.treasureRules!.ceiling}`);
+  });
+
+  it('shows the visible feats and keeps the hidden ones secret', () => {
+    const html = page('feats');
+    for (const f of g.config.feats) expect(html.includes(f.name)).toBe(!f.hidden);
+  });
+
+  it('shows the objective rhythm and the events from config', () => {
+    const html = page('objectives');
+    expect(html).toContain(`${g.config.objectives!.dailies} dailies`);
+    for (const e of g.config.events) expect(html).toContain(e.name);
+  });
 });

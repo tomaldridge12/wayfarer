@@ -65,6 +65,27 @@ export interface BossRules {
 
 export interface PityRow { id: string; item: string; mobs: string[]; heldItem: string | null; chance: number; kills: number }
 
+export interface CurioRow { id: string; name: string; colour: string; description: string[]; flavour: string; tool: boolean; cooldown: number; icon: string }
+export interface GearRow { id: string; name: string; colour: string; base: string; enchants: { id: string; level: number; excellent: boolean }[]; flavour: string; icon: string }
+export interface SupplyRow { id: string; name: string; colour: string; description: string[]; flavour: string; icon: string }
+export interface CollectionRow { id: string; title: string; colour: string; blurb: string; unit: string; milestones: { at: string; rewards: string[] }[] }
+export interface FishRow {
+  id: string; name: string; rarity: string; water: string; temps: string[]; time: string; weather: string; place: string;
+  minGrams: number; maxGrams: number; flavour: string; hint: string | null; icon: string;
+}
+export interface TreasureRow { id: string; name: string; colour: string; kind: string; flavour: string; brush: string[]; chests: Record<string, number>; chart: string | null; icon: string }
+export interface TreasureRules { brushChance: number; ceiling: number; sites: Record<string, string[]> }
+export interface FeatRow { id: string; name: string; flavour: string; counts: string[]; distinct: boolean; at: number | 'all'; hidden: boolean; rewards: string[] }
+export interface CosmeticRow { id: string; kind: 'title' | 'trail'; name: string; colour: string }
+export interface ObjectiveRules {
+  dailies: number; dailyReset: string; zone: string; weeklyDay: string; eventStart: string; eventEnd: string;
+  freeRerolls: number; rerollLevels: number; rerollStep: number; streakEvery: number; streakTokens: number; streakReward: string | null;
+  duplicateTokens: number; stages: string[]; dailyCount: number; weeklyCount: number; goalCount: number; tables: string[];
+}
+export interface EventRow { id: string; name: string; blurb: string; goal: string; target: number }
+export interface ShopRules { cosmetics: Record<string, number>; supplies: Record<string, number>; extraReroll: number; templateCopy: number; wayfinder: number; kindling: number; enchantPerLevel: number }
+export interface ExplorationRules { range: number; cooldown: number; structureLevels: number; biomeLevels: number; chartLevels: number; rare: Record<string, number>; structures: Record<string, string>; kindlingSeconds: number }
+
 export interface Config {
   families: Family[];
   allMobs: string | null;
@@ -80,6 +101,21 @@ export interface Config {
   alloyRules: AlloyRules | null;
   marks: MarkRow[];
   books: BookRow[];
+  curios: CurioRow[];
+  gear: GearRow[];
+  supplies: SupplyRow[];
+  collections: CollectionRow[];
+  fish: FishRow[];
+  fishChance: number;
+  treasures: TreasureRow[];
+  treasureRules: TreasureRules | null;
+  feats: FeatRow[];
+  cosmetics: CosmeticRow[];
+  objectives: ObjectiveRules | null;
+  events: EventRow[];
+  eventRotation: string[];
+  shop: ShopRules | null;
+  exploration: ExplorationRules | null;
 }
 
 function read(files: GuideFiles, dir: string, file: string): any {
@@ -173,6 +209,12 @@ function rankText(mark: string, r: any): string {
     default: return '';
   }
 }
+
+/** Curio effects that are right-click tools (the rest are charms that work while carried). */
+const TOOL_EFFECTS = ['spread', 'light', 'sense', 'recall', 'locate'];
+
+const title = (id: string) => id.split(/[_:]/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+const num = (n: number) => n.toLocaleString('en-GB');
 
 /** The pity rule from core: the ceil(1 / chance)-th counted kill in a row without the item drops it. */
 export const pityKills = (chance: number) => Math.ceil(1 / chance - 1e-9);
@@ -270,7 +312,91 @@ export function readConfig(dir: string, files: GuideFiles): Config {
     id, name: b.name ?? id, enchant: b.enchant, unit: b.unit ?? 'block', counts: asList(b.counts), levelsAt: b['levels-at'] ?? [],
   }));
 
+  const curiosYml = read(files, dir, 'curios.yml');
+  const collectionsYml = read(files, dir, 'collections.yml');
+  const objectivesYml = read(files, dir, 'objectives.yml');
+  const explorationYml = read(files, dir, 'exploration.yml');
+  const curios: CurioRow[] = entries(curiosYml.curios).map(([id, c]) => ({
+    id, name: c.name ?? title(id), colour: c.colour ?? '#e8d9a8', description: asList(c.description), flavour: c.flavour ?? '',
+    tool: TOOL_EFFECTS.includes(c.effect), cooldown: c.cooldown ?? 0, icon: `wayfarer:curio/${id}`,
+  }));
+  const gear: GearRow[] = entries(curiosYml.gear).map(([id, g]) => {
+    const base = String(g.base ?? '');
+    return {
+      id, name: g.name ?? title(id), colour: g.colour ?? '#e8d9a8', base, flavour: g.flavour ?? '',
+      enchants: entries(g.enchants).map(([e, level]) => ({ id: e.replace(/^(excellentenchants|minecraft):/, ''), level: level as number,
+        excellent: e.startsWith('excellentenchants:') })),
+      icon: base.startsWith('alloy:') ? `wayfarer:${base.slice(6)}` : g.model ? `wayfarer:${g.model}` : base,
+    };
+  });
+  const supplies: SupplyRow[] = entries(curiosYml.supplies).map(([id, s2]) => ({
+    id, name: s2.name ?? title(id), colour: s2.colour ?? '#e8d9a8', description: asList(s2.description), flavour: s2.flavour ?? '',
+    icon: `wayfarer:supply/${id}`,
+  }));
+  const collectionDefs = collectionsYml.collections ?? {};
+  const collections: CollectionRow[] = entries(collectionDefs).map(([id, c]) => ({
+    id, title: c.title ?? title(id), colour: c.colour ?? '#e8d9a8', blurb: c.blurb ?? '', unit: c.unit ?? 'entry|entries',
+    milestones: entries(c.milestones).map(([at, rewards]) => ({ at, rewards: asList(rewards) })),
+  }));
+  const almanac = collectionDefs.almanac ?? {};
+  const fish: FishRow[] = entries(almanac.species).map(([id, f]) => {
+    const [min, max] = String(f.weight ?? '1-1').split('-').map(Number);
+    return {
+      id, name: f.name ?? title(id), rarity: f.rarity ?? 'common', water: f.water ?? 'any', temps: asList(f.temp), time: f.time ?? 'any',
+      weather: f.weather ?? 'any', place: f.place ?? '', minGrams: min, maxGrams: max, flavour: f.flavour ?? '', hint: f.hint ?? null,
+      icon: `wayfarer:fish/${id}`,
+    };
+  });
+  const treasureDef = collectionDefs.treasures ?? {};
+  const treasures: TreasureRow[] = entries(treasureDef.list).map(([id, t]) => ({
+    id, name: t.name ?? title(id), colour: t.colour ?? '#d9a55b', kind: t.kind, flavour: t.flavour ?? '', brush: asList(t.brush),
+    chests: Object.fromEntries(entries(t.chests).map(([k, v]) => [k.replace(/^minecraft:/, ''), v as number])), chart: t.chart ?? null,
+    icon: `wayfarer:treasure/${id}`,
+  }));
+  const brushChance = treasureDef['brush-chance'] ?? 0.12;
+  const treasureRules: TreasureRules | null = treasureDef.list ? {
+    brushChance, ceiling: Math.ceil(1 / brushChance - 1e-9),
+    sites: Object.fromEntries(entries(treasureDef.sites).map(([k, v]) => [k, asList(v)])),
+  } : null;
+  const feats: FeatRow[] = entries(objectivesYml.feats).map(([id, f]) => ({
+    id, name: f.name ?? title(id), flavour: f.flavour ?? '', counts: asList(f.counts), distinct: !!f.distinct,
+    at: f.at === 'all' ? 'all' : f.at ?? 0, hidden: !!f.hidden, rewards: asList(f.rewards),
+  }));
+  const cosmetics: CosmeticRow[] = entries(objectivesYml.cosmetics).map(([id, c]) => ({
+    id, kind: c.kind, name: c.name ?? title(id), colour: c.colour ?? '#e8d9a8',
+  }));
+  const sched = objectivesYml.schedule ?? {};
+  const dl = objectivesYml.dailies ?? {};
+  const objectives: ObjectiveRules | null = objectivesYml['daily-pool'] ? {
+    dailies: dl.count ?? 3, dailyReset: sched['daily-reset'] ?? '06:00', zone: sched.zone ?? 'Europe/London',
+    weeklyDay: title(String(sched['weekly-reset'] ?? 'MONDAY').toLowerCase()), eventStart: String(sched['event-start'] ?? 'FRIDAY 18:00'),
+    eventEnd: String(sched['event-end'] ?? 'MONDAY 00:00'), freeRerolls: dl.rerolls?.free ?? 1, rerollLevels: dl.rerolls?.['xp-levels'] ?? 3,
+    rerollStep: dl.rerolls?.['xp-step'] ?? 2, streakEvery: dl.streak?.every ?? 7, streakTokens: dl.streak?.tokens ?? 50,
+    streakReward: dl.streak?.reward ?? null, duplicateTokens: objectivesYml['duplicate-tokens'] ?? 30,
+    stages: Object.keys(objectivesYml.stages ?? {}), dailyCount: Object.keys(objectivesYml['daily-pool'] ?? {}).length,
+    weeklyCount: Object.keys(objectivesYml['weekly-pool'] ?? {}).length, goalCount: Object.keys(objectivesYml['goal-pool'] ?? {}).length,
+    tables: Object.keys(objectivesYml.tables ?? {}),
+  } : null;
+  const events: EventRow[] = entries(objectivesYml.events?.list).map(([id, e]) => ({
+    id, name: e.name ?? title(id), blurb: e.blurb ?? '', goal: String(e.goal?.text ?? '').replace('{n}', num(e.goal?.target ?? 0)),
+    target: e.goal?.target ?? 0,
+  }));
+  const shopYml = objectivesYml.shop;
+  const shop: ShopRules | null = shopYml ? {
+    cosmetics: shopYml.cosmetics ?? {}, supplies: shopYml.supplies ?? {}, extraReroll: shopYml['extra-reroll'] ?? 40,
+    templateCopy: shopYml['template-copy'] ?? 120, wayfinder: shopYml.wayfinder ?? 60, kindling: shopYml['beacon-kindling'] ?? 80,
+    enchantPerLevel: shopYml['enchant-per-level'] ?? 60,
+  } : null;
+  const wf = explorationYml.wayfinder;
+  const exploration: ExplorationRules | null = wf ? {
+    range: wf.range ?? 3200, cooldown: wf.cooldown ?? 300, structureLevels: wf['structure-levels'] ?? 5, biomeLevels: wf['biome-levels'] ?? 3,
+    chartLevels: wf['chart-levels'] ?? 8, rare: wf.rare ?? {}, structures: wf.structures ?? {},
+    kindlingSeconds: explorationYml['beacon-kindling']?.seconds ?? 90,
+  } : null;
+
   return {
+    curios, gear, supplies, collections, fish, fishChance: almanac.chance ?? 0.5, treasures, treasureRules, feats, cosmetics,
+    objectives, events, eventRotation: asList(objectivesYml.events?.rotation), shop, exploration,
     alloys, alloyRules, marks, books,
     families, allMobs: banners.counting?.['all-mobs'] ?? null,
     banners: bannerRows, heads, relics,

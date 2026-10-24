@@ -1,0 +1,26 @@
+---
+// Every treasure with where it turns up and its story. From collections.yml.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { treasureWhere } from '../data/rewards';
+
+const config = guide().config;
+const kinds = [['gem', 'Gems'], ['statue', 'Statues'], ['charm', 'Charms'], ['chart', 'Charts'], ['fossil', 'Fossils'], ['coin', 'Coins']];
+---
+{kinds.map(([kind, heading]) => (
+  <>
+    <h3>{heading}</h3>
+    <div class="grid">
+      {config.treasures.filter((t) => t.kind === kind).map((t) => (
+        <ItemCard item={t.icon} name={t.name} colour={t.colour} lines={[
+          { text: treasureWhere(t), colour: 'var(--mc-white)' },
+          { text: t.flavour, colour: '#9a9080' },
+          ...(t.chart ? [{ text: 'Right-click: follow it to the nearest one, once', colour: 'var(--mc-gray)' }] : []),
+        ]} />
+      ))}
+    </div>
+  </>
+))}
+<style>
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1rem 0 1.6rem; }
+</style>
