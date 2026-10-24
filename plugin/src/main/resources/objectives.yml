@@ -238,3 +238,420 @@ feats:
     distinct: true
     at: all
     rewards: [curio:hyacinthus_blessing, cosmetic:crate_digger]
+
+# When things turn over, in this time zone: dailies at daily-reset, the weekly on weekly-reset at that time, weekend
+# events from event-start to event-end ("MONDAY 00:00" is Sunday midnight).
+schedule:
+  zone: Europe/London
+  daily-reset: "06:00"
+  weekly-reset: MONDAY
+  event-start: "FRIDAY 18:00"
+  event-end: "MONDAY 00:00"
+
+# Stages, in order, each marked by the vanilla advancement that reaches it (the first needs none). An objective is only
+# drawn for a player who has reached its stage, so nobody gets "mine 16 ancient debris" on day one.
+stages:
+  start: ""
+  iron: story/smelt_iron
+  nether: story/enter_the_nether
+  end: story/enter_the_end
+
+dailies:
+  count: 3
+  # One free reroll a day; after that each costs xp-levels, plus xp-step for every paid one before it.
+  rerolls: {free: 1, xp-levels: 3, xp-step: 2}
+  # A day with every daily done adds one to your streak (a missed day pauses it); every so many days pays a bonus.
+  streak: {every: 7, tokens: 50, reward: supply:tome_of_experience}
+
+# A one-of-a-kind reward you already own (a curio you have held, a cosmetic you have) turns into this many tokens.
+duplicate-tokens: 30
+
+# Each objective: name, text (what to do, {n} is the target), counts (activities; distinct: true counts different
+# targets new since it was drawn), target, stage, table (the reward table it rolls from), tokens.
+daily-pool:
+  # Mining
+  coal_run: {name: "Coal Run", text: "Mine {n} coal ore", counts: [mine:coal_ore, mine:deepslate_coal_ore], target: 32, stage: start, table: mining, tokens: 10}
+  copper_bottom: {name: "Copper Bottom", text: "Mine {n} copper ore", counts: [mine:copper_ore, mine:deepslate_copper_ore], target: 24, stage: start, table: mining, tokens: 10}
+  stone_cold: {name: "Stone Cold", text: "Mine {n} stone", counts: [mine:stone], target: 256, stage: start, table: mining, tokens: 8}
+  iron_will: {name: "Iron Will", text: "Mine {n} iron ore", counts: [mine:iron_ore, mine:deepslate_iron_ore], target: 24, stage: iron, table: mining, tokens: 12}
+  into_the_deep: {name: "Into the Deep", text: "Mine {n} deepslate", counts: [mine:deepslate], target: 192, stage: iron, table: mining, tokens: 10}
+  seeing_red: {name: "Seeing Red", text: "Mine {n} redstone ore", counts: [mine:redstone_ore, mine:deepslate_redstone_ore], target: 16, stage: iron, table: mining, tokens: 12}
+  feeling_blue: {name: "Feeling Blue", text: "Mine {n} lapis ore", counts: [mine:lapis_ore, mine:deepslate_lapis_ore], target: 10, stage: iron, table: mining, tokens: 12}
+  all_that_glitters: {name: "All That Glitters", text: "Mine {n} gold ore", counts: [mine:gold_ore, mine:deepslate_gold_ore, mine:nether_gold_ore], target: 16, stage: iron, table: mining, tokens: 12}
+  diamond_eyes: {name: "Diamond Eyes", text: "Mine {n} diamond ore", counts: [mine:diamond_ore, mine:deepslate_diamond_ore], target: 4, stage: iron, table: mining, tokens: 16}
+  emerald_city: {name: "Emerald City", text: "Mine {n} emerald ore", counts: [mine:emerald_ore, mine:deepslate_emerald_ore], target: 3, stage: iron, table: mining, tokens: 18}
+  crystal_clear: {name: "Crystal Clear", text: "Mine {n} amethyst clusters", counts: [mine:amethyst_cluster], target: 12, stage: iron, table: mining, tokens: 12}
+  # Digging
+  sandcastles: {name: "Sandcastles", text: "Dig {n} sand", counts: [mine:sand, mine:red_sand], target: 128, stage: start, table: digging, tokens: 8}
+  gravel_matters: {name: "Gravel Matters", text: "Dig {n} gravel", counts: [mine:gravel], target: 96, stage: start, table: digging, tokens: 8}
+  mud_pie: {name: "Mud Pie", text: "Dig {n} mud", counts: [mine:mud], target: 48, stage: start, table: digging, tokens: 10}
+  clay_day: {name: "Clay Day", text: "Dig {n} clay", counts: [mine:clay], target: 32, stage: start, table: digging, tokens: 10}
+  dirt_cheap: {name: "Dirt Cheap", text: "Dig {n} dirt or grass", counts: [mine:dirt, mine:grass_block, mine:coarse_dirt], target: 192, stage: start, table: digging, tokens: 6}
+  snow_day: {name: "Snow Day", text: "Dig {n} snow", counts: [mine:snow_block, mine:snow, mine:powder_snow], target: 64, stage: start, table: digging, tokens: 8}
+  # Farming
+  amber_waves: {name: "Amber Waves", text: "Harvest {n} wheat", counts: [harvest:wheat], target: 64, stage: start, table: farming, tokens: 10}
+  root_and_branch: {name: "Root and Branch", text: "Harvest {n} carrots or potatoes", counts: [harvest:carrots, harvest:potatoes], target: 64, stage: start, table: farming, tokens: 10}
+  beet_it: {name: "Beet It", text: "Harvest {n} beetroots", counts: [harvest:beetroots], target: 48, stage: start, table: farming, tokens: 10}
+  melon_patch: {name: "Melon Patch", text: "Harvest {n} melons", counts: [harvest:melon], target: 32, stage: start, table: farming, tokens: 10}
+  pumpkin_spice: {name: "Pumpkin Spice", text: "Harvest {n} pumpkins", counts: [harvest:pumpkin], target: 24, stage: start, table: farming, tokens: 10}
+  hot_chocolate: {name: "Hot Chocolate", text: "Harvest {n} cocoa pods", counts: [harvest:cocoa], target: 32, stage: start, table: farming, tokens: 12}
+  sheer_joy: {name: "Sheer Joy", text: "Shear {n} sheep", counts: [shear:sheep], target: 12, stage: start, table: farming, tokens: 10}
+  matchmaker: {name: "Matchmaker", text: "Breed {n} animals", counts: ["breed:*"], target: 10, stage: start, table: farming, tokens: 10}
+  timber: {name: "Timber!", text: "Chop {n} logs", counts: ["mine:#minecraft:logs"], target: 96, stage: start, table: farming, tokens: 10}
+  wart_and_all: {name: "Wart and All", text: "Harvest {n} nether wart", counts: [harvest:nether_wart], target: 48, stage: nether, table: farming, tokens: 12}
+  # Fishing
+  gone_fishing: {name: "Gone Fishing", text: "Catch {n} things on your line", counts: ["catch:*"], target: 16, stage: start, table: fishing, tokens: 12}
+  something_new: {name: "Something New", text: "Catch {n} species new to your Almanac", counts: ["catch:wayfarer:fish/*"], distinct: true, target: 2, stage: start, table: fishing, tokens: 15}
+  deep_water: {name: "Deep Water", text: "Catch {n} Almanac fish", counts: ["catch:wayfarer:fish/*"], target: 6, stage: start, table: fishing, tokens: 12}
+  salmon_run: {name: "Salmon Run", text: "Catch {n} salmon", counts: [catch:salmon], target: 6, stage: start, table: fishing, tokens: 10}
+  paradise: {name: "Paradise", text: "Catch {n} tropical fish or pufferfish", counts: [catch:tropical_fish, catch:pufferfish], target: 4, stage: start, table: fishing, tokens: 12}
+  # Hunting
+  night_shift: {name: "Night Shift", text: "Defeat {n} zombies of any kind", counts: [kill:zombie, kill:husk, kill:drowned, kill:zombie_villager], target: 24, stage: start, table: hunting, tokens: 10}
+  bone_collector: {name: "Bone Collector", text: "Defeat {n} skeletons of any kind", counts: [kill:skeleton, kill:stray, kill:bogged, kill:parched], target: 20, stage: start, table: hunting, tokens: 10}
+  web_cutter: {name: "Web Cutter", text: "Defeat {n} spiders", counts: [kill:spider, kill:cave_spider], target: 16, stage: start, table: hunting, tokens: 10}
+  creeper_season: {name: "Creeper Season", text: "Defeat {n} creepers", counts: [kill:creeper], target: 10, stage: start, table: hunting, tokens: 12}
+  new_quarry: {name: "New Quarry", text: "Defeat a kind of mob you never have", counts: ["kill:*"], distinct: true, target: 1, stage: start, table: hunting, tokens: 15}
+  pearl_diver: {name: "Pearl Diver", text: "Defeat {n} endermen", counts: [kill:enderman], target: 8, stage: iron, table: hunting, tokens: 14}
+  witching_hour: {name: "Witching Hour", text: "Defeat {n} witches", counts: [kill:witch], target: 3, stage: iron, table: hunting, tokens: 14}
+  slime_season: {name: "Slime Season", text: "Defeat {n} slimes", counts: [kill:slime], target: 16, stage: iron, table: hunting, tokens: 12}
+  # Exploring
+  new_horizons: {name: "New Horizons", text: "Stand in a land you have never seen", counts: ["discover:biome/*"], distinct: true, target: 1, stage: start, table: exploring, tokens: 15}
+  old_stones: {name: "Old Stones", text: "Step inside {n} structures", counts: ["discover:structure/*"], target: 2, stage: start, table: exploring, tokens: 12}
+  neighbourly: {name: "Neighbourly", text: "Visit a village", counts: ["discover:structure/village_*"], target: 1, stage: start, table: exploring, tokens: 10}
+  wanderlust: {name: "Wanderlust", text: "Find {n} lands new to you", counts: ["discover:biome/*"], distinct: true, target: 2, stage: iron, table: exploring, tokens: 20}
+  # Crafting
+  torch_song: {name: "Torch Song", text: "Craft {n} torches", counts: [craft:torch], target: 64, stage: start, table: crafting, tokens: 8}
+  bread_basket: {name: "Bread Basket", text: "Bake {n} loaves of bread", counts: [craft:bread], target: 24, stage: start, table: crafting, tokens: 10}
+  tool_time: {name: "Tool Time", text: "Craft {n} pickaxes, axes or shovels", counts: ["craft:#minecraft:pickaxes", "craft:#minecraft:axes", "craft:#minecraft:shovels"], target: 4, stage: start, table: crafting, tokens: 10}
+  bookish: {name: "Bookish", text: "Craft {n} books", counts: [craft:book], target: 8, stage: iron, table: crafting, tokens: 12}
+  forge_ahead: {name: "Forge Ahead", text: "Melt {n} alloy ingots in a crucible", counts: ["forge:*"], target: 2, stage: iron, table: crafting, tokens: 15}
+  lamplighter: {name: "Lamplighter", text: "Craft {n} lanterns", counts: [craft:lantern, craft:soul_lantern], target: 8, stage: iron, table: crafting, tokens: 10}
+  end_of_the_line: {name: "End of the Line", text: "Craft {n} rails", counts: [craft:rail], target: 64, stage: iron, table: crafting, tokens: 10}
+  # Archaeology
+  brushwork: {name: "Brushwork", text: "Brush {n} suspicious blocks", counts: ["brush:*"], target: 10, stage: start, table: archaeology, tokens: 15}
+  lost_and_found: {name: "Lost and Found", text: "Find a treasure new to you", counts: ["find:wayfarer:treasure/*"], distinct: true, target: 1, stage: start, table: archaeology, tokens: 18}
+  pieces_of_the_past: {name: "Pieces of the Past", text: "Find a pottery sherd new to you", counts: ["find:#minecraft:decorated_pot_sherds"], distinct: true, target: 1, stage: start, table: archaeology, tokens: 15}
+  # The Nether
+  quartz_vein: {name: "Quartz Vein", text: "Mine {n} nether quartz ore", counts: [mine:nether_quartz_ore], target: 32, stage: nether, table: nether, tokens: 12}
+  blaze_runner: {name: "Blaze Runner", text: "Defeat {n} blazes", counts: [kill:blaze], target: 8, stage: nether, table: nether, tokens: 14}
+  hog_wild: {name: "Hog Wild", text: "Defeat {n} hoglins", counts: [kill:hoglin], target: 6, stage: nether, table: nether, tokens: 14}
+  bright_idea: {name: "Bright Idea", text: "Mine {n} glowstone", counts: [mine:glowstone], target: 32, stage: nether, table: nether, tokens: 12}
+  soul_searching: {name: "Soul Searching", text: "Dig {n} soul sand or soul soil", counts: [mine:soul_sand, mine:soul_soil], target: 64, stage: nether, table: nether, tokens: 10}
+  black_pillars: {name: "Black Pillars", text: "Mine {n} basalt or blackstone", counts: [mine:basalt, mine:blackstone, mine:polished_basalt], target: 96, stage: nether, table: nether, tokens: 10}
+  ghostbusting: {name: "Ghostbusting", text: "Defeat {n} ghasts", counts: [kill:ghast], target: 3, stage: nether, table: nether, tokens: 16}
+  # The End
+  edge_of_the_world: {name: "Edge of the World", text: "Mine {n} end stone", counts: [mine:end_stone], target: 128, stage: end, table: end, tokens: 12}
+  shell_game: {name: "Shell Game", text: "Defeat {n} shulkers", counts: [kill:shulker], target: 6, stage: end, table: end, tokens: 16}
+  chorus_line: {name: "Chorus Line", text: "Break {n} chorus plants", counts: [mine:chorus_plant, mine:chorus_flower], target: 32, stage: end, table: end, tokens: 12}
+  purple_haze: {name: "Purple Haze", text: "Mine {n} purpur blocks", counts: [mine:purpur_block, mine:purpur_pillar], target: 48, stage: end, table: end, tokens: 12}
+  long_stares: {name: "Long Stares", text: "Defeat {n} endermen", counts: [kill:enderman], target: 16, stage: end, table: end, tokens: 14}
+
+weekly-pool:
+  the_long_dig: {name: "The Long Dig", text: "Mine {n} ore of any kind", counts: ["mine:#minecraft:coal_ores", "mine:#minecraft:iron_ores", "mine:#minecraft:copper_ores", "mine:#minecraft:gold_ores", "mine:#minecraft:redstone_ores", "mine:#minecraft:lapis_ores", "mine:#minecraft:diamond_ores", "mine:#minecraft:emerald_ores"], target: 256, stage: iron, table: mining, tokens: 60}
+  earthmover: {name: "Earthmover", text: "Dig {n} sand, gravel, dirt or clay", counts: [mine:sand, mine:red_sand, mine:gravel, mine:dirt, mine:grass_block, mine:clay], target: 1500, stage: start, table: digging, tokens: 50}
+  harvest_home: {name: "Harvest Home", text: "Harvest {n} crops", counts: ["harvest:*"], target: 512, stage: start, table: farming, tokens: 60}
+  anglers_week: {name: "Angler's Week", text: "Catch {n} things on your line", counts: ["catch:*"], target: 96, stage: start, table: fishing, tokens: 60}
+  field_notes: {name: "Field Notes", text: "Catch {n} species new to your Almanac", counts: ["catch:wayfarer:fish/*"], distinct: true, target: 6, stage: start, table: fishing, tokens: 80}
+  the_long_hunt: {name: "The Long Hunt", text: "Defeat {n} mobs", counts: ["kill:*"], target: 300, stage: start, table: hunting, tokens: 60}
+  new_faces: {name: "New Faces", text: "Defeat {n} kinds of mob you never have", counts: ["kill:*"], distinct: true, target: 3, stage: iron, table: hunting, tokens: 80}
+  off_the_map: {name: "Off the Map", text: "Find {n} lands new to you", counts: ["discover:biome/*"], distinct: true, target: 6, stage: iron, table: exploring, tokens: 80}
+  ruin_raider: {name: "Ruin Raider", text: "Step inside {n} structures", counts: ["discover:structure/*"], target: 10, stage: iron, table: exploring, tokens: 70}
+  master_craftsman: {name: "Master Craftsman", text: "Craft {n} things", counts: ["craft:*"], target: 1000, stage: start, table: crafting, tokens: 50}
+  the_dig_site: {name: "The Dig Site", text: "Brush {n} suspicious blocks", counts: ["brush:*"], target: 40, stage: start, table: archaeology, tokens: 80}
+  treasure_seeker: {name: "Treasure Seeker", text: "Find {n} treasures new to you", counts: ["find:wayfarer:treasure/*"], distinct: true, target: 3, stage: start, table: archaeology, tokens: 90}
+  hellfire_week: {name: "Hellfire Week", text: "Defeat {n} Nether mobs", counts: [kill:blaze, kill:ghast, kill:hoglin, kill:piglin_brute, kill:magma_cube, kill:wither_skeleton, kill:zoglin], target: 80, stage: nether, table: nether, tokens: 80}
+  void_walker: {name: "Void Walker", text: "Defeat {n} endermen or shulkers", counts: [kill:enderman, kill:shulker], target: 60, stage: end, table: end, tokens: 80}
+
+# Reward tables: per theme, per tier (daily, weekly, goal for the server goal, event), weighted lines. reward: tokens
+# (amount a-b), supply:<id>, curio:<id>, gear:<id>, cosmetic:<id>, item:<vanilla item> (amount), or
+# enchant:<key> (level a-b, an enchanted book that also unlocks it in the shop). Between them, the tables reach every
+# ExcellentEnchants enchant but the mark books' veinminer and treefeller and the curses.
+tables:
+  mining:
+    daily:
+      - {reward: tokens, amount: 6-12, weight: 8}
+      - {reward: "item:coal", amount: 12-24, weight: 3}
+      - {reward: "item:iron_ingot", amount: 3-6, weight: 3}
+      - {reward: "item:lapis_lazuli", amount: 6-12, weight: 2}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: "enchant:excellentenchants:haste", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:lucky_miner", level: 1, weight: 1}
+      - {reward: curio:prospectors_pan, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-40, weight: 6}
+      - {reward: "item:diamond", amount: 2-4, weight: 3}
+      - {reward: "item:emerald", amount: 4-8, weight: 2}
+      - {reward: "enchant:excellentenchants:smelter", level: 1-3, weight: 2}
+      - {reward: "enchant:excellentenchants:telekinesis", level: 1, weight: 2}
+      - {reward: "enchant:excellentenchants:glassbreaker", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:lucky_miner", level: 1-2, weight: 2}
+      - {reward: curio:lapis_earrings, weight: 2}
+      - {reward: curio:midas_blessing, weight: 2}
+      - {reward: gear:old_strike, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "enchant:excellentenchants:blast_mining", level: 2-4, weight: 3}
+      - {reward: "enchant:excellentenchants:haste", level: 2-3, weight: 3}
+      - {reward: "enchant:excellentenchants:tunnel", level: 1-3, weight: 2}
+      - {reward: gear:old_strike, weight: 2}
+      - {reward: curio:glow_jar, weight: 2}
+  digging:
+    daily:
+      - {reward: tokens, amount: 5-10, weight: 8}
+      - {reward: "item:glass", amount: 16-32, weight: 3}
+      - {reward: "item:flint", amount: 4-8, weight: 2}
+      - {reward: supply:seed_bundle, weight: 3}
+      - {reward: "enchant:excellentenchants:smelter", level: 1, weight: 1}
+      - {reward: curio:north_mitten, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-35, weight: 6}
+      - {reward: "item:brush", weight: 2}
+      - {reward: "enchant:excellentenchants:tunnel", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:glassbreaker", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:restore", level: 1-2, weight: 2}
+      - {reward: curio:daedalus_blessing, weight: 2}
+      - {reward: curio:lodestone_pendant, weight: 2}
+      - {reward: gear:glassblowers_spade, weight: 1}
+    goal:
+      - {reward: tokens, amount: 50-90, weight: 4}
+      - {reward: "enchant:excellentenchants:tunnel", level: 2-3, weight: 3}
+      - {reward: "enchant:excellentenchants:restore", level: 2-3, weight: 2}
+      - {reward: gear:glassblowers_spade, weight: 2}
+      - {reward: curio:lodestone_pendant, weight: 2}
+  farming:
+    daily:
+      - {reward: tokens, amount: 5-10, weight: 8}
+      - {reward: supply:seed_bundle, weight: 4}
+      - {reward: supply:floral_bundle, weight: 3}
+      - {reward: "item:bone_meal", amount: 16-32, weight: 3}
+      - {reward: "item:golden_carrot", amount: 4-8, weight: 2}
+      - {reward: "enchant:excellentenchants:replanter", level: 1, weight: 1}
+      - {reward: curio:lu_ban_blessing, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-35, weight: 6}
+      - {reward: supply:animal_crate, weight: 3}
+      - {reward: supply:mushy_bundle, amount: 2, weight: 2}
+      - {reward: "enchant:excellentenchants:regrowth", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:saturation", level: 1, weight: 2}
+      - {reward: "enchant:excellentenchants:cure", level: 1-2, weight: 1}
+      - {reward: curio:stormglass, weight: 2}
+      - {reward: cosmetic:petals, weight: 1}
+    goal:
+      - {reward: tokens, amount: 50-90, weight: 4}
+      - {reward: supply:animal_crate, amount: 2, weight: 3}
+      - {reward: "enchant:excellentenchants:regrowth", level: 2-4, weight: 3}
+      - {reward: "enchant:excellentenchants:saturation", level: 1-2, weight: 2}
+      - {reward: cosmetic:petals, weight: 2}
+      - {reward: curio:lu_ban_blessing, weight: 2}
+  fishing:
+    daily:
+      - {reward: tokens, amount: 6-12, weight: 8}
+      - {reward: supply:wayfarers_bait, weight: 4}
+      - {reward: "item:cooked_salmon", amount: 4-8, weight: 2}
+      - {reward: "item:nautilus_shell", weight: 1}
+      - {reward: "enchant:excellentenchants:seasoned_angler", level: 1, weight: 1}
+      - {reward: curio:mermaids_comb, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-40, weight: 6}
+      - {reward: supply:wayfarers_bait, amount: 2-3, weight: 3}
+      - {reward: "enchant:excellentenchants:double_catch", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:auto_reel", level: 1, weight: 2}
+      - {reward: "enchant:excellentenchants:river_master", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:survivalist", level: 1, weight: 1}
+      - {reward: curio:mermaids_comb, weight: 2}
+      - {reward: cosmetic:bubbles, weight: 1}
+      - {reward: gear:tidecaller, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "enchant:excellentenchants:river_master", level: 3-5, weight: 3}
+      - {reward: "enchant:excellentenchants:seasoned_angler", level: 2-3, weight: 2}
+      - {reward: "enchant:excellentenchants:double_catch", level: 2-3, weight: 2}
+      - {reward: gear:tidecaller, weight: 2}
+      - {reward: cosmetic:bubbles, weight: 2}
+  hunting:
+    daily:
+      - {reward: tokens, amount: 6-12, weight: 8}
+      - {reward: "item:arrow", amount: 16-32, weight: 3}
+      - {reward: "item:cooked_beef", amount: 6-10, weight: 2}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: "enchant:excellentenchants:vampire", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:cutter", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:sniper", level: 1, weight: 1}
+      - {reward: curio:bone_dice, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-40, weight: 6}
+      - {reward: "enchant:excellentenchants:rage", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:double_strike", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:exhaust", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:ice_aspect", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:paralyze", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:swiper", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:venom", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:wither", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:blindness", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:confusion", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:poisoned_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:withered_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:darkness_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:confusing_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:vampiric_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:lingering", level: 1-2, weight: 1}
+      - {reward: curio:hunters_tooth, weight: 2}
+      - {reward: curio:arachne_blessing, weight: 2}
+      - {reward: curio:artemis_blessing, weight: 2}
+      - {reward: cosmetic:embers, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "enchant:excellentenchants:temper", level: 2-4, weight: 1}
+      - {reward: "enchant:excellentenchants:thunder", level: 2-4, weight: 1}
+      - {reward: "enchant:excellentenchants:village_defender", level: 2-4, weight: 1}
+      - {reward: "enchant:excellentenchants:cold_steel", level: 1-3, weight: 1}
+      - {reward: "enchant:excellentenchants:hardened", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:nimble", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:decapitator", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:vampire", level: 2-3, weight: 1}
+      - {reward: "enchant:excellentenchants:bomber", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:explosive_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:electrified_arrows", level: 1-3, weight: 1}
+      - {reward: "enchant:excellentenchants:flare", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:ghast", level: 1, weight: 1}
+      - {reward: curio:bone_dice, weight: 2}
+      - {reward: cosmetic:embers, weight: 2}
+  exploring:
+    daily:
+      - {reward: tokens, amount: 6-12, weight: 8}
+      - {reward: "item:map", amount: 2-4, weight: 2}
+      - {reward: "item:golden_apple", weight: 1}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: "enchant:excellentenchants:speed", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:night_vision", level: 1, weight: 1}
+      - {reward: curio:owl_feather, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-40, weight: 6}
+      - {reward: "item:ender_pearl", amount: 4-8, weight: 2}
+      - {reward: "enchant:excellentenchants:jumping", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:lightweight", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:water_breathing", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:stopping_force", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:elemental_protection", level: 1-2, weight: 1}
+      - {reward: curio:hearthstone, weight: 2}
+      - {reward: curio:icarus_blessing, weight: 2}
+      - {reward: cosmetic:trailblazer, weight: 1}
+      - {reward: gear:featherstep_boots, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "enchant:excellentenchants:darkness_cloak", level: 1-3, weight: 1}
+      - {reward: "enchant:excellentenchants:kamikadze", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:elemental_protection", level: 2-4, weight: 2}
+      - {reward: "enchant:excellentenchants:speed", level: 1-2, weight: 2}
+      - {reward: gear:featherstep_boots, weight: 2}
+      - {reward: cosmetic:trailblazer, weight: 2}
+      - {reward: cosmetic:snowfall, weight: 2}
+  crafting:
+    daily:
+      - {reward: tokens, amount: 5-10, weight: 8}
+      - {reward: "item:iron_ingot", amount: 4-8, weight: 3}
+      - {reward: "item:paper", amount: 12-24, weight: 2}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: "enchant:excellentenchants:restore", level: 1, weight: 1}
+      - {reward: curio:glow_jar, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 20-35, weight: 6}
+      - {reward: "item:experience_bottle", amount: 8-16, weight: 3}
+      - {reward: "enchant:excellentenchants:wisdom", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:thrifty", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:soulbound", level: 1, weight: 1}
+      - {reward: curio:hepatizon_laurel, weight: 2}
+      - {reward: curio:daedalus_blessing, weight: 2}
+      - {reward: gear:woodsmans_bearded_axe, weight: 1}
+      - {reward: cosmetic:hearth_keeper, weight: 1}
+    goal:
+      - {reward: tokens, amount: 50-90, weight: 4}
+      - {reward: "enchant:excellentenchants:wisdom", level: 2-4, weight: 2}
+      - {reward: "enchant:excellentenchants:soulbound", level: 1, weight: 2}
+      - {reward: gear:woodsmans_bearded_axe, weight: 2}
+      - {reward: gear:miners_lamp_helm, weight: 2}
+      - {reward: cosmetic:hearth_keeper, weight: 2}
+  archaeology:
+    daily:
+      - {reward: tokens, amount: 8-14, weight: 8}
+      - {reward: "item:brush", weight: 2}
+      - {reward: supply:mushy_bundle, weight: 2}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: curio:lodestone_pendant, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 25-45, weight: 6}
+      - {reward: "item:decorated_pot", weight: 2}
+      - {reward: "enchant:excellentenchants:silk_chest", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:restore", level: 1-2, weight: 2}
+      - {reward: curio:ruby_circlet, weight: 2}
+      - {reward: cosmetic:sparkles, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "enchant:excellentenchants:silk_chest", level: 1, weight: 2}
+      - {reward: "enchant:excellentenchants:silk_spawner", level: 1, weight: 1}
+      - {reward: curio:ruby_circlet, weight: 2}
+      - {reward: cosmetic:sparkles, weight: 2}
+  nether:
+    daily:
+      - {reward: tokens, amount: 8-14, weight: 8}
+      - {reward: "item:blaze_rod", amount: 2-4, weight: 2}
+      - {reward: "item:gold_ingot", amount: 4-8, weight: 3}
+      - {reward: supply:mushy_bundle, weight: 2}
+      - {reward: "enchant:excellentenchants:fire_shield", level: 1, weight: 1}
+      - {reward: curio:strider_sole, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 25-45, weight: 6}
+      - {reward: "item:netherite_scrap", weight: 1}
+      - {reward: "enchant:excellentenchants:flame_walker", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:infernus", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:ice_shield", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:bane_of_netherspawn", level: 1-3, weight: 2}
+      - {reward: curio:prometheus_blessing, weight: 2}
+      - {reward: curio:strider_sole, weight: 2}
+      - {reward: cosmetic:embers, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "item:netherite_scrap", amount: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:fire_shield", level: 2-4, weight: 2}
+      - {reward: "enchant:excellentenchants:bane_of_netherspawn", level: 3-5, weight: 2}
+      - {reward: curio:prometheus_blessing, weight: 2}
+      - {reward: curio:hepatizon_laurel, weight: 2}
+  end:
+    daily:
+      - {reward: tokens, amount: 8-14, weight: 8}
+      - {reward: "item:ender_pearl", amount: 2-4, weight: 3}
+      - {reward: "item:chorus_fruit", amount: 8-16, weight: 2}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: "enchant:excellentenchants:hover", level: 1, weight: 1}
+      - {reward: curio:icarus_blessing, weight: 1}
+    weekly:
+      - {reward: tokens, amount: 25-45, weight: 6}
+      - {reward: "item:shulker_shell", amount: 2, weight: 2}
+      - {reward: "enchant:excellentenchants:ender_bow", level: 1, weight: 1}
+      - {reward: "enchant:excellentenchants:dragonfire_arrows", level: 1-2, weight: 1}
+      - {reward: "enchant:excellentenchants:rocket", level: 1-2, weight: 2}
+      - {reward: "enchant:excellentenchants:sniper", level: 1-2, weight: 1}
+      - {reward: curio:ruby_circlet, weight: 2}
+      - {reward: cosmetic:night_owl, weight: 1}
+    goal:
+      - {reward: tokens, amount: 60-100, weight: 4}
+      - {reward: "enchant:excellentenchants:dragon_heart", level: 2-4, weight: 2}
+      - {reward: "enchant:excellentenchants:rocket", level: 2-3, weight: 2}
+      - {reward: "enchant:excellentenchants:hover", level: 2-3, weight: 1}
+      - {reward: gear:wyrmscale, weight: 1}
+      - {reward: cosmetic:night_owl, weight: 2}
+  event:
+    event:
+      - {reward: tokens, amount: 30-60, weight: 6}
+      - {reward: supply:animal_crate, weight: 2}
+      - {reward: supply:wayfarers_bait, amount: 2, weight: 2}
+      - {reward: cosmetic:notes, weight: 2}
+      - {reward: cosmetic:wayfarer, weight: 1}
+      - {reward: curio:artemis_blessing, weight: 1}
+    goal:
+      - {reward: tokens, amount: 80-120, weight: 4}
+      - {reward: cosmetic:notes, weight: 2}
+      - {reward: cosmetic:wayfarer, weight: 2}
+      - {reward: gear:miners_lamp_helm, weight: 1}
+      - {reward: curio:icarus_blessing, weight: 2}

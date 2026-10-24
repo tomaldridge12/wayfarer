@@ -1,6 +1,7 @@
 package dev.wayfarer.objectives;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.ItemLook;
@@ -33,6 +34,8 @@ public final class ObjectivesModule implements Module {
     private Core core;
     private volatile Map<String, Feat> feats = Map.of();
     private volatile Map<String, Cosmetic> cosmetics = Map.of();
+    private volatile ObjectivesService.State pools;
+    private ObjectivesService service;
 
     public ObjectivesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -48,19 +51,29 @@ public final class ObjectivesModule implements Module {
         this.core = core;
         core.progression().registerRewardType(id(), FeatRules.FEAT, new FeatMarker());
         core.progression().registerRewardType(id(), "cosmetic", new Cosmetics());
+        ObjectivesService[] self = new ObjectivesService[1];
+        Loot loot = new Loot(core, () -> self[0]);
         load();
-        core.services().get(JournalPages.class).ifPresent(journal ->
-                journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page()));
+        service = new ObjectivesService(plugin, core, () -> pools, loot);
+        self[0] = service;
+        listen(service);
+        service.start();
+        core.services().get(JournalPages.class).ifPresent(journal -> {
+            journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page());
+            journal.add(id(), new ObjectivesPage(service, () -> pools, journal).page());
+        });
         core.commands().register(id(), commands());
     }
 
     @Override
     public void disable() {
+        if (service != null) {
+            service.stop();
+        }
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
     }
 
-    @SuppressWarnings("unused")
     private void listen(Listener listener) {
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
         listeners.add(listener);
@@ -84,9 +97,20 @@ public final class ObjectivesModule implements Module {
                         + "; whichever comes first is the only one a player gets")));
         problems.forEach(p -> core.logger().warning("[objectives] " + p));
         core.progression().setLadders(id(), feats.values().stream().map(FeatRules::ladder).toList());
-        Map<String, Integer> enchants = new LinkedHashMap<>();
+        PoolConfigParser.Result pool = PoolConfigParser.parse(core.config().load(id()), vocabulary, key -> {
+            org.bukkit.Material m = org.bukkit.Material.matchMaterial(key);
+            return m != null && m.isItem();
+        });
+        pool.problems().forEach(p -> core.logger().warning("[objectives] " + p));
+        problems.addAll(pool.problems());
+        pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.tables());
+        Map<String, Integer> enchants = new LinkedHashMap<>(pool.tables().enchants());
         feats.values().forEach(f -> f.rewards().stream().filter(x -> x.startsWith("enchant:")).forEach(x -> enchantOf(x, enchants)));
         core.rewardEnchants().register(id(), enchants);
+        core.logger().info("Objectives loaded: " + pool.daily().size() + " dailies, " + pool.weekly().size() + " weeklies, "
+                + pool.tables().all().size() + " reward tables, " + pool.settings().stages().size() + " stages "
+                + pool.settings().stages() + ", dailies turn over at " + pool.settings().schedule().dailyReset() + " "
+                + pool.settings().schedule().zone() + ", " + pool.problems().size() + " problems");
         long hidden = feats.values().stream().filter(Feat::hidden).count();
         core.logger().info("Feats loaded: " + feats.size() + " feats (" + hidden + " hidden), " + cosmetics.size() + " cosmetics ("
                 + cosmetics.values().stream().filter(Cosmetic::title).count() + " titles), " + problems.size() + " problems");
@@ -140,6 +164,37 @@ public final class ObjectivesModule implements Module {
         }
     }
 
+    private Loot loot() {
+        return new Loot(core, () -> service);
+    }
+
+    /** The player's stage if they are online; offline players draw at the first stage. */
+    private String stageOf(UUID id) {
+        org.bukkit.entity.Player online = plugin.getServer().getPlayer(id);
+        return online != null ? service.stage(online) : pools.settings().stages().getFirst();
+    }
+
+    /** Something to do with a player's objectives data and progression record. */
+    private interface PlayerAction {
+        void run(UUID id, ObjectivesPlayerData data, dev.wayfarer.core.progression.Progression.Snapshot snap);
+    }
+
+    private void withPlayer(CommandSender sender, String name, PlayerAction action) {
+        UUID id = dev.wayfarer.core.PlayerNames.resolve(plugin.getServer(), name);
+        if (id == null) {
+            sender.sendMessage("Unknown player '" + name + "' (use their UUID if they have not joined recently)");
+            return;
+        }
+        service.with(id, (data, snap) -> action.run(id, data, snap));
+    }
+
+    private com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> player() {
+        return Commands.argument("player", StringArgumentType.word()).suggests((ctx, b) -> {
+            plugin.getServer().getOnlinePlayers().forEach(p -> b.suggest(p.getName()));
+            return b.buildFuture();
+        });
+    }
+
     private LiteralArgumentBuilder<CommandSourceStack> commands() {
         return Commands.literal("objectives")
                 .requires(s -> s.getSender().hasPermission(ADMIN_PERMISSION))
@@ -149,6 +204,107 @@ public final class ObjectivesModule implements Module {
                             + f.selector().size() + " activities at " + f.at() + (f.hidden() ? ", hidden" : "") + " -> " + f.rewards()));
                     return Command.SINGLE_SUCCESS;
                 }))
+                .then(Commands.literal("show").then(player().executes(ctx -> {
+                    CommandSender sender = ctx.getSource().getSender();
+                    withPlayer(sender, StringArgumentType.getString(ctx, "player"), (uuid, data, snap) -> {
+                        service.refresh(uuid, data, snap, stageOf(uuid));
+                        sender.sendMessage("Objectives for " + uuid + ": " + data.tokens + " tokens, streak " + data.streak);
+                        for (int i = 0; i < data.dailies.size(); i++) {
+                            ObjectivesPlayerData.Slot slot = data.dailies.get(i);
+                            ObjectiveDefinition d = pools.daily().get(slot.id);
+                            sender.sendMessage("  daily " + (i + 1) + ": " + slot.id + (d == null ? "" : " " + ObjectiveRules.progress(d,
+                                    snap.counters(), slot.baseline) + "/" + d.target()) + (slot.done ? " done" : ""));
+                        }
+                        if (data.weekly != null) {
+                            sender.sendMessage("  weekly: " + data.weekly.id + (data.weekly.done ? " done" : ""));
+                        }
+                    });
+                    return Command.SINGLE_SUCCESS;
+                })))
+                .then(Commands.literal("tokens").then(player().then(Commands.argument("change", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            CommandSender sender = ctx.getSource().getSender();
+                            String[] parts = StringArgumentType.getString(ctx, "change").trim().split("\\s+");
+                            withPlayer(sender, StringArgumentType.getString(ctx, "player"), (uuid, data, snap) -> {
+                                long n;
+                                try {
+                                    n = Long.parseLong(parts[parts.length - 1]);
+                                } catch (NumberFormatException e) {
+                                    sender.sendMessage("Usage: /wayfarer objectives tokens <player> add|set <n>");
+                                    return;
+                                }
+                                long delta = parts[0].equals("set") ? n - data.tokens : n;
+                                if (!service.tokens(uuid, data, delta, "admin " + sender.getName())) {
+                                    sender.sendMessage("That would take the balance below zero");
+                                    return;
+                                }
+                                sender.sendMessage("Tokens for " + uuid + " now " + data.tokens);
+                            });
+                            return Command.SINGLE_SUCCESS;
+                        }))))
+                .then(Commands.literal("complete").then(player().then(Commands.argument("slot", StringArgumentType.word())
+                        .executes(ctx -> {
+                            CommandSender sender = ctx.getSource().getSender();
+                            String which = StringArgumentType.getString(ctx, "slot");
+                            withPlayer(sender, StringArgumentType.getString(ctx, "player"), (uuid, data, snap) -> {
+                                service.refresh(uuid, data, snap, stageOf(uuid));
+                                ObjectivesPlayerData.Slot slot = which.equals("weekly") ? data.weekly
+                                        : which.matches("[1-9]") && Integer.parseInt(which) <= data.dailies.size()
+                                        ? data.dailies.get(Integer.parseInt(which) - 1) : null;
+                                ObjectiveDefinition d = slot == null ? null
+                                        : (which.equals("weekly") ? pools.weekly() : pools.daily()).get(slot.id);
+                                if (d == null || slot.done) {
+                                    sender.sendMessage("No open objective '" + which + "' for " + uuid);
+                                    return;
+                                }
+                                service.complete(uuid, data, slot, d, which.equals("weekly") ? "weekly" : "daily");
+                                sender.sendMessage("Completed " + d.id() + " for " + uuid + "; tokens now " + data.tokens);
+                            });
+                            return Command.SINGLE_SUCCESS;
+                        }))))
+                .then(Commands.literal("reroll").then(player().then(Commands.argument("slot", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 6))
+                        .executes(ctx -> {
+                            CommandSender sender = ctx.getSource().getSender();
+                            int slot = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "slot") - 1;
+                            org.bukkit.entity.Player target = plugin.getServer().getPlayerExact(StringArgumentType.getString(ctx, "player"));
+                            if (target == null) {
+                                sender.sendMessage("No online player named '" + StringArgumentType.getString(ctx, "player") + "'");
+                                return Command.SINGLE_SUCCESS;
+                            }
+                            service.with(target.getUniqueId(), (data, snap) -> sender.sendMessage(service.reroll(target, data, snap, slot, true)
+                                    ? "Rerolled daily " + (slot + 1) + " for " + target.getName() : "Could not reroll that daily"));
+                            return Command.SINGLE_SUCCESS;
+                        }))))
+                .then(Commands.literal("reset").then(player().executes(ctx -> {
+                    CommandSender sender = ctx.getSource().getSender();
+                    withPlayer(sender, StringArgumentType.getString(ctx, "player"), (uuid, data, snap) -> {
+                        data.dailyStart = 0;
+                        data.weeklyStart = 0;
+                        service.refresh(uuid, data, snap, stageOf(uuid));
+                        sender.sendMessage("Redrew objectives for " + uuid + ": " + data.dailies.stream().map(x -> x.id).toList());
+                    });
+                    return Command.SINGLE_SUCCESS;
+                })))
+                .then(Commands.literal("roll").then(Commands.argument("table tier player", StringArgumentType.greedyString())
+                        .executes(ctx -> {
+                            CommandSender sender = ctx.getSource().getSender();
+                            String[] parts = StringArgumentType.getString(ctx, "table tier player").trim().split("\\s+");
+                            if (parts.length != 3) {
+                                sender.sendMessage("Usage: /wayfarer objectives roll <table> <tier> <player>");
+                                return Command.SINGLE_SUCCESS;
+                            }
+                            withPlayer(sender, parts[2], (uuid, data, snap) -> {
+                                java.util.List<String> rolled = pools.tables().roll(parts[0], parts[1], r -> service.owns(uuid, data, r),
+                                        java.util.concurrent.ThreadLocalRandom.current());
+                                if (rolled.isEmpty()) {
+                                    sender.sendMessage("Table " + parts[0] + " has no " + parts[1] + " tier");
+                                    return;
+                                }
+                                loot().give(uuid, data, rolled, "admin roll " + parts[0] + " " + parts[1]);
+                                sender.sendMessage("Rolled " + parts[0] + " " + parts[1] + " for " + uuid + ": " + rolled);
+                            });
+                            return Command.SINGLE_SUCCESS;
+                        })))
                 .then(Commands.literal("reload").executes(ctx -> {
                     CommandSender sender = ctx.getSource().getSender();
                     try {

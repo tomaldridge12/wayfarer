@@ -13,7 +13,7 @@ final class ObjectiveFixtures {
             return switch (tag) {
                 case "minecraft:hoes" -> Set.of("wooden_hoe", "stone_hoe", "iron_hoe", "golden_hoe", "diamond_hoe", "netherite_hoe");
                 case "minecraft:decorated_pot_sherds" -> Set.of("angler_pottery_sherd", "archer_pottery_sherd", "arms_up_pottery_sherd");
-                default -> Set.of();
+                default -> tag.startsWith("minecraft:") ? Set.of(tag.substring(10) + "_member") : Set.of();
             };
         }
 
