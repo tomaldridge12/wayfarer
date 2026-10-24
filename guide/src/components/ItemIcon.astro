@@ -1,0 +1,38 @@
+---
+// An item's art in an inventory slot. Dyed leather is tinted the way the game does: the grey texture
+// multiplied by the dye, with the undyed overlay on top.
+import HeadFace from './HeadFace.astro';
+import { guide } from '../data/repo';
+import { FACES } from '../data/faces';
+
+interface Props { item: string; dye?: string | null; size?: number; slot?: boolean; title?: string }
+const { item, dye = null, size = 32, slot = true, title } = Astro.props;
+const g = guide();
+const src = g.icon(item);
+const overlay = dye ? g.icon(`${item}_overlay`) : null;
+---
+<span class:list={['item', { slot }]} style={`--s:${size}px`} title={title}>
+  {src ? (
+    <span class="art">
+      <img class="px" src={src} width={size} height={size} alt="" loading="lazy" />
+      {dye && <span class="tint" style={`background:${dye};-webkit-mask-image:url(${src});mask-image:url(${src})`} />}
+      {overlay && <img class="px" src={overlay} width={size} height={size} alt="" loading="lazy" />}
+    </span>
+  ) : FACES[item] ? <HeadFace item={item} size={size * 0.8} /> : <span class="missing" title={item}>?</span>}
+</span>
+
+<style>
+  .item { display: inline-grid; place-items: center; flex: none; vertical-align: middle; }
+  .slot {
+    width: calc(var(--s) + 12px); height: calc(var(--s) + 12px);
+    background: var(--slot);
+    box-shadow: inset 2px 2px 0 var(--gui-dark), inset -2px -2px 0 var(--gui-light);
+  }
+  .art { position: relative; width: var(--s); height: var(--s); display: block; }
+  .art > * { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tint { mix-blend-mode: multiply; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; image-rendering: pixelated; }
+  .missing {
+    width: var(--s); height: var(--s); display: grid; place-items: center;
+    font-family: var(--pixel); color: #3f3f3f; background: repeating-linear-gradient(45deg, rgba(0,0,0,.08) 0 4px, transparent 4px 8px);
+  }
+</style>

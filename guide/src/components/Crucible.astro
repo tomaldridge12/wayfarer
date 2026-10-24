@@ -1,0 +1,28 @@
+---
+// The three heats of a crucible: a cauldron standing on a campfire, on magma, on soul fire.
+import ItemIcon from './ItemIcon.astro';
+const HEATS = [
+  { name: 'Low', under: 'campfire', label: 'on a campfire' },
+  { name: 'High', under: 'lava_bucket', label: 'on lava or magma' },
+  { name: 'Soul', under: 'soul_campfire', label: 'on soul fire' },
+];
+---
+<div class="heats">
+  {HEATS.map((h) => (
+    <figure class="heat">
+      <div class="stack">
+        <img class="px block" src="/textures/minecraft/block/cauldron_side.png" width="64" height="64" alt="" />
+        <ItemIcon item={h.under} size={64} slot={false} />
+      </div>
+      <figcaption><strong>{h.name} heat</strong><span>{h.label}</span></figcaption>
+    </figure>
+  ))}
+</div>
+<style>
+  .heats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 1.4rem 0 1.8rem; }
+  .heat { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+  .stack { display: flex; flex-direction: column; align-items: center; filter: drop-shadow(4px 4px 0 rgba(47, 34, 23, 0.3)); }
+  figcaption { display: flex; flex-direction: column; line-height: 1.3; }
+  figcaption strong { font-family: var(--pixel); font-weight: 400; }
+  figcaption span { font-style: italic; color: var(--ink-soft); font-size: 1rem; }
+</style>

@@ -1,0 +1,24 @@
+---
+// What stars do: health, damage and loot by star, and how far from spawn each star appears.
+import Stars from './Stars.astro';
+import { guide } from '../data/repo';
+import { num, pct } from '../data/text';
+
+const r = guide().config.bossRules!;
+const distance = (i: number) => (i === 0 ? 'anywhere' : `beyond ${num(r.starDistances[i - 1])} blocks`);
+---
+<table>
+  <thead><tr><th>Stars</th><th class="num">Health</th><th class="num">Damage</th><th class="num">Ascended drop</th><th class="num">Legendary drop</th><th>Usually found</th></tr></thead>
+  <tbody>
+    {r.health.map((h, i) => (
+      <tr>
+        <td><Stars n={i + 1} /></td>
+        <td class="num">×{h}</td>
+        <td class="num">×{r.damage[i]}</td>
+        <td class="num">{r.ascendedChance[i] != null ? pct(r.ascendedChance[i]) : '—'}</td>
+        <td class="num">{r.legendaryChance[i] != null ? pct(r.legendaryChance[i]) : '—'}</td>
+        <td>{distance(i)}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>

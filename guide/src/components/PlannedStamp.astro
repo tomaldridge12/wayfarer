@@ -1,0 +1,27 @@
+---
+// The ink stamp on a planned chapter.
+---
+<div class="stamp" role="note" aria-label="Planned. Details may change.">
+  <span class="stamp-word">Planned</span>
+  <span class="stamp-note">Details may change</span>
+</div>
+
+<style>
+  .stamp {
+    position: absolute;
+    right: 0; top: -14px;
+    transform: rotate(-7deg);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 6px 16px 5px;
+    color: var(--red-ink);
+    border: 3px double var(--red-ink);
+    border-radius: 4px;
+    font-family: var(--pixel);
+    opacity: 0.82;
+    mix-blend-mode: multiply;
+    background: radial-gradient(circle at 30% 40%, rgba(168, 50, 31, 0.06), transparent 70%);
+  }
+  .stamp-word { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; line-height: 1; }
+  .stamp-note { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  @media (max-width: 600px) { .stamp { position: static; display: inline-flex; margin-top: 0.6rem; transform: rotate(-3deg); } }
+</style>

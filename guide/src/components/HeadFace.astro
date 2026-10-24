@@ -1,0 +1,17 @@
+---
+// A trophy head's face, cut from the mob's own skin (the inventory head is a 3D model).
+import { FACES } from '../data/faces';
+
+interface Props { item: string; skin?: string | null; size?: number }
+const { item, skin = null, size = 32 } = Astro.props;
+
+const [tex, x, y, w, h] = FACES[skin ?? item] ?? FACES.zombie_head;
+const k = size / Math.max(w, h);
+const style = `width:${w * k}px;height:${h * k}px;background-image:url(/textures/minecraft/entity/${tex}.png);` +
+  `background-size:${64 * k}px auto;background-position:-${x * k}px -${y * k}px`;
+---
+<span class="face px" style={style} aria-hidden="true" />
+
+<style>
+  .face { display: inline-block; flex: none; background-repeat: no-repeat; box-shadow: 0 0 0 2px rgba(0,0,0,0.55), 3px 3px 0 2px rgba(47,34,23,0.3); }
+</style>

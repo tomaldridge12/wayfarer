@@ -1,0 +1,145 @@
+# The Guide's stage timeline: the points of a normal playthrough every reward is placed against.
+# marker: the vanilla advancement that marks reaching the stage (the same ones core snapshots).
+stages:
+  - id: iron
+    name: Iron
+    marker: Acquire Hardware
+    item: iron_ingot
+    blurb: First furnace, first iron. The world is still big and you are still small.
+  - id: diamond
+    name: Diamond
+    marker: Diamonds!
+    item: diamond
+    blurb: Deep caves, enchanting tables, the first real gear.
+  - id: nether
+    name: Nether
+    marker: We Need to Go Deeper
+    item: netherrack
+    blurb: Through the portal, into fortresses and bastions, out with netherite.
+  - id: post_end
+    name: Post-End
+    marker: Free the End
+    item: elytra
+    blurb: The dragon is down, the surface is safe, and the long road opens up.
+
+# Every reward the Guide shows, placed on a stage. The build fails on a reward missing here
+# or on an entry here that no longer exists in config.
+rewards:
+  # Bosses: where you first meet them.
+  boss:rotting_warlord: iron
+  boss:bone_marshal: diamond
+  boss:brood_mother: iron
+  boss:blast_prophet: iron
+  boss:void_stalker: post_end
+  boss:bog_witch_queen: diamond
+  boss:sand_pharaoh: diamond
+  boss:drowned_captain: diamond
+  boss:piglin_warlord: nether
+  # Banners: a family's banner comes with the first hundred kills; a boss's with its first defeat.
+  banner:zombie: iron
+  banner:skeleton: iron
+  banner:creeper: iron
+  banner:spider: iron
+  banner:enderman: iron
+  banner:rotting_warlord: iron
+  banner:bone_marshal: diamond
+  banner:brood_mother: iron
+  banner:blast_prophet: iron
+  banner:void_stalker: post_end
+  banner:bog_witch_queen: diamond
+  banner:sand_pharaoh: diamond
+  banner:drowned_captain: diamond
+  banner:piglin_warlord: nether
+  # Trophy heads.
+  head:zombie: diamond
+  head:skeleton: diamond
+  head:spider: diamond
+  head:creeper: diamond
+  head:enderman: diamond
+  head:rotting_warlord: iron
+  head:bone_marshal: diamond
+  head:brood_mother: iron
+  head:blast_prophet: iron
+  head:void_stalker: post_end
+  head:bog_witch_queen: diamond
+  head:sand_pharaoh: diamond
+  head:drowned_captain: diamond
+  head:piglin_warlord: nether
+  # Relics: Tier I at diamond, Tier II and Ascended in the Nether, Legendaries and the Wayfarer's Blade after the End;
+  # regalia with its boss.
+  relic:zombie_weapon: diamond
+  relic:zombie_armour: diamond
+  relic:zombie_weapon_2: nether
+  relic:zombie_armour_2: nether
+  relic:skeleton_weapon: diamond
+  relic:skeleton_armour: diamond
+  relic:skeleton_weapon_2: nether
+  relic:skeleton_armour_2: nether
+  relic:spider_weapon: diamond
+  relic:spider_armour: diamond
+  relic:spider_weapon_2: nether
+  relic:spider_armour_2: nether
+  relic:creeper_weapon: diamond
+  relic:creeper_armour: diamond
+  relic:creeper_weapon_2: nether
+  relic:creeper_armour_2: nether
+  relic:enderman_weapon: diamond
+  relic:enderman_armour: diamond
+  relic:enderman_weapon_2: nether
+  relic:enderman_armour_2: nether
+  relic:wayfarers_blade: post_end
+  relic:rotting_warlord_regalia_head: iron
+  relic:rotting_warlord_regalia_chest: iron
+  relic:rotting_warlord_regalia_legs: iron
+  relic:rotting_warlord_regalia_feet: iron
+  relic:bone_marshal_regalia_head: diamond
+  relic:bone_marshal_regalia_chest: diamond
+  relic:bone_marshal_regalia_legs: diamond
+  relic:bone_marshal_regalia_feet: diamond
+  relic:brood_mother_regalia_head: iron
+  relic:brood_mother_regalia_chest: iron
+  relic:brood_mother_regalia_legs: iron
+  relic:brood_mother_regalia_feet: iron
+  relic:blast_prophet_regalia_head: iron
+  relic:blast_prophet_regalia_chest: iron
+  relic:blast_prophet_regalia_legs: iron
+  relic:blast_prophet_regalia_feet: iron
+  relic:void_stalker_regalia_head: post_end
+  relic:void_stalker_regalia_chest: post_end
+  relic:void_stalker_regalia_legs: post_end
+  relic:void_stalker_regalia_feet: post_end
+  relic:bog_witch_queen_regalia_head: diamond
+  relic:bog_witch_queen_regalia_chest: diamond
+  relic:bog_witch_queen_regalia_legs: diamond
+  relic:bog_witch_queen_regalia_feet: diamond
+  relic:sand_pharaoh_regalia_head: diamond
+  relic:sand_pharaoh_regalia_chest: diamond
+  relic:sand_pharaoh_regalia_legs: diamond
+  relic:sand_pharaoh_regalia_feet: diamond
+  relic:drowned_captain_regalia_head: diamond
+  relic:drowned_captain_regalia_chest: diamond
+  relic:drowned_captain_regalia_legs: diamond
+  relic:drowned_captain_regalia_feet: diamond
+  relic:piglin_warlord_regalia_head: nether
+  relic:piglin_warlord_regalia_chest: nether
+  relic:piglin_warlord_regalia_legs: nether
+  relic:piglin_warlord_regalia_feet: nether
+  relic:zombie_weapon_3: nether
+  relic:zombie_armour_3: nether
+  relic:skeleton_weapon_3: nether
+  relic:skeleton_armour_3: nether
+  relic:spider_weapon_3: nether
+  relic:spider_armour_3: nether
+  relic:creeper_weapon_3: nether
+  relic:creeper_armour_3: nether
+  relic:enderman_weapon_3: nether
+  relic:enderman_armour_3: nether
+  relic:gravecleaver: post_end
+  relic:marshals_longbow: post_end
+  relic:broodfang: post_end
+  relic:prophets_maul: post_end
+  relic:voidwalkers: post_end
+  relic:hexbloom_crown: post_end
+  relic:pharaohs_khopesh: post_end
+  relic:captains_trident: post_end
+  relic:warlords_greataxe: post_end

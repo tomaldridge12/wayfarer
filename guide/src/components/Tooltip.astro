@@ -1,0 +1,29 @@
+---
+// A Minecraft item tooltip: dark panel, purple frame, coloured name, lore lines.
+export interface Line { text: string; colour?: string }
+interface Props { name: string; colour?: string; lines?: Line[] }
+const { name, colour = 'var(--mc-white)', lines = [] } = Astro.props;
+---
+<div class="tooltip">
+  <div class="name" style={`color:${colour}`}>{name}</div>
+  {lines.map((l) => <div class="line" style={`color:${l.colour ?? 'var(--mc-gray)'}`}>{l.text}</div>)}
+  <slot />
+</div>
+
+<style>
+  .tooltip {
+    position: relative;
+    background: var(--tooltip);
+    padding: 8px 12px 9px;
+    font-family: var(--pixel);
+    font-size: 0.98rem;
+    line-height: 1.35;
+    border: 2px solid transparent;
+    border-image: linear-gradient(var(--tooltip-edge-top), var(--tooltip-edge-bottom)) 1;
+    outline: 2px solid rgba(16, 0, 16, 0.94);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.55);
+    min-width: 0;
+  }
+  .name, .line { text-shadow: 2px 2px 0 color-mix(in srgb, currentColor 25%, black); overflow-wrap: anywhere; }
+  .name { margin-bottom: 4px; font-weight: 400; }
+</style>

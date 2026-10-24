@@ -1,0 +1,56 @@
+---
+// Relics as item cards. show: 'families' (Tier I, II and Ascended per mob family), 'all' (the all-mobs relics
+// earned by kills), 'legendary', or 'regalia'.
+import ItemCard from './ItemCard.astro';
+import StageChip from './StageChip.astro';
+import { guide } from '../data/repo';
+import { TIER_NAMES, type RelicRow } from '../data/config';
+import { title, num, roman } from '../data/text';
+
+interface Props { show: 'families' | 'all' | 'legendary' | 'regalia' }
+const { show } = Astro.props;
+const g = guide();
+const { relics, families } = g.config;
+
+const TIER_COLOURS = ['var(--mc-white)', 'var(--mc-aqua)', 'var(--mc-purple)', 'var(--mc-yellow)', 'var(--mc-gold)'];
+const SLOT = { weapon: 'Weapon', head: 'Helmet', chest: 'Chestplate', legs: 'Leggings', feet: 'Boots', offhand: 'Off-hand charm' };
+
+function lines(r: RelicRow) {
+  const out = [{ text: `${TIER_NAMES[r.tier]} · ${SLOT[r.slot]}`, colour: TIER_COLOURS[r.tier] }];
+  if (r.edge) {
+    const who = r.family === 'all' ? 'all mobs' : title(r.family);
+    out.push({ text: r.slot === 'weapon' ? `+${r.edge}% damage to ${who}` : `−${r.edge}% damage from ${who}`, colour: 'var(--mc-blue)' });
+  }
+  for (const p of r.perks) out.push({ text: p, colour: 'var(--mc-green)' });
+  for (const e of r.enchants) out.push({ text: `${title(e.id)} ${roman(e.level)}`, colour: e.excellent ? 'var(--mc-purple)' : 'var(--mc-gray)' });
+  out.push(r.dropOnly
+    ? { text: r.tier >= 4 ? 'Rare drop from its boss' : 'Drops from this family’s mini boss', colour: '#8a8a8a' }
+    : { text: `Earned at ${num(r.kills!)} ${r.family === 'all' ? 'hostile' : title(r.family)} kills`, colour: '#8a8a8a' });
+  return out;
+}
+
+const bossIds = new Set(g.config.bosses.map((b) => b.id));
+const groups: { label: string | null; rows: RelicRow[] }[] =
+  show === 'families' ? families.map((f) => ({ label: title(f.id), rows: relics.filter((r) => r.family === f.id && r.tier > 0) }))
+  : show === 'all' ? [{ label: null, rows: relics.filter((r) => r.family === 'all' && r.tier < 4) }]
+  : show === 'legendary' ? [{ label: null, rows: relics.filter((r) => r.tier === 4) }]
+  : [...bossIds].map((b) => ({ label: title(b), rows: relics.filter((r) => r.family === b && r.tier === 0) }));
+---
+{groups.filter((grp) => grp.rows.length).map((grp) => (
+  <section class="relic-group">
+    {grp.label && <h3>{grp.label}</h3>}
+    <div class="relics">
+      {grp.rows.map((r) => (
+        <div class="relic">
+          <ItemCard item={r.item} dye={r.dye} name={r.name} colour={TIER_COLOURS[r.tier]} lines={lines(r)} />
+          <StageChip stage={g.stageOf(r.reward)} />
+        </div>
+      ))}
+    </div>
+  </section>
+))}
+<style>
+  .relics { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px 20px; margin: 0.6rem 0 1.4rem; }
+  .relic { display: flex; flex-direction: column; gap: 6px; }
+  .relic :global(.chip) { margin-left: 56px; }
+</style>

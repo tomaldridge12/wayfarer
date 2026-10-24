@@ -1,0 +1,45 @@
+import StarTable from '../components/StarTable.astro';
+import BossCards from '../components/BossCards.astro';
+import BannerGallery from '../components/BannerGallery.astro';
+import HeadShelf from '../components/HeadShelf.astro';
+import RelicGrid from '../components/RelicGrid.astro';
+import { guide } from '../data/repo';
+export const rules = guide().config.bossRules;
+
+Some things out there have names. You'll know one when you see it: bigger than it should be, glowing, a health bar across the top of your screen and its name in colour. These are the **bosses**, and each is its own family on the ladder, with its own banner, its own trophy head and its own regalia.
+
+## Stars
+
+Every boss rolls **stars** when it appears, from one to five. Stars scale everything: its health, how hard it hits, how often it uses its tricks, and what it drops. The further from spawn you meet it, the more stars it's likely to have, with an occasional extra one for luck ({rules && `${Math.round(rules.extraStarChance * 100)}% of the time`}).
+
+<StarTable />
+
+There are two ways to meet one.
+
+- **Roaming bosses** rise from an ordinary mob's natural spawn in the right biome. They're capped at {rules?.roamingMaxStars} stars, and the same boss won't roam again in that world for {rules?.roamingCooldown} minutes.
+- **Structure guardians** wait inside particular structures and appear when you walk in. They're always {rules?.guardianMinStars} stars or more, and each structure's guardian takes a while to come back.
+
+Everyone who lands a hit gets their own loot roll, so bring friends. Bosses tied to a mob family are **mini bosses**: they drop that family's Ascended relics.
+
+## The bestiary
+
+Each boss below has a fold for its spoilers: its different forms, what they do, and where to look. Leave them shut if you'd rather be surprised.
+
+<BossCards />
+
+## Their banners and heads
+
+A boss's banner comes with your first win, and its banner zone is wider and stronger than a family's.
+
+<BannerGallery bosses />
+
+<HeadShelf bosses />
+
+## Regalia
+
+Beat a boss enough times and it gives up its regalia: a full suit of dyed armour in its colours. It's purely for show, which is the point.
+
+<details class="spoiler">
+  <summary>Show every boss's regalia</summary>
+  <div class="spoiler-body"><RelicGrid show="regalia" /></div>
+</details>

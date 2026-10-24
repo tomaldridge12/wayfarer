@@ -1,0 +1,12 @@
+# The Guide's chapters in reading order. stage: where the chapter sits on the timeline (none = before it).
+# status: live once the feature is on the server, planned until then.
+chapters:
+  - { slug: welcome, title: 'Welcome, Wayfarer', stage: none, status: live }
+  - { slug: banners-and-trophies, title: Banners and trophies, stage: iron, status: live }
+  - { slug: pity-drops, title: Pity drops, stage: iron, status: live }
+  - { slug: alloys, title: Alloys and the crucible, stage: iron, status: planned }
+  - { slug: marks, title: Marks, stage: iron, status: planned }
+  - { slug: relics, title: Relics, stage: diamond, status: live }
+  - { slug: objectives, title: Objectives, stage: diamond, status: planned }
+  - { slug: bosses, title: Bosses, stage: nether, status: live }
+  - { slug: exploration, title: Exploration, stage: post_end, status: planned }

@@ -1,0 +1,150 @@
+@import '@fontsource/pixelify-sans/400.css';
+@import '@fontsource/pixelify-sans/600.css';
+@import '@fontsource/eb-garamond/400.css';
+@import '@fontsource/eb-garamond/400-italic.css';
+@import '@fontsource/eb-garamond/600.css';
+
+:root {
+  --pixel: 'Pixelify Sans', ui-monospace, monospace;
+  --serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+
+  --table: #1d1712;
+  --table-line: rgba(214, 180, 120, 0.06);
+  --parchment: #f2e6c9;
+  --parchment-deep: #e4d2a6;
+  --parchment-edge: #c9ae78;
+  --ink: #2f2217;
+  --ink-soft: #6a5239;
+  --ink-faint: #9b8466;
+  --rule: #b99c66;
+  --gold: #e0a92e;
+  --red-ink: #a8321f;
+
+  /* Minecraft GUI */
+  --gui: #c6c6c6;
+  --gui-light: #ffffff;
+  --gui-shadow: #555555;
+  --gui-dark: #373737;
+  --slot: #8b8b8b;
+  --tooltip: rgba(16, 0, 16, 0.94);
+  --tooltip-edge-top: #5000ff;
+  --tooltip-edge-bottom: #28007f;
+
+  /* Minecraft text colours */
+  --mc-gold: #ffaa00;
+  --mc-yellow: #ffff55;
+  --mc-aqua: #55ffff;
+  --mc-green: #55ff55;
+  --mc-red: #ff5555;
+  --mc-purple: #ff55ff;
+  --mc-gray: #aaaaaa;
+  --mc-dark-gray: #555555;
+  --mc-blue: #5555ff;
+  --mc-white: #ffffff;
+
+  --stage-iron: #d8d8d8;
+  --stage-diamond: #4aedd9;
+  --stage-nether: #e0543c;
+  --stage-post_end: #c58ef0;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--table); }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.18rem;
+  line-height: 1.6;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(120, 90, 50, 0.25), transparent 60%),
+    radial-gradient(ellipse at 90% 100%, rgba(60, 90, 70, 0.18), transparent 55%),
+    repeating-linear-gradient(0deg, var(--table-line) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, var(--table-line) 0 1px, transparent 1px 48px),
+    var(--table);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img.px, .px { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+a { color: #7a3f12; text-decoration-color: rgba(122, 63, 18, 0.4); text-underline-offset: 0.18em; }
+a:hover { text-decoration-color: currentColor; }
+
+h1, h2, h3, h4 { font-family: var(--pixel); font-weight: 600; line-height: 1.15; color: var(--ink); text-wrap: balance; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); margin: 0.2em 0 0.3em; letter-spacing: 0.01em; }
+h2 { font-size: 1.6rem; margin: 2.2em 0 0.6em; display: flex; align-items: center; gap: 0.5em; }
+h2::before {
+  content: '';
+  width: 0.55em; height: 0.55em;
+  background: var(--gold);
+  box-shadow: 0.15em 0.15em 0 var(--ink-soft);
+  flex: none;
+}
+h3 { font-size: 1.25rem; margin: 1.8em 0 0.4em; }
+
+p, ul, ol { margin: 0 0 1em; text-wrap: pretty; }
+strong { font-weight: 600; }
+em { color: var(--ink-soft); }
+
+hr {
+  border: 0;
+  height: 14px;
+  margin: 2.5em auto;
+  max-width: 220px;
+  background:
+    linear-gradient(90deg, transparent, var(--rule) 20%, var(--rule) 80%, transparent) center / 100% 2px no-repeat;
+  position: relative;
+}
+hr::after {
+  content: '';
+  position: absolute; left: 50%; top: 50%;
+  width: 10px; height: 10px;
+  background: var(--rule);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums lining-nums; margin: 0 0 1.5em; }
+th, td { text-align: left; padding: 0.45em 0.7em; border-bottom: 1px solid rgba(185, 156, 102, 0.55); vertical-align: middle; }
+th { font-family: var(--pixel); font-weight: 400; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); border-bottom: 2px solid var(--rule); }
+td.num, th.num { text-align: right; }
+
+blockquote {
+  margin: 1.5em 0;
+  padding: 0.2em 0 0.2em 1.1em;
+  border-left: 3px solid var(--rule);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* Spoilers: native disclosure, styled like a sealed note. */
+details.spoiler {
+  margin: 0.8em 0;
+  border: 1px dashed var(--rule);
+  background: rgba(228, 210, 166, 0.45);
+  border-radius: 2px;
+}
+details.spoiler > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.5em 0.9em;
+  font-family: var(--pixel);
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  display: flex; align-items: center; gap: 0.6em;
+}
+details.spoiler > summary::-webkit-details-marker { display: none; }
+details.spoiler > summary::before { content: '\25B6'; font-size: 0.7em; transition: transform 0.15s ease; }
+details.spoiler[open] > summary::before { transform: rotate(90deg); }
+details.spoiler > .spoiler-body { padding: 0.2em 0.9em 0.9em; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Wide tables scroll inside the page on phones rather than widening it. */
+@media (max-width: 700px) {
+  table { display: block; overflow-x: auto; font-size: 1rem; }
+  th, td { padding: 0.4em 0.5em; }
+}

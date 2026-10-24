@@ -1,0 +1,16 @@
+---
+// One item's 16x16 art, scaled by whole pixels so it stays crisp.
+import { guide } from '../data/repo';
+
+interface Props { item: string; size?: number; alt?: string; class?: string }
+const { item, size = 32, alt = '', class: cls } = Astro.props;
+const src = guide().icon(item);
+---
+{src
+  ? <img class:list={['px', 'icon', cls]} src={src} width={size} height={size} alt={alt} loading="lazy" decoding="async" />
+  : <span class:list={['icon', 'icon-missing', cls]} style={`width:${size}px;height:${size}px`} title={item} />}
+
+<style>
+  .icon { display: inline-block; vertical-align: middle; flex: none; }
+  .icon-missing { background: repeating-linear-gradient(45deg, rgba(0,0,0,0.08) 0 4px, transparent 4px 8px); outline: 1px dashed var(--ink-faint); }
+</style>

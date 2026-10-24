@@ -1,0 +1,10 @@
+---
+interface Props { n: number; of?: number }
+const { n, of = 5 } = Astro.props;
+---
+<span class="stars" aria-label={`${n} stars`}>{Array.from({ length: of }, (_, i) => <span class:list={['s', { on: i < n }]}>★</span>)}</span>
+<style>
+  .stars { font-family: var(--pixel); font-size: 1.15rem; letter-spacing: 1px; white-space: nowrap; }
+  .s { color: rgba(47, 34, 23, 0.22); }
+  .s.on { color: var(--mc-gold); text-shadow: 1px 1px 0 #6b4400; }
+</style>

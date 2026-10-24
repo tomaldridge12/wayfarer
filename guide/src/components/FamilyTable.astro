@@ -1,0 +1,30 @@
+---
+// Mob families and the mobs that count toward each, with each family's banner and head thresholds.
+import ItemIcon from './ItemIcon.astro';
+import { guide } from '../data/repo';
+import { title, num } from '../data/text';
+
+const g = guide();
+const { families, banners, heads } = g.config;
+---
+<table class="families">
+  <thead><tr><th>Family</th><th>Mobs that count</th><th class="num">Banner</th><th class="num">Head</th></tr></thead>
+  <tbody>
+    {families.map((f) => {
+      const banner = banners.find((b) => b.family === f.id);
+      const head = heads.find((h) => h.family === f.id);
+      return (
+        <tr>
+          <td><strong>{title(f.id)}</strong></td>
+          <td class="mobs">{f.mobs.map((m) => <span class="mob"><ItemIcon item={`${m}_spawn_egg`} size={16} slot={false} title={title(m)} />{title(m)}</span>)}</td>
+          <td class="num">{banner?.kills != null ? `${num(banner.kills)} kills` : '—'}</td>
+          <td class="num">{head ? `${num(head.kills)} kills` : '—'}</td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
+<style>
+  .mobs { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .mob { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+</style>

@@ -1,0 +1,107 @@
+// Guide data: turns the repo's files (plugin config, stage map, chapter list, textures) into what pages render.
+// Pure apart from reading files, so it is tested with fixture folders.
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse } from 'yaml';
+import { readConfig, type Config } from './config';
+import { FACES } from './faces';
+
+export type StageId = 'iron' | 'diamond' | 'nether' | 'post_end';
+export type Status = 'live' | 'planned';
+
+export interface Stage { id: StageId; name: string; marker: string; item: string; blurb: string }
+export interface Chapter { slug: string; title: string; stage: StageId | 'none'; status: Status }
+
+export interface GuidePaths {
+  /** Folder holding stages.yml, chapters.yml and chapters/. */
+  guideData: string;
+  /** Folder holding chapter files (<slug>.mdx). */
+  chapters: string;
+  /** Vanilla textures (item/, block/, entity/ ...), served at /textures/minecraft/. */
+  vanillaTextures: string;
+  /** Wayfarer's resource pack textures, served at /textures/wayfarer/. */
+  packTextures: string;
+  /** The plugin's default config folder (banners.yml, bosses.yml, progression.yml). */
+  config: string;
+}
+
+export interface Guide {
+  stages: Stage[];
+  chapters: Chapter[];
+  config: Config;
+  /** The stage a reward or boss id (`banner:zombie`, `boss:void_stalker`) sits on. */
+  stageOf(reward: string): StageId;
+  /** The art for an item id (`diamond`, `wayfarer:steel_ingot`); null when there is none. */
+  icon(item: string): string | null;
+}
+
+export class GuideError extends Error {}
+
+const STAGE_IDS: StageId[] = ['iron', 'diamond', 'nether', 'post_end'];
+
+function readYaml(file: string): any {
+  if (!existsSync(file)) throw new GuideError(`missing file ${file}`);
+  return parse(readFileSync(file, 'utf8')) ?? {};
+}
+
+export function loadGuide(paths: GuidePaths): Guide {
+  const stagesFile = join(paths.guideData, 'stages.yml');
+  const chaptersFile = join(paths.guideData, 'chapters.yml');
+  const stageDoc = readYaml(stagesFile);
+  const stages: Stage[] = (stageDoc.stages ?? []).map((s: any) => {
+    if (!STAGE_IDS.includes(s.id)) throw new GuideError(`${stagesFile}: unknown stage '${s.id}'`);
+    return { id: s.id, name: s.name, marker: s.marker, item: s.item, blurb: s.blurb };
+  });
+
+  const chapters: Chapter[] = (readYaml(chaptersFile).chapters ?? []).map((c: any) => {
+    if (c.stage !== 'none' && !STAGE_IDS.includes(c.stage))
+      throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has unknown stage '${c.stage}'`);
+    if (c.status !== 'live' && c.status !== 'planned')
+      throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has status '${c.status}' (live or planned)`);
+    if (!existsSync(join(paths.chapters, `${c.slug}.mdx`)))
+      throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has no file ${c.slug}.mdx`);
+    return { slug: c.slug, title: c.title, stage: c.stage, status: c.status };
+  });
+
+  // Reading order follows the timeline: unstaged chapters first, then by stage, list order within a stage.
+  const rank = (c: Chapter) => (c.stage === 'none' ? -1 : STAGE_IDS.indexOf(c.stage));
+  chapters.sort((a, b) => rank(a) - rank(b));
+
+  const icon = (item: string) => iconFor(paths, item);
+  for (const stage of stages)
+    if (!icon(stage.item)) throw new GuideError(`${stagesFile}: stage '${stage.id}' item '${stage.item}' has no texture`);
+
+  const config = readConfig(paths.config);
+  const placed: Record<string, StageId> = stageDoc.rewards ?? {};
+  const known = new Set([...config.banners, ...config.heads, ...config.relics, ...config.bosses].map((r) => r.reward));
+  for (const reward of known)
+    if (!placed[reward]) throw new GuideError(`${stagesFile}: '${reward}' is not placed on a stage (add it under rewards)`);
+  for (const [reward, stage] of Object.entries(placed)) {
+    if (!known.has(reward)) throw new GuideError(`${stagesFile}: '${reward}' is not in the plugin config any more (remove it)`);
+    if (!STAGE_IDS.includes(stage)) throw new GuideError(`${stagesFile}: '${reward}' has unknown stage '${stage}'`);
+  }
+
+  // Items shown by a live chapter must have art; planned chapters may show an empty slot.
+  const liveItems = [
+    ...config.relics.map((r) => r.item), ...config.pity.map((p) => p.item),
+  ];
+  for (const item of liveItems)
+    if (!icon(item) && !FACES[item]) throw new GuideError(`item '${item}' has no texture (vanilla or wayfarer:)`);
+
+  return { stages, chapters, config, icon, stageOf: (reward) => placed[reward] };
+}
+
+// Items drawn from animation frames: one fixed frame stands for the item.
+const ANIMATED: Record<string, string> = { compass: 'compass_16', recovery_compass: 'recovery_compass_16', clock: 'clock_00' };
+
+/** Vanilla items look in item/ then block/; `wayfarer:` items look in the pack's item/. */
+export function iconFor(paths: GuidePaths, item: string): string | null {
+  const [ns, id] = item.includes(':') ? item.split(':', 2) : ['minecraft', item];
+  const name = ANIMATED[id] ?? id;
+  const root = ns === 'wayfarer' ? paths.packTextures : ns === 'minecraft' ? paths.vanillaTextures : null;
+  if (!root) return null;
+  for (const folder of ['item', 'block']) {
+    if (existsSync(join(root, folder, `${name}.png`))) return `/textures/${ns}/${folder}/${name}.png`;
+  }
+  return null;
+}

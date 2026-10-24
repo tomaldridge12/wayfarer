@@ -1,0 +1,16 @@
+---
+import { guide } from '../data/repo';
+import type { StageId } from '../data/guide';
+interface Props { stage: StageId }
+const { stage } = Astro.props;
+const s = guide().stages.find((x) => x.id === stage)!;
+---
+<span class="chip" style={`--c: var(--stage-${stage})`}>{s.name}</span>
+<style>
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--pixel); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .chip::before { content: ''; width: 9px; height: 9px; background: var(--c); box-shadow: 1px 1px 0 rgba(0,0,0,0.45); }
+</style>

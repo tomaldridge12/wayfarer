@@ -1,0 +1,34 @@
+---
+// Banners hung in a row, each with its tooltip. boss: show the bosses' banners instead of the mob families'.
+import BannerArt from './BannerArt.astro';
+import Tooltip from './Tooltip.astro';
+import StageChip from './StageChip.astro';
+import { guide } from '../data/repo';
+import { title, num, plural } from '../data/text';
+
+interface Props { bosses?: boolean }
+const { bosses = false } = Astro.props;
+const g = guide();
+const bossIds = new Set(g.config.bosses.map((b) => b.id));
+const rows = g.config.banners.filter((b) => bossIds.has(b.family) === bosses);
+---
+<div class="gallery">
+  {rows.map((b) => (
+    <figure class="hang">
+      <BannerArt look={b.look} scale={3} />
+      <Tooltip name={b.name} colour="var(--mc-yellow)" lines={[
+        { text: b.kills != null ? `Earned at ${plural(b.kills, bosses ? 'defeat' : 'kill')} of the ${title(b.family)} family` : 'Earned by drop only', colour: 'var(--mc-gray)' },
+        { text: `+${b.bonus}% damage to ${title(b.family)}`, colour: 'var(--mc-blue)' },
+        { text: `−${b.reduction}% damage from ${title(b.family)}`, colour: 'var(--mc-blue)' },
+        { text: `Boost zone: ${num(b.radius)} blocks`, colour: 'var(--mc-gray)' },
+        ...Object.entries(b.drops).map(([mob, c]) => ({ text: `${Math.round(c * 100)}% drop from ${title(mob)}`, colour: 'var(--mc-gold)' })),
+      ]} />
+      <figcaption><StageChip stage={g.stageOf(b.reward)} /></figcaption>
+    </figure>
+  ))}
+</div>
+<style>
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 28px 22px; margin: 1.5rem 0 2rem; }
+  .hang { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; gap: 8px 14px; align-items: start; }
+  .hang figcaption { grid-column: 2; }
+</style>

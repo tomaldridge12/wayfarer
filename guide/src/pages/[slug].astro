@@ -1,0 +1,15 @@
+---
+import Guide from '../layouts/Guide.astro';
+import { guide } from '../data/repo';
+
+export function getStaticPaths() {
+  const files = import.meta.glob<{ Content: any }>('../chapters/*.mdx', { eager: true });
+  return guide().chapters
+    .filter((c) => c.slug !== 'welcome')
+    .map((c) => ({ params: { slug: c.slug }, props: { Content: files[`../chapters/${c.slug}.mdx`].Content } }));
+}
+
+const { slug } = Astro.params;
+const { Content } = Astro.props;
+---
+<Guide slug={slug!}><Content /></Guide>

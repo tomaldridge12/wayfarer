@@ -1,0 +1,118 @@
+---
+// Every boss as a bestiary card. Variants, abilities and where it spawns stay folded away as spoilers.
+import Stars from './Stars.astro';
+import BannerArt from './BannerArt.astro';
+import HeadFace from './HeadFace.astro';
+import ItemCard from './ItemCard.astro';
+import StageChip from './StageChip.astro';
+import { guide } from '../data/repo';
+import { TIER_NAMES } from '../data/config';
+import { title, place, pct, num } from '../data/text';
+
+const g = guide();
+const { bosses, banners, heads, relics, bossRules } = g.config;
+const ABILITIES: Record<string, string> = {
+  charge: 'lunges at you', ground_slam: 'slams the ground, hurting and throwing back anyone close',
+  summon_minions: 'calls minions to its side', poison_cloud: 'drops a poison cloud at your feet',
+  arrow_volley: 'fires a fan of five arrows', blink: 'teleports behind you',
+  fire_ring: 'bursts into a ring of fire that burns anyone close', pull: 'drags everyone nearby towards it',
+  shield: 'calls minions and cannot be hurt until they fall (or for 15 seconds)', enrage: 'turns faster and fiercer when badly hurt',
+};
+const gradient = (c: string[]) => (c.length > 1 ? `background:linear-gradient(90deg,${c[0]},${c[1]});-webkit-background-clip:text;background-clip:text;color:transparent` : `color:${c[0] ?? '#fff'}`);
+---
+<div class="bestiary">
+  {bosses.map((b) => {
+    const banner = banners.find((x) => x.family === b.id);
+    const head = heads.find((x) => x.family === b.id);
+    const legendary = relics.find((x) => x.id === b.legendary);
+    const colours = b.variants[0]?.colours ?? [];
+    const minStars = b.roams ? 1 : bossRules!.guardianMinStars;
+    return (
+      <article class="boss" id={b.id}>
+        <header>
+          <div class="trophies">
+            {banner && <BannerArt look={banner.look} scale={2} />}
+            {head && <HeadFace item={head.item} skin={head.skin} size={28} />}
+          </div>
+          <div class="title">
+            <div class="plate">
+              <h3 style={gradient(colours)}>{b.name}</h3>
+              <span class="bar" style={`--glow:${colours[1] ?? colours[0] ?? '#aa00aa'}`} />
+            </div>
+            <div class="meta">
+              <Stars n={minStars} /> <span class="to">to</span> <Stars n={5} />
+              <StageChip stage={g.stageOf(b.reward)} />
+            </div>
+          </div>
+        </header>
+        <ul class="facts">
+          <li><strong>{b.roams && b.structures.length ? 'Roams and guards' : b.roams ? 'Roams' : 'Guards'}</strong>{b.roams
+            ? ` — any ${title(b.entity!)} can rise as one${b.nightOnly ? ', at night' : ''}; roaming it never has more than ${bossRules!.roamingMaxStars} stars.`
+            : ` — waits inside ${b.structures.map((s) => title(s)).join(' and ')}, always ${bossRules!.guardianMinStars} stars or more.`}</li>
+          <li><strong>{num(b.health)} health</strong> and <strong>{b.damage} damage</strong> at one star.</li>
+          {b.base && <li>A mini boss of the <strong>{title(b.base)}</strong> family: it drops their Ascended relics, and their banners and relics work against it.</li>}
+        </ul>
+        {legendary && (
+          <div class="legendary">
+            <span class="label">Its Legendary</span>
+            <ItemCard item={legendary.item} name={legendary.name} colour="var(--mc-gold)" lines={[
+              { text: `${TIER_NAMES[4]} · rare personal drop`, colour: 'var(--mc-gold)' },
+              ...legendary.perks.map((p) => ({ text: p, colour: 'var(--mc-green)' })),
+            ]} />
+          </div>
+        )}
+        <details class="spoiler">
+          <summary>Spoilers: its forms and where it hides</summary>
+          <div class="spoiler-body">
+            <ul class="variants">
+              {b.variants.map((v) => (
+                <li><span class="vtag"><strong style={gradient(v.colours)} class="vname">{v.name}</strong></span> <em>({title(v.entity)})</em> — {v.abilities.map((a) => ABILITIES[a] ?? title(a)).join(', ')}.</li>
+              ))}
+            </ul>
+            <p class="where">
+              {b.roams && <>Rises from a natural {title(b.entity!)} spawn ({pct(b.chance ?? 0)} of them) {b.biomes === 'any' ? 'in any biome' : `in ${(b.biomes as string[]).map(place).join(', ')}`}{b.nightOnly ? ', only at night' : ''}. </>}
+              {b.structures.length > 0 && <>Guards {b.structures.map((s) => title(s)).join(' and ')}; once beaten there, it returns after {b.cooldown} minutes.</>}
+            </p>
+          </div>
+        </details>
+      </article>
+    );
+  })}
+</div>
+<style>
+  .bestiary { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 22px; margin: 1.5rem 0; }
+  .boss {
+    background: rgba(255, 250, 235, 0.55);
+    border: 1px solid var(--rule);
+    box-shadow: 3px 3px 0 rgba(150, 110, 50, 0.25);
+    padding: 18px 20px 14px;
+    border-radius: 2px;
+  }
+  header { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 10px; }
+  .trophies { display: flex; align-items: flex-end; gap: 10px; }
+  .title { flex: 1; min-width: 0; }
+  /* The boss bar as it hangs at the top of your screen: name over a long thin bar. */
+  .plate {
+    background: var(--tooltip); padding: 8px 14px 10px; margin-bottom: 8px;
+    border: 2px solid transparent; border-image: linear-gradient(var(--tooltip-edge-top), var(--tooltip-edge-bottom)) 1;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .plate h3 { margin: 0; font-size: 1.35rem; font-weight: 400; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.9)); }
+  .bar {
+    width: 100%; height: 7px; display: block;
+    background: linear-gradient(90deg, var(--glow) 0 78%, rgba(255,255,255,0.12) 78%);
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.8);
+  }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.95rem; }
+  .to { color: var(--ink-faint); font-style: italic; }
+  .meta :global(.chip) { margin-left: 8px; }
+  .facts { padding-left: 1.1em; margin: 0 0 12px; font-size: 1.05rem; }
+  .facts li { margin-bottom: 4px; }
+  .legendary { margin: 12px 0; }
+  .label { display: block; font-family: var(--pixel); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); margin-bottom: 6px; }
+  .variants { padding-left: 1.1em; margin: 0 0 8px; }
+  .variants li { margin-bottom: 6px; }
+  .vname { font-family: var(--pixel); font-weight: 400; filter: drop-shadow(1px 1px 0 #000); }
+  .vtag { display: inline-block; background: var(--tooltip); padding: 0 8px 1px; margin-right: 2px; }
+  .where { margin: 0; font-size: 1rem; }
+</style>

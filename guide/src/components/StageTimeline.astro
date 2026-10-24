@@ -1,0 +1,57 @@
+---
+// The spine of the Guide: the four stages as advancement frames along a trail on the map.
+import Icon from './Icon.astro';
+import { guide } from '../data/repo';
+
+const g = guide();
+---
+<ol class="timeline">
+  {g.stages.map((s, i) => (
+    <li class="stop" data-stage={s.id} style={`--stage: var(--stage-${s.id})`}>
+      <div class:list={['frame', { goal: i === g.stages.length - 1 }]}>
+        <Icon item={s.item} size={32} />
+      </div>
+      <div class="label">
+        <span class="name">{s.name}</span>
+        <span class="marker">“{s.marker}”</span>
+        <span class="blurb">{s.blurb}</span>
+      </div>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .timeline {
+    list-style: none; margin: 2rem 0 2.5rem; padding: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    position: relative;
+  }
+  /* The dashed trail through the frames, like a route drawn on a map. */
+  .timeline::before {
+    content: ''; position: absolute; left: 12%; right: 12%; top: 31px;
+    border-top: 3px dashed var(--red-ink); opacity: 0.55;
+  }
+  .stop { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .frame {
+    width: 64px; height: 64px; display: grid; place-items: center;
+    background: url('/textures/minecraft/gui/sprites/advancements/task_frame_obtained.png') center / 64px 64px no-repeat;
+    image-rendering: pixelated;
+    position: relative; z-index: 1;
+    filter: drop-shadow(0 3px 0 rgba(47, 34, 23, 0.35));
+  }
+  .frame.goal { background-image: url('/textures/minecraft/gui/sprites/advancements/goal_frame_obtained.png'); }
+  .label { display: flex; flex-direction: column; gap: 2px; }
+  .name {
+    font-family: var(--pixel); font-weight: 600; font-size: 1.1rem; color: var(--ink);
+    text-decoration: underline 4px var(--stage); text-underline-offset: 6px; text-decoration-skip-ink: none;
+  }
+  .marker { font-style: italic; color: var(--ink-soft); font-size: 0.95rem; margin-top: 6px; }
+  .blurb { font-size: 0.95rem; line-height: 1.4; color: var(--ink); }
+
+  @media (max-width: 700px) {
+    .timeline { grid-template-columns: 1fr; gap: 18px; }
+    .timeline::before { left: 31px; right: auto; top: 20px; bottom: 20px; border-top: 0; border-left: 3px dashed var(--red-ink); }
+    .stop { flex-direction: row; align-items: flex-start; text-align: left; }
+    .frame { flex: none; }
+  }
+</style>

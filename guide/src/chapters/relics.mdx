@@ -1,0 +1,34 @@
+import RelicGrid from '../components/RelicGrid.astro';
+import { guide } from '../data/repo';
+export const set = guide().config.wayfarerSet;
+
+Past the banner and the head, each family keeps something better: **relics**, weapons and armour made with that family in mind. Each one carries a **family edge** (extra damage to them, or less damage from them), a perk or two, and enchantments you can't get anywhere else.
+
+They're not meant to replace your netherite. A relic is a sidegrade: brilliant against its own family, ordinary against everything else. Which is why you'll end up carrying more than one.
+
+## How they work
+
+- **Tiers.** Tier I relics come from climbing the ladder, Tier II from climbing much further. **Ascended** relics only drop from a family's mini boss. Each tier is its own item; nothing is ever upgraded in place.
+- **The family edge** adds on top of a banner's boost. Stand in your zombie zone holding the Zombie Cleaver and the two stack.
+- **Perks** never stack with themselves: two pieces with the same perk are no better than the strongest one.
+- **Enchantments** marked in purple belong to relics alone; you won't find them on a table or from a villager.
+
+## The family relics
+
+<RelicGrid show="families" />
+
+## For every mob
+
+One relic counts every hostile kill rather than a family's, so it's a long road for anyone.
+
+<RelicGrid show="all" />
+
+## The Wayfarer set
+
+{set && <p>Wear relic armour from <strong>{set.families} different families</strong> at once (head, chest, legs, feet, or the off-hand charm all count, at any tier) and every hostile mob hits you <strong>{set.reduction}% softer</strong>, and you gain <strong>{set.hearts} extra {set.hearts === 1 ? 'heart' : 'hearts'}</strong>. It's the reason to wear a skeleton's helmet with a spider's boots.</p>}
+
+## Legendaries
+
+The rarest things in the world: one per boss, each a personal drop with its own perks. You'll find them on the bosses' own pages too.
+
+<RelicGrid show="legendary" />

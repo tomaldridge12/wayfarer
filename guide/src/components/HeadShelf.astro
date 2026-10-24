@@ -1,0 +1,38 @@
+---
+// Trophy heads on a shelf. bosses: the bosses' heads instead of the mob families'.
+import HeadFace from './HeadFace.astro';
+import StageChip from './StageChip.astro';
+import { guide } from '../data/repo';
+import { title, plural } from '../data/text';
+
+interface Props { bosses?: boolean }
+const { bosses = false } = Astro.props;
+const g = guide();
+const bossIds = new Set(g.config.bosses.map((b) => b.id));
+const rows = g.config.heads.filter((h) => bossIds.has(h.family) === bosses);
+---
+<ul class="shelf">
+  {rows.map((h) => (
+    <li>
+      <HeadFace item={h.item} skin={h.skin} size={40} />
+      <span class="what">
+        <strong>{h.name}</strong>
+        <span>{plural(h.kills, bosses ? 'defeat' : 'kill')} of {title(h.family)}</span>
+        <StageChip stage={g.stageOf(h.reward)} />
+      </span>
+    </li>
+  ))}
+</ul>
+<style>
+  .shelf {
+    list-style: none; padding: 18px 18px 22px; margin: 1.2rem 0 2rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px 20px;
+    background: linear-gradient(#a07a4a, #8a6438); border: 3px solid #4a3218;
+    box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), inset 0 -4px 0 rgba(0,0,0,0.25), 0 6px 0 #5a3d1c;
+    border-radius: 2px;
+  }
+  .shelf li { display: flex; gap: 14px; align-items: center; }
+  .what { display: flex; flex-direction: column; line-height: 1.25; color: #fff4dc; font-size: 1rem; }
+  .what strong { font-family: var(--pixel); font-weight: 400; color: #fff; text-shadow: 2px 2px 0 rgba(0,0,0,0.4); }
+  .what :global(.chip) { color: #f3dfb8; }
+</style>

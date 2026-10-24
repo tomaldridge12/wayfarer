@@ -1,0 +1,114 @@
+---
+import '../styles/guide.css';
+import Sidebar from '../components/Sidebar.astro';
+import PlannedStamp from '../components/PlannedStamp.astro';
+import Icon from '../components/Icon.astro';
+import { guide } from '../data/repo';
+
+interface Props { slug: string }
+const { slug } = Astro.props;
+const g = guide();
+const chapter = g.chapters.find((c) => c.slug === slug)!;
+const stage = g.stages.find((s) => s.id === chapter.stage);
+const index = g.chapters.indexOf(chapter);
+const prev = g.chapters[index - 1];
+const next = g.chapters[index + 1];
+const href = (s: string) => (s === 'welcome' ? '/' : `/${s}/`);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{chapter.title} · Wayfarer Guide</title>
+    <link rel="icon" href="/textures/minecraft/item/compass_16.png" />
+  </head>
+  <body>
+    <div class="shell">
+      <Sidebar current={slug} />
+      <main class="page" data-status={chapter.status}>
+        <header class="entry-head">
+          <p class="eyebrow">
+            {stage ? <><Icon item={stage.item} size={20} /> <span>{stage.name}</span></> : <span>Field notes</span>}
+            <span class="dot">·</span>
+            <span>Entry {String(index + 1).padStart(2, '0')}</span>
+          </p>
+          <h1>{chapter.title}</h1>
+          {chapter.status === 'planned' && <PlannedStamp />}
+        </header>
+        <article class="prose">
+          <slot />
+        </article>
+        <nav class="turn" aria-label="Turn the page">
+          {prev ? <a class="turn-prev" href={href(prev.slug)}><span class="turn-dir">Previous</span><span>{prev.title}</span></a> : <span />}
+          {next ? <a class="turn-next" href={href(next.slug)}><span class="turn-dir">Next</span><span>{next.title}</span></a> : <span />}
+        </nav>
+      </main>
+    </div>
+  </body>
+</html>
+
+<style>
+  .shell {
+    display: grid;
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 36px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 36px 28px 64px;
+    align-items: start;
+  }
+  .page {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255, 250, 235, 0.7), transparent 70%),
+      radial-gradient(circle at 0% 100%, rgba(170, 130, 70, 0.22), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(170, 130, 70, 0.16), transparent 35%),
+      linear-gradient(180deg, var(--parchment), var(--parchment-deep));
+    padding: 56px clamp(24px, 6vw, 76px) 48px;
+    border-radius: 3px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+      inset 0 0 70px rgba(150, 110, 50, 0.35),
+      0 1px 0 var(--parchment-edge),
+      0 24px 60px -18px rgba(0, 0, 0, 0.75),
+      0 4px 14px rgba(0, 0, 0, 0.4);
+    min-width: 0;
+  }
+  .entry-head { position: relative; margin-bottom: 2rem; padding-bottom: 1.4rem; border-bottom: 2px solid var(--rule); }
+  .eyebrow {
+    display: flex; align-items: center; gap: 0.5em;
+    margin: 0;
+    font-family: var(--pixel);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+  }
+  .dot { color: var(--ink-faint); }
+  .prose { max-width: 68ch; }
+  .prose :global(> p:first-of-type::first-letter) {
+    font-family: var(--pixel);
+    font-weight: 600;
+    float: left;
+    font-size: 3.4em;
+    line-height: 0.9;
+    padding: 0.06em 0.12em 0 0;
+    color: var(--red-ink);
+  }
+  .turn {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-top: 3.5rem; padding-top: 1.5rem;
+    border-top: 2px solid var(--rule);
+  }
+  .turn a { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); font-family: var(--pixel); font-size: 1.05rem; }
+  .turn-next { text-align: right; align-items: flex-end; }
+  .turn-dir { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); }
+  .turn a:hover span:last-child { color: var(--red-ink); }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; padding: 16px 12px 40px; gap: 16px; }
+    .page { padding: 36px 22px 32px; }
+  }
+</style>

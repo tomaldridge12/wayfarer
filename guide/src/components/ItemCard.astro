@@ -1,0 +1,16 @@
+---
+// An item as you'd see it on hover: its slot beside its tooltip.
+import ItemIcon from './ItemIcon.astro';
+import Tooltip, { type Line } from './Tooltip.astro';
+
+interface Props { item: string; name: string; colour?: string; lines?: Line[]; dye?: string | null }
+const { item, name, colour, lines, dye } = Astro.props;
+---
+<div class="card">
+  <ItemIcon item={item} dye={dye} size={32} />
+  <Tooltip name={name} colour={colour} lines={lines}><slot /></Tooltip>
+</div>
+
+<style>
+  .card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; }
+</style>

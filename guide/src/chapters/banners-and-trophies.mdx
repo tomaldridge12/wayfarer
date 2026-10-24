@@ -1,0 +1,37 @@
+import FamilyTable from '../components/FamilyTable.astro';
+import BannerGallery from '../components/BannerGallery.astro';
+import HeadShelf from '../components/HeadShelf.astro';
+
+Every hostile thing you put down is written in a ledger somewhere. Not just "a zombie": a member of the **zombie family**, which also counts husks and drowned. Each family keeps its own tally for you, and each tally leads up a ladder of rewards: a banner first, then a trophy head, then relics.
+
+## The families
+
+A mob belongs to one family at most. Kill any of them and the whole family's count goes up.
+
+<FamilyTable />
+
+There's also a quiet all-mobs count running underneath, of every hostile kill you make. It doesn't earn a banner, but a few rewards read it.
+
+### What counts
+
+Kills you make yourself, with your own hands or your own arrows. Mobs from spawners, trial spawners, spawn eggs and the like don't count, and neither do tamed or leashed ones. Farms won't climb the ladder for you; going out into the world will.
+
+## Banners
+
+A banner is the first prize on each family's ladder. Carry it, and it's just a banner. **Place** it, and it lays a boost zone around itself: stand inside and you hit that family harder and they hit you softer.
+
+<BannerGallery />
+
+Zones from several banners can overlap, but the same family's boost never adds up: two zombie banners side by side are one zombie banner with extra decoration. Mix families instead and you're covered against all of them. You'll feel the edge when you cross into a zone, and with damage numbers on, boosted hits show a little **▲**.
+
+## Trophy heads
+
+Keep going after the banner and the family gives up a trophy head.
+
+<HeadShelf />
+
+Place the head and it becomes a **plaque**: it floats a label with your name and your live count for that family, so anyone visiting your base can see exactly how much trouble you've been.
+
+## Lost something?
+
+Every reward on a ladder is yours for good, even if the item isn't. If a banner burns, falls in the void, or walks off with a friend, you can **claim** a fresh copy: `/wayfarer claim`. `/wayfarer progress` shows how far along each ladder you are.

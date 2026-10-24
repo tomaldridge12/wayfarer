@@ -1,0 +1,37 @@
+---
+// A banner drawn the way the game draws it: each pattern is a grey mask from the banner texture, dyed one colour.
+import type { BannerLook } from '../data/config';
+
+interface Props { look: BannerLook; scale?: number }
+const { look, scale = 4 } = Astro.props;
+// Minecraft's dye colours (DyeColor texture diffuse colours).
+const DYES: Record<string, string> = {
+  white: '#F9FFFE', orange: '#F9801D', magenta: '#C74EBD', light_blue: '#3AB3DA', yellow: '#FED83D', lime: '#80C71F',
+  pink: '#F38BAA', gray: '#474F52', light_gray: '#9D9D97', cyan: '#169C9C', purple: '#8932B8', blue: '#3C44AA',
+  brown: '#835432', green: '#5E7C16', red: '#B02E26', black: '#1D1D21',
+};
+const layers = [{ pattern: 'base', colour: look.colour }, ...look.patterns];
+// The banner face sits at (1, 1) in the 64x64 texture and is 20x40.
+const w = 20 * scale, h = 40 * scale;
+const mask = (p: string) => `url(/textures/minecraft/entity/banner/${p}.png)`;
+const style = (p: string, c: string) =>
+  `background:${DYES[c] ?? c};-webkit-mask-image:${mask(p)};mask-image:${mask(p)};` +
+  `-webkit-mask-size:${64 * scale}px ${64 * scale}px;mask-size:${64 * scale}px ${64 * scale}px;` +
+  `-webkit-mask-position:-${scale}px -${scale}px;mask-position:-${scale}px -${scale}px`;
+---
+<span class="banner" style={`width:${w}px;height:${h}px;--pole:${scale * 2}px`} aria-hidden="true">
+  {layers.map((l) => <span class="layer" style={style(l.pattern, l.colour)} />)}
+  <span class="shade" style={`-webkit-mask-image:${mask('base')};mask-image:${mask('base')};-webkit-mask-size:${64 * scale}px;mask-size:${64 * scale}px;-webkit-mask-position:-${scale}px -${scale}px;mask-position:-${scale}px -${scale}px`} />
+</span>
+
+<style>
+  .banner { position: relative; display: inline-block; flex: none; margin-top: var(--pole); filter: drop-shadow(3px 4px 0 rgba(47, 34, 23, 0.3)); }
+  /* The crossbar it hangs from. */
+  .banner::before {
+    content: ''; position: absolute; left: -8%; right: -8%; top: calc(var(--pole) * -1); height: var(--pole);
+    background: linear-gradient(#9c7a4a, #6b4f2c); box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  }
+  .layer, .shade { position: absolute; inset: 0; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; image-rendering: pixelated; }
+  /* The cloth's own shading, laid over the dyes. */
+  .shade { background: linear-gradient(90deg, rgba(0,0,0,0.12), transparent 30%, transparent 70%, rgba(0,0,0,0.18)); mix-blend-mode: multiply; }
+</style>
