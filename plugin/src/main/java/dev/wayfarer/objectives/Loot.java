@@ -25,10 +25,12 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 final class Loot {
     private final Core core;
     private final Supplier<ObjectivesService> service;
+    private final Keepsakes keepsakes;
 
-    Loot(Core core, Supplier<ObjectivesService> service) {
+    Loot(Core core, Supplier<ObjectivesService> service, Keepsakes keepsakes) {
         this.core = core;
         this.service = service;
+        this.keepsakes = keepsakes;
     }
 
     /** Gives every loot key and says what was given ("20 tokens, Tome of Experience"). */
@@ -49,7 +51,7 @@ final class Loot {
                 unlock(data, one);
             }
             if (online != null) {
-                item(one).ifPresentOrElse(item -> online.getInventory().addItem(item).values()
+                item(one, id, online.getName()).ifPresentOrElse(item -> online.getInventory().addItem(item).values()
                         .forEach(left -> online.getWorld().dropItem(online.getLocation(), left)),
                         () -> core.logger().warning("[objectives] Loot " + one + " could not be made (is its module on?)"));
             } else {
@@ -69,8 +71,11 @@ final class Loot {
         }
     }
 
-    /** The item for a loot key, or empty when no module makes it. */
-    Optional<ItemStack> item(String text) {
+    /** The item for a loot key given to this player, or empty when no module makes it. */
+    Optional<ItemStack> item(String text, UUID owner, String ownerName) {
+        if (text.startsWith(Keepsakes.PREFIX)) {
+            return keepsakes.make(text, owner, ownerName);
+        }
         RewardTables.Loot l = RewardTables.Loot.of(text);
         String what = l.what();
         if (what.startsWith("item:")) {
@@ -98,6 +103,9 @@ final class Loot {
     Component name(String text) {
         if (text.startsWith("tokens:")) {
             return ItemLook.text(text.substring(7) + " tokens", ObjectivesService.GOLD);
+        }
+        if (text.startsWith(Keepsakes.PREFIX)) {
+            return ItemLook.text("a keepsake", 0xF2C744);
         }
         if (text.startsWith("item:")) {
             RewardTables.Loot l = RewardTables.Loot.of(text);

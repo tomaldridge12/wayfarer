@@ -33,11 +33,13 @@ final class ObjectivesPage {
     private final ObjectivesService service;
     private final Supplier<ObjectivesService.State> state;
     private final JournalPages journal;
+    private final ServerGoals goals;
 
-    ObjectivesPage(ObjectivesService service, Supplier<ObjectivesService.State> state, JournalPages journal) {
+    ObjectivesPage(ObjectivesService service, Supplier<ObjectivesService.State> state, JournalPages journal, ServerGoals goals) {
         this.service = service;
         this.state = state;
         this.journal = journal;
+        this.goals = goals;
     }
 
     JournalPages.Page page() {
@@ -85,6 +87,8 @@ final class ObjectivesPage {
                     ObjectivesService.INK)));
             body.add(row(s.weekly().get(data.weekly.id), data.weekly, snap, "Weekly"));
         }
+        body.add(Menus.text(ItemLook.text("The server goal · everyone, together", ServerGoals.BLUE)));
+        body.add(Menus.item(ItemStack.of(Material.BELL), goals.line(player.getUniqueId())));
         Menus.show(player, ItemLook.text("Objectives", ObjectivesService.GOLD), body, buttons, Math.max(1, buttons.size()), journal.back());
     }
 

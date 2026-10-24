@@ -26,7 +26,7 @@ public final class PoolConfigParser {
     }
 
     public record Result(Settings settings, Map<String, ObjectiveDefinition> daily, Map<String, ObjectiveDefinition> weekly,
-            RewardTables tables, List<String> problems) {
+            Map<String, ObjectiveDefinition> goal, RewardTables tables, List<String> problems) {
     }
 
     private final ObjectiveVocabulary names;
@@ -44,7 +44,8 @@ public final class PoolConfigParser {
         RewardTables tables = p.tables(root.get("tables"), settings.duplicateTokens());
         Map<String, ObjectiveDefinition> daily = p.pool("Daily", root.get("daily-pool"), settings, tables, "daily");
         Map<String, ObjectiveDefinition> weekly = p.pool("Weekly", root.get("weekly-pool"), settings, tables, "weekly");
-        return new Result(settings, daily, weekly, tables, List.copyOf(p.problems));
+        Map<String, ObjectiveDefinition> goal = p.pool("Server goal", root.get("goal-pool"), settings, tables, "goal");
+        return new Result(settings, daily, weekly, goal, tables, List.copyOf(p.problems));
     }
 
     private Settings settings(Map<String, Object> root) {

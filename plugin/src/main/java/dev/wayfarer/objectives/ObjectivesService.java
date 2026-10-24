@@ -43,7 +43,7 @@ final class ObjectivesService implements Listener {
 
     /** What the service works from, as last loaded. */
     record State(PoolConfigParser.Settings settings, Map<String, ObjectiveDefinition> daily, Map<String, ObjectiveDefinition> weekly,
-            RewardTables tables) {
+            Map<String, ObjectiveDefinition> goal, RewardTables tables) {
     }
 
     private final JavaPlugin plugin;

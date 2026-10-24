@@ -362,6 +362,25 @@ weekly-pool:
   hellfire_week: {name: "Hellfire Week", text: "Defeat {n} Nether mobs", counts: [kill:blaze, kill:ghast, kill:hoglin, kill:piglin_brute, kill:magma_cube, kill:wither_skeleton, kill:zoglin], target: 80, stage: nether, table: nether, tokens: 80}
   void_walker: {name: "Void Walker", text: "Defeat {n} endermen or shulkers", counts: [kill:enderman, kill:shulker], target: 60, stage: end, table: end, tokens: 80}
 
+# The weekly server goal: one shared objective for everyone, drawn at the stage most players have reached (from those
+# seen in the last two weeks). Progress is the sum of every player's count since they were first seen that week; on
+# completion every contributor gets a keepsake and a goal-tier roll from the goal's table.
+goal-pool:
+  great_harvest: {name: "The Great Harvest", text: "Harvest {n} crops", counts: ["harvest:*"], target: 3000, stage: start, table: farming}
+  stone_age: {name: "The Stone Age", text: "Mine {n} stone", counts: [mine:stone, mine:deepslate, mine:tuff], target: 12000, stage: start, table: mining}
+  full_nets: {name: "Full Nets", text: "Catch {n} fish", counts: ["catch:*"], target: 600, stage: start, table: fishing}
+  night_watch: {name: "The Night Watch", text: "Defeat {n} mobs", counts: ["kill:*"], target: 2000, stage: start, table: hunting}
+  wide_world: {name: "The Wide World", text: "Find {n} new lands between you", counts: ["discover:biome/*"], distinct: true, target: 30, stage: start, table: exploring}
+  timber_yard: {name: "The Timber Yard", text: "Chop {n} logs", counts: ["mine:#minecraft:logs"], target: 4000, stage: start, table: crafting}
+  the_dig: {name: "The Big Dig", text: "Brush {n} suspicious blocks", counts: ["brush:*"], target: 150, stage: start, table: archaeology}
+  iron_age: {name: "The Iron Age", text: "Mine {n} iron ore", counts: [mine:iron_ore, mine:deepslate_iron_ore], target: 1200, stage: iron, table: mining}
+  deep_shafts: {name: "Deep Shafts", text: "Mine {n} deepslate", counts: [mine:deepslate], target: 15000, stage: iron, table: mining}
+  menagerie: {name: "The Menagerie", text: "Breed {n} animals", counts: ["breed:*"], target: 400, stage: iron, table: farming}
+  forgefire: {name: "Forgefire", text: "Melt {n} alloy ingots", counts: ["forge:*"], target: 60, stage: iron, table: crafting}
+  into_the_fire: {name: "Into the Fire", text: "Defeat {n} Nether mobs", counts: [kill:blaze, kill:ghast, kill:hoglin, kill:piglin_brute, kill:magma_cube, kill:wither_skeleton, kill:zoglin], target: 600, stage: nether, table: nether}
+  quartz_rush: {name: "Quartz Rush", text: "Mine {n} nether quartz ore", counts: [mine:nether_quartz_ore], target: 1500, stage: nether, table: nether}
+  end_of_days: {name: "End of Days", text: "Defeat {n} endermen and shulkers", counts: [kill:enderman, kill:shulker], target: 500, stage: end, table: end}
+
 # Reward tables: per theme, per tier (daily, weekly, goal for the server goal, event), weighted lines. reward: tokens
 # (amount a-b), supply:<id>, curio:<id>, gear:<id>, cosmetic:<id>, item:<vanilla item> (amount), or
 # enchant:<key> (level a-b, an enchanted book that also unlocks it in the shop). Between them, the tables reach every

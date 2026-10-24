@@ -36,6 +36,7 @@ public final class ObjectivesModule implements Module {
     private volatile Map<String, Cosmetic> cosmetics = Map.of();
     private volatile ObjectivesService.State pools;
     private ObjectivesService service;
+    private ServerGoals goals;
 
     public ObjectivesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -52,21 +53,28 @@ public final class ObjectivesModule implements Module {
         core.progression().registerRewardType(id(), FeatRules.FEAT, new FeatMarker());
         core.progression().registerRewardType(id(), "cosmetic", new Cosmetics());
         ObjectivesService[] self = new ObjectivesService[1];
-        Loot loot = new Loot(core, () -> self[0]);
+        Keepsakes keepsakes = new Keepsakes(core.itemTags(), () -> pools.goal());
+        Loot loot = new Loot(core, () -> self[0], keepsakes);
         load();
         service = new ObjectivesService(plugin, core, () -> pools, loot);
         self[0] = service;
         listen(service);
         service.start();
+        goals = new ServerGoals(plugin, core, () -> pools, () -> pools.goal(), service, loot);
+        goals.start();
+        listen(goals);
         core.services().get(JournalPages.class).ifPresent(journal -> {
             journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page());
-            journal.add(id(), new ObjectivesPage(service, () -> pools, journal).page());
+            journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals).page());
         });
         core.commands().register(id(), commands());
     }
 
     @Override
     public void disable() {
+        if (goals != null) {
+            goals.stop();
+        }
         if (service != null) {
             service.stop();
         }
@@ -103,11 +111,12 @@ public final class ObjectivesModule implements Module {
         });
         pool.problems().forEach(p -> core.logger().warning("[objectives] " + p));
         problems.addAll(pool.problems());
-        pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.tables());
+        pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.goal(), pool.tables());
         Map<String, Integer> enchants = new LinkedHashMap<>(pool.tables().enchants());
         feats.values().forEach(f -> f.rewards().stream().filter(x -> x.startsWith("enchant:")).forEach(x -> enchantOf(x, enchants)));
         core.rewardEnchants().register(id(), enchants);
         core.logger().info("Objectives loaded: " + pool.daily().size() + " dailies, " + pool.weekly().size() + " weeklies, "
+                + pool.goal().size() + " server goals, "
                 + pool.tables().all().size() + " reward tables, " + pool.settings().stages().size() + " stages "
                 + pool.settings().stages() + ", dailies turn over at " + pool.settings().schedule().dailyReset() + " "
                 + pool.settings().schedule().zone() + ", " + pool.problems().size() + " problems");
@@ -165,7 +174,7 @@ public final class ObjectivesModule implements Module {
     }
 
     private Loot loot() {
-        return new Loot(core, () -> service);
+        return new Loot(core, () -> service, new Keepsakes(core.itemTags(), () -> pools.goal()));
     }
 
     /** The player's stage if they are online; offline players draw at the first stage. */
@@ -305,6 +314,35 @@ public final class ObjectivesModule implements Module {
                             });
                             return Command.SINGLE_SUCCESS;
                         })))
+                .then(Commands.literal("goal")
+                        .then(Commands.literal("show").executes(ctx -> {
+                            ObjectiveDefinition g = goals.goal();
+                            ServerGoalState st = goals.state();
+                            ctx.getSource().getSender().sendMessage(g == null ? "No server goal" : "Server goal " + g.id() + ": "
+                                    + ServerGoalRules.total(st.contributions) + " / " + g.target() + " (" + st.contributions.size()
+                                    + " contributors" + (st.completed ? ", completed" : "") + ")");
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                        .then(Commands.literal("new").executes(ctx -> {
+                            goals.state().weekStart = 0;
+                            goals.rollover(true);
+                            ctx.getSource().getSender().sendMessage("New server goal: " + goals.state().goal);
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                        .then(Commands.literal("contribute").then(player().then(Commands.argument("amount",
+                                com.mojang.brigadier.arguments.LongArgumentType.longArg(0)).executes(ctx -> {
+                                    CommandSender sender = ctx.getSource().getSender();
+                                    UUID id = dev.wayfarer.core.PlayerNames.resolve(plugin.getServer(), StringArgumentType.getString(ctx, "player"));
+                                    if (id == null || goals.goal() == null) {
+                                        sender.sendMessage("Unknown player, or no server goal");
+                                        return Command.SINGLE_SUCCESS;
+                                    }
+                                    long amount = com.mojang.brigadier.arguments.LongArgumentType.getLong(ctx, "amount");
+                                    goals.contribute(id.toString(), goals.state().contributions.getOrDefault(id.toString(), 0L) + amount);
+                                    sender.sendMessage("Server goal now " + ServerGoalRules.total(goals.state().contributions) + " / "
+                                            + goals.goal().target());
+                                    return Command.SINGLE_SUCCESS;
+                                })))))
                 .then(Commands.literal("reload").executes(ctx -> {
                     CommandSender sender = ctx.getSource().getSender();
                     try {
