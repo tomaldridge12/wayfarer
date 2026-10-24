@@ -104,7 +104,7 @@ final class AlloyItems {
     Optional<ItemStack> gear(AlloyRules.Gear g) {
         return rules.get().alloy(g.alloy()).flatMap(a -> rules.get().stats(g).map(stats -> {
             ItemStack item = ItemStack.of(Material.matchMaterial(stats.item()));
-            gear.apply(item, a, g, stats);
+            gear.apply(item, a, g, stats, 0);
             tags.write(item, MODULE, Tag.GEAR + ":" + g.key());
             return item;
         }));
@@ -116,9 +116,10 @@ final class AlloyItems {
      */
     Optional<ItemStack> convert(ItemStack from, AlloyRules.Gear g) {
         return rules.get().alloy(g.alloy()).flatMap(a -> rules.get().stats(g).map(stats -> {
+            double used = AlloyGear.used(from); // before withType: a plain diamond pickaxe's max durability is its type's
             ItemStack item = from.withType(Material.matchMaterial(stats.item()));
             item.setAmount(1);
-            gear.apply(item, a, g, stats);
+            gear.apply(item, a, g, stats, used);
             tags.write(item, MODULE, Tag.GEAR + ":" + g.key());
             return item;
         }));
@@ -135,7 +136,7 @@ final class AlloyItems {
         if (a.isEmpty() || stats.isEmpty() || !stats.get().item().equals(item.getType().getKey().getKey())) {
             return false; // removed from config, or its material changed: left as it is
         }
-        gear.apply(item, a.get(), g.get(), stats.get());
+        gear.apply(item, a.get(), g.get(), stats.get(), AlloyGear.used(item));
         return true;
     }
 

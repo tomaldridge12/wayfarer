@@ -13,7 +13,7 @@ import org.bukkit.inventory.SmithingTrimRecipe;
 
 /**
  * Alloy items are never the vanilla item they are built on: a recipe that is not Wayfarer's gives nothing when an
- * alloy item is in it (crafting, the grid's repair-by-combining, crafters, vanilla smithing upgrades). Armour trims
+ * alloy item is in it (crafting, the grid's repair-by-combining, crafters, furnaces, vanilla smithing upgrades). Armour trims
  * still work on alloy armour.
  */
 final class AlloyGuard implements Listener {
@@ -48,6 +48,14 @@ final class AlloyGuard implements Listener {
         }
         if (!ours(inv.getRecipe()) && any(new ItemStack[] {inv.getInputTemplate(), inv.getInputEquipment(), inv.getInputMineral()})) {
             event.setResult(null);
+        }
+    }
+
+    /** Alloy gear built on iron would otherwise smelt down to nuggets. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    void onSmelt(org.bukkit.event.inventory.FurnaceSmeltEvent event) {
+        if (items.tag(event.getSource()).isPresent()) {
+            event.setCancelled(true);
         }
     }
 

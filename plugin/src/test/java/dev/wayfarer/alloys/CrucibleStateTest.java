@@ -94,8 +94,22 @@ class CrucibleStateTest {
     @Test
     void anUnreadableRecordIsSkippedAndTheRestLoad() {
         String good = CrucibleState.encode(List.of(steelBatch()));
-        CrucibleState.Decoded d = CrucibleState.decode("garbage|" + good);
+        CrucibleState.Decoded d = CrucibleState.decode("v1|garbage|" + good.substring(3));
         assertEquals(List.of(steelBatch()), d.crucibles());
+        assertEquals(1, d.problems().size());
+    }
+
+    @Test
+    void chunkDataIsVersionedAndReadsDataWrittenBeforeTheVersion() {
+        String text = CrucibleState.encode(List.of(steelBatch()));
+        assertTrue(text.startsWith("v1|"), text);
+        assertEquals(List.of(steelBatch()), CrucibleState.decode(text.substring(3)).crucibles());
+    }
+
+    @Test
+    void aNewerFormatIsNotMisread() {
+        CrucibleState.Decoded d = CrucibleState.decode("v2|1,2,3;new;format");
+        assertEquals(List.of(), d.crucibles());
         assertEquals(1, d.problems().size());
     }
 }

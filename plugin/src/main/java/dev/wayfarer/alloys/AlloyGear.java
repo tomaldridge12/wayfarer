@@ -26,11 +26,16 @@ import org.bukkit.inventory.ItemType;
  * durability used. Vanilla repair-by-material is removed; the anvil listener repairs alloys.
  */
 final class AlloyGear {
-    void apply(ItemStack item, AlloyDefinition a, AlloyRules.Gear g, AlloyRules.Stats s) {
-        ItemType type = item.getType().asItemType();
-        Integer oldMax = item.getData(DataComponentTypes.MAX_DAMAGE);
+    /** The share of an item's durability already used (0 to 1). Read before changing its type: max durability is the type's. */
+    static double used(ItemStack item) {
+        Integer max = item.getData(DataComponentTypes.MAX_DAMAGE);
         Integer damage = item.getData(DataComponentTypes.DAMAGE);
-        double used = oldMax == null || oldMax <= 0 || damage == null ? 0 : (double) damage / oldMax;
+        return max == null || max <= 0 || damage == null ? 0 : (double) damage / max;
+    }
+
+    /** @param used the share of durability already used, kept on the new stats */
+    void apply(ItemStack item, AlloyDefinition a, AlloyRules.Gear g, AlloyRules.Stats s, double used) {
+        ItemType type = item.getType().asItemType();
         item.setData(DataComponentTypes.MAX_DAMAGE, s.durability());
         item.setData(DataComponentTypes.DAMAGE, Math.min(s.durability() - 1, (int) Math.round(used * s.durability())));
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("wayfarer", g.model()));

@@ -67,7 +67,12 @@ public record CrucibleState(int x, int y, int z, Map<String, Integer> contents, 
         };
     }
 
-    /** Chunk data: crucibles joined by '|', each {@code x,y,z;item=n,item=n;progress;starter or -;last}. */
+    /** Prefix of the chunk data format; data without one is the same format (written before it was versioned). */
+    static final String VERSION = "v1";
+
+    /**
+     * Chunk data: {@code v1} then crucibles, joined by '|', each {@code x,y,z;item=n,item=n;progress;starter or -;last}.
+     */
     public static String encode(Collection<CrucibleState> crucibles) {
         List<String> parts = new ArrayList<>();
         for (CrucibleState c : crucibles) {
@@ -76,6 +81,7 @@ public record CrucibleState(int x, int y, int z, Map<String, Integer> contents, 
             parts.add(c.x() + "," + c.y() + "," + c.z() + ";" + String.join(",", items) + ";" + c.progress() + ";"
                     + (c.starter() == null ? "-" : c.starter()) + ";" + c.last());
         }
+        parts.addFirst(VERSION);
         return String.join("|", parts);
     }
 
@@ -88,7 +94,16 @@ public record CrucibleState(int x, int y, int z, Map<String, Integer> contents, 
         if (text == null || text.isEmpty()) {
             return new Decoded(out, problems);
         }
-        for (String part : text.split("\\|")) {
+        String[] all = text.split("\\|");
+        int first = 0;
+        if (all[0].matches("v\\d+")) {
+            if (!all[0].equals(VERSION)) {
+                problems.add("crucible data is format " + all[0] + ", newer than this plugin (" + VERSION + "); not read");
+                return new Decoded(out, problems);
+            }
+            first = 1;
+        }
+        for (String part : java.util.Arrays.copyOfRange(all, first, all.length)) {
             try {
                 String[] f = part.split(";", -1);
                 String[] pos = f[0].split(",");
