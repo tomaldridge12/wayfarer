@@ -149,4 +149,54 @@ class LadderTest {
         assertTrue(engine.award(data, "banner:skeleton"));
         assertFalse(engine.award(data, "banner:skeleton"));
     }
+
+    private static Ladder angler() {
+        return new Ladder("angler", "Angler", "catch", Set.of("catch:*"), List.of(
+                new Ladder.Rung(3, "mark:angler_1")), false);
+    }
+
+    @Test
+    void aPrefixEntrySumsEveryMatchingCounter() {
+        ladders.set("marks", List.of(angler()));
+        ProgressionData data = new ProgressionData();
+        engine.record(data, "catch:cod");
+        engine.record(data, "catch:salmon");
+        engine.record(data, "kill:cod");
+        assertEquals(2, engine.progress(data, ladders.find("angler").orElseThrow()));
+    }
+
+    @Test
+    void aPrefixLadderIsFoundForANewActivityAndAwardsItsRungs() {
+        ladders.set("marks", List.of(angler()));
+        assertEquals(List.of("angler"), ladders.reading("catch:pufferfish").stream().map(Ladder::id).toList());
+        assertEquals(List.of(), ladders.reading("kill:cod"));
+        ProgressionData data = new ProgressionData();
+        engine.record(data, "catch:cod");
+        engine.record(data, "catch:nautilus_shell");
+        assertEquals(List.of("mark:angler_1"), rewards(engine.record(data, "catch:saddle")));
+    }
+
+    @Test
+    void exactAndPrefixEntriesMixAndCountEachCounterOnce() {
+        Ladder mixed = new Ladder("mixed", "Mixed", "x", Set.of("catch:*", "catch:cod", "mine:sand"),
+                List.of(new Ladder.Rung(100, "x:y")), false);
+        ladders.set("marks", List.of(mixed));
+        ProgressionData data = new ProgressionData();
+        engine.record(data, "catch:cod");
+        engine.record(data, "catch:salmon");
+        engine.record(data, "mine:sand");
+        assertEquals(3, engine.progress(data, mixed));
+        assertEquals(List.of("mixed"), ladders.reading("catch:cod").stream().map(Ladder::id).toList());
+    }
+
+    @Test
+    void craftingCountsByTheAmountMade() {
+        ladders.set("odd", List.of(new Ladder("hoes", "Hoes", "craft", Set.of("craft:wooden_hoe"),
+                List.of(new Ladder.Rung(5, "x:hoe")), false)));
+        ProgressionData data = new ProgressionData();
+        engine.craft(data, "wooden_hoe", 4);
+        assertEquals(4, data.count("craft:wooden_hoe"));
+        assertEquals(List.of("x:hoe"), rewards(engine.craft(data, "wooden_hoe", 1)));
+        assertFalse(engine.craft(data, "stick", 0).counted());
+    }
 }

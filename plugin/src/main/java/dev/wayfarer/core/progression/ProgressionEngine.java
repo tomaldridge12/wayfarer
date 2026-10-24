@@ -109,6 +109,16 @@ public final class ProgressionEngine {
         return firstVisit ? record(data, Activity.DISCOVER + ":structure/" + structure) : Outcome.NOT_COUNTED;
     }
 
+    /** Items a player crafted: {@code craft:<item>} goes up by the amount made. */
+    public Outcome craft(ProgressionData data, String item, int amount) {
+        if (amount <= 0) {
+            return Outcome.NOT_COUNTED;
+        }
+        String activity = Activity.CRAFT + ":" + item;
+        data.set(activity, data.count(activity) + amount);
+        return new Outcome(true, List.of(activity), climb(data, List.of(activity)));
+    }
+
     /** One more of an activity that has no credit rules of its own. */
     public Outcome record(ProgressionData data, String activity) {
         return record(data, List.of(activity));

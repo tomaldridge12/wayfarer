@@ -11,6 +11,7 @@ public final class Ladders {
     private final Map<String, List<Ladder>> byOwner = new LinkedHashMap<>();
     private volatile List<Ladder> all = List.of();
     private volatile Map<String, List<Ladder>> byActivity = Map.of();
+    private volatile List<Ladder> withPrefixes = List.of();
 
     /** Replaces everything this owner registered; throws if a ladder id is taken by another owner. */
     public synchronized void set(String owner, List<Ladder> ladders) {
@@ -34,19 +35,37 @@ public final class Ladders {
         List<Ladder> list = new ArrayList<>();
         byOwner.values().forEach(list::addAll);
         Map<String, List<Ladder>> index = new LinkedHashMap<>();
+        List<Ladder> prefixed = new ArrayList<>();
         for (Ladder ladder : list) {
-            ladder.selector().forEach(a -> index.computeIfAbsent(a, k -> new ArrayList<>()).add(ladder));
+            ladder.selector().stream().filter(a -> !Ladder.isPrefix(a))
+                    .forEach(a -> index.computeIfAbsent(a, k -> new ArrayList<>()).add(ladder));
+            if (ladder.selector().stream().anyMatch(Ladder::isPrefix)) {
+                prefixed.add(ladder);
+            }
         }
         all = List.copyOf(list);
         byActivity = index;
+        withPrefixes = List.copyOf(prefixed);
     }
 
     public List<Ladder> all() {
         return all;
     }
 
+    /** Ladders reading this activity, exactly or through a prefix entry. */
     public List<Ladder> reading(String activity) {
-        return byActivity.getOrDefault(activity, List.of());
+        List<Ladder> exact = byActivity.getOrDefault(activity, List.of());
+        List<Ladder> prefixed = withPrefixes;
+        if (prefixed.isEmpty()) {
+            return exact;
+        }
+        List<Ladder> out = new ArrayList<>(exact);
+        for (Ladder ladder : prefixed) {
+            if (!out.contains(ladder) && ladder.reads(activity)) {
+                out.add(ladder);
+            }
+        }
+        return out;
     }
 
     public Optional<Ladder> find(String id) {

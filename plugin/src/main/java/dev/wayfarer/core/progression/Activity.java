@@ -10,6 +10,7 @@ public final class Activity {
     public static final String SHEAR = "shear";
     public static final String BREED = "breed";
     public static final String DISCOVER = "discover";
+    public static final String CRAFT = "craft";
 
     /**
      * Blocks whose fully grown break is also a harvest. Melons and pumpkins only exist grown; stems and

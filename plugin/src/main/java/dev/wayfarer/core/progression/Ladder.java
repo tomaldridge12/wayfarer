@@ -5,7 +5,8 @@ import java.util.Set;
 
 /**
  * Rewards in order along a set of counters, summed when read: a mob family's banner, trophy head and relics
- * along every {@code kill:<type>} in the family. {@code unit} names one step ("kill") for progress text.
+ * along every {@code kill:<type>} in the family. A selector entry ending in {@code *} is a prefix ({@code catch:*}
+ * reads every catch). {@code unit} names one step ("kill") for progress text.
  */
 public record Ladder(String id, String title, String unit, Set<String> selector, List<Rung> rungs, boolean announce) {
     /** One reward and the summed count that earns it. */
@@ -22,9 +23,39 @@ public record Ladder(String id, String title, String unit, Set<String> selector,
     /** The player's position on this ladder: the sum of the selected counters. */
     public long progress(ProgressionData data) {
         long sum = 0;
-        for (String activity : selector) {
-            sum += data.count(activity);
+        List<String> prefixes = new java.util.ArrayList<>();
+        for (String entry : selector) {
+            if (isPrefix(entry)) {
+                prefixes.add(entry.substring(0, entry.length() - 1));
+            } else {
+                sum += data.count(entry);
+            }
+        }
+        if (!prefixes.isEmpty()) {
+            for (var e : data.countersView().entrySet()) {
+                // An activity both listed exactly and under a prefix is still counted once.
+                if (!selector.contains(e.getKey()) && prefixes.stream().anyMatch(e.getKey()::startsWith)) {
+                    sum += e.getValue();
+                }
+            }
         }
         return sum;
+    }
+
+    /** Whether this ladder reads the activity, exactly or by a prefix entry. */
+    public boolean reads(String activity) {
+        if (selector.contains(activity)) {
+            return true;
+        }
+        for (String entry : selector) {
+            if (isPrefix(entry) && activity.startsWith(entry.substring(0, entry.length() - 1))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean isPrefix(String entry) {
+        return entry.endsWith("*");
     }
 }

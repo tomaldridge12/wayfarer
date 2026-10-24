@@ -117,6 +117,43 @@ final class ProgressionListener implements Listener {
         }
     }
 
+    /**
+     * Items crafted by hand. A shift-click makes as many as fit, so it is counted by what actually arrived in the
+     * inventory a tick later; a plain click takes one result onto the cursor.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onCraft(org.bukkit.event.inventory.CraftItemEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player) || event.getRecipe() == null) {
+            return;
+        }
+        ItemStack result = event.getRecipe().getResult();
+        if (result.isEmpty()) {
+            return;
+        }
+        String item = target(result.getType());
+        if (event.isShiftClick()) {
+            int before = count(player, result);
+            service.later(() -> {
+                int made = count(player, result) - before;
+                service.act(player, (engine, data) -> engine.craft(data, item, made));
+            });
+        } else {
+            ItemStack taken = event.getCurrentItem();
+            int made = taken == null || taken.isEmpty() ? result.getAmount() : taken.getAmount();
+            service.act(player, (engine, data) -> engine.craft(data, item, made));
+        }
+    }
+
+    private static int count(Player player, ItemStack like) {
+        int n = 0;
+        for (ItemStack s : player.getInventory().getStorageContents()) {
+            if (s != null && s.isSimilar(like)) {
+                n += s.getAmount();
+            }
+        }
+        return n;
+    }
+
     private static String target(Keyed type) {
         NamespacedKey key = type.getKey();
         return Activity.target(key.getNamespace(), key.getKey());
