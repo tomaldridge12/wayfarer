@@ -123,6 +123,33 @@ relics:
   });
 });
 
+describe('marks from config', () => {
+  it('give each mark its ladder, tool, material and what each rank does', () => {
+    const g = loadFixture(fixture({
+      'config/marks.yml': `
+marks:
+  dune: {name: Dune, counts: [mine:sand], ranks-at: [500, 2500], tool: shovel, material: [sand], ranks: [{area: 3x1}, {area: 3x3, gravel: true}]}
+  angler: {name: Angler, unit: "catch|catches", counts: ["catch:*"], ranks-at: [100], tool: fishing_rod, material: string, ranks: [{bite-wait: 0.7, treasure: 0.05}]}
+books:
+  veinminer: {name: Veinminer, enchant: excellentenchants:veinminer, counts: ["mine:#minecraft:coal_ores"], levels-at: [250]}
+`,
+      'textures/wayfarer/item/dune_mark_template.png': '', 'textures/wayfarer/item/angler_mark_template.png': '',
+    }));
+    const [dune, angler] = g.config.marks;
+    expect([dune.tool, dune.materials, dune.ranksAt]).toEqual(['shovel', ['sand'], [500, 2500]]);
+    expect(dune.ranks).toEqual(['Digs 3x1 of sand at once', 'Digs 3x3 of sand and gravel at once']);
+    expect(angler.ranks).toEqual(['Bites come 30% sooner, 5% chance of treasure']);
+    expect(angler.materials).toEqual(['string']);
+    expect(g.config.books).toEqual([{ id: 'veinminer', name: 'Veinminer', enchant: 'excellentenchants:veinminer', unit: 'block',
+      counts: ['mine:#minecraft:coal_ores'], levelsAt: [250] }]);
+  });
+
+  it('fail when a mark template has no art', () => {
+    expect(() => loadFixture(fixture({ 'config/marks.yml': 'marks:\n  reaper: {name: Reaper, ranks-at: [1], tool: hoe, material: [hay_block], ranks: [{area: 3x1}]}\n' })))
+      .toThrow(/wayfarer:reaper_mark_template/);
+  });
+});
+
 describe('pity drops', () => {
   it('guarantee the drop at ceil(1 / chance) kills', () => {
     expect(pityKills(0.025)).toBe(40);

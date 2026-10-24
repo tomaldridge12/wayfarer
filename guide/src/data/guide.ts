@@ -21,7 +21,7 @@ export interface GuidePaths {
   vanillaTextures: string;
   /** Wayfarer's resource pack textures, served at /textures/wayfarer/. */
   packTextures: string;
-  /** The plugin's default config folder (banners.yml, bosses.yml, progression.yml, alloys.yml). */
+  /** The plugin's default config folder (banners.yml, bosses.yml, progression.yml, alloys.yml, marks.yml). */
   config: string;
 }
 
@@ -87,6 +87,7 @@ export function loadGuide(paths: GuidePaths, files: GuideFiles): Guide {
   const liveItems = [
     ...config.relics.map((r) => r.item), ...config.relics.map((r) => r.art), ...config.pity.map((p) => p.item),
     ...config.alloys.flatMap((a) => [`wayfarer:${a.id}_ingot`, `wayfarer:${a.id}_template`, ...a.recipe.map((r) => r.item)]),
+    ...config.marks.map((m) => `wayfarer:${m.id}_mark_template`),
   ];
   for (const item of liveItems)
     if (!icon(item) && !FACES[item]) throw new GuideError(`item '${item}' has no texture (vanilla or wayfarer:)`);

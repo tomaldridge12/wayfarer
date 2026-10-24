@@ -5,7 +5,7 @@ chapters:
   - { slug: banners-and-trophies, title: Banners and trophies, stage: iron, status: live }
   - { slug: pity-drops, title: Pity drops, stage: iron, status: live }
   - { slug: alloys, title: Alloys and the crucible, stage: iron, status: live }
-  - { slug: marks, title: Marks, stage: iron, status: planned }
+  - { slug: marks, title: Marks, stage: iron, status: live }
   - { slug: relics, title: Relics, stage: diamond, status: live }
   - { slug: objectives, title: Objectives, stage: diamond, status: planned }
   - { slug: bosses, title: Bosses, stage: nether, status: live }

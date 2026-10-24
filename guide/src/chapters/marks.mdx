@@ -1,13 +1,22 @@
-The dull jobs (digging sand, shearing sheep, chopping trees) are going to start paying off. Each one gets its own ladder, counted the same way as kills, and climbing it earns a **mark**.
+import MarkLadders from '../components/MarkLadders.astro';
 
-## What a mark does
+The dull jobs (digging sand, shearing sheep, fishing, farming) pay off. Each one has its own ladder, counted the same way as kills, and every step up it earns a **mark**: a tool's gimmick that makes that job lighter from then on.
 
-A mark is a tool's gimmick, added at the smithing table. The **Dune Mark** turns a shovel into a 3×3 sand-digger; a shepherd's mark lets shears clip every sheep around you at once. The idea is simple: the grind pays off once, and then it's lighter forever after.
+## Putting a mark on a tool
 
-## Ranks
+Climbing a ladder gives you that rank's **mark template**. At the smithing table, put in the template, a tool of the right kind (vanilla or any alloy) and the job's own material: sand for the Dune Mark, wool for the Shepherd, string for the Angler, a hay bale for the Reaper.
 
-Marks come in **ranks**. Climb further up the same ladder and you earn the next rank, which replaces the one before (Dune Mark II is just a better Dune Mark I).
+- **The template stays.** Take the marked tool and the template is still in the table, ready for a spare or a replacement.
+- **Ranks replace each other.** A higher rank takes the place of a lower one on the same tool (Dune Mark II is just a better Dune Mark I), and a tool never takes a lower rank than it has.
+- **Marks stay with the tool**, through repairs and through upgrading it to an alloy, so nothing you earn is wasted.
+- **Sneak** while digging or reaping to work one block at a time.
 
-A mark stays with the tool when you upgrade it to an alloy, so nothing you earn is wasted.
+Everything a mark does counts as if you'd done it by hand: the extra sand counts toward the Dune ladder, every extra sheep toward the Shepherd, and so on.
 
-The ladders, thresholds and marks will be listed here once they're on the server.
+## The marks
+
+<MarkLadders />
+
+## Veinminer and Treefeller
+
+Two more ladders pay enchanted books instead of marks: **Veinminer** for the ores you mine and **Treefeller** for the logs you chop. These books are the only way to get those enchantments on this server: no table, librarian or chest will ever offer them. Each level comes from climbing further.

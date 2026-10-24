@@ -1,0 +1,49 @@
+---
+// Each mark's ladder as a card: what it counts, the rank thresholds, the tool, the smithing material and what each
+// rank does; then the book ladders. Generated from marks.yml.
+import ItemIcon from './ItemIcon.astro';
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { title, num, roman } from '../data/text';
+
+const { marks, books } = guide().config;
+const TOOL_ICON: Record<string, string> = { shovel: 'iron_shovel', shears: 'shears', fishing_rod: 'fishing_rod', hoe: 'iron_hoe' };
+const TOOL_NAME: Record<string, string> = { shovel: 'shovels', shears: 'shears', fishing_rod: 'fishing rods', hoe: 'hoes' };
+const plural = (unit: string) => (unit.includes('|') ? unit.split('|')[1] : `${unit}s`);
+const counts = (c: string[]) => c.map((e) => e === 'catch:*' ? 'every catch' : e === 'harvest:*' ? 'every crop harvested'
+  : e.replace(/^mine:#minecraft:/, '').replace(/^mine:/, '').replace(/^shear:/, 'shearing ').replace(/_/g, ' ')).join(', ');
+const material = (m: string) => (m.startsWith('#minecraft:') ? `any ${m.slice(11)}` : title(m).toLowerCase());
+const materialIcon = (m: string) => (m === '#minecraft:wool' ? 'white_wool' : m);
+---
+<div class="marks">
+  {marks.map((m) => (
+    <section class="mark">
+      <div class="how">
+        <ItemIcon item={`wayfarer:${m.id}_mark_template`} size={32} title={`${m.name} Mark template`} />
+        <span class="plus">+</span>
+        <ItemIcon item={TOOL_ICON[m.tool] ?? 'barrier'} size={32} title={TOOL_NAME[m.tool]} />
+        <span class="plus">+</span>
+        <ItemIcon item={materialIcon(m.materials[0])} size={32} title={m.materials.map(material).join(' or ')} />
+        <span class="note">on {TOOL_NAME[m.tool]}, with {m.materials.map(material).join(' or ')}</span>
+      </div>
+      <ItemCard item={`wayfarer:${m.id}_mark_template`} name={`${m.name} Mark`} colour={m.colour}
+        lines={[{ text: `Counts ${counts(m.counts)}`, colour: 'var(--mc-gray)' },
+          ...m.ranks.map((r, i) => ({ text: `${roman(i + 1)} at ${num(m.ranksAt[i])} ${plural(m.unit)}: ${r}`, colour: 'var(--mc-blue)' }))]} />
+    </section>
+  ))}
+</div>
+
+<div class="books">
+  {books.map((b) => (
+    <ItemCard item="enchanted_book" name={`${b.name} books`} colour="var(--mc-aqua)"
+      lines={[{ text: `Counts ${counts(b.counts)}`, colour: 'var(--mc-gray)' },
+        ...b.levelsAt.map((n, i) => ({ text: `${b.name} ${roman(i + 1)} at ${num(n)} ${plural(b.unit)}`, colour: 'var(--mc-purple)' }))]} />
+  ))}
+</div>
+<style>
+  .marks, .books { display: grid; gap: 22px; margin: 1.4rem 0 1.8rem; }
+  .mark { display: grid; gap: 10px; }
+  .how { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .plus { font-family: var(--pixel); color: var(--ink-soft); }
+  .note { font-style: italic; color: var(--ink-soft); }
+</style>

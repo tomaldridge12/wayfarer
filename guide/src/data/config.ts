@@ -36,6 +36,15 @@ export interface AlloyRow {
   identity: string[];
 }
 
+export interface MarkRow {
+  id: string; name: string; colour: string; unit: string; counts: string[]; ranksAt: number[];
+  tool: string; materials: string[];
+  /** What each rank does, as players read it. */
+  ranks: string[];
+}
+
+export interface BookRow { id: string; name: string; enchant: string; unit: string; counts: string[]; levelsAt: number[] }
+
 export interface AlloyRules { heatBlocks: Record<string, Heat>; maxIngots: number; endless: boolean; cap: number }
 
 export interface WayfarerSet { families: number; reduction: number; hearts: number }
@@ -69,6 +78,8 @@ export interface Config {
   excludedSpawns: string[];
   alloys: AlloyRow[];
   alloyRules: AlloyRules | null;
+  marks: MarkRow[];
+  books: BookRow[];
 }
 
 function read(files: GuideFiles, dir: string, file: string): any {
@@ -152,6 +163,17 @@ function identity(a: any): string[] {
   return out;
 }
 
+// Mirrors MarkRules: what each mark's rank fields mean.
+function rankText(mark: string, r: any): string {
+  switch (mark) {
+    case 'dune': return `Digs ${r.area} of sand${r.gravel ? ' and gravel' : ''} at once`;
+    case 'reaper': return `Harvests and replants ${r.area} of crops`;
+    case 'shepherd': return `Shears every sheep within ${r.radius} blocks${r['extra-wool'] ? `, ${percent(r['extra-wool'])} chance of extra wool` : ''}`;
+    case 'angler': return `Bites come ${percent(1 - (r['bite-wait'] ?? 1))} sooner${r.treasure ? `, ${percent(r.treasure)} chance of treasure` : ''}`;
+    default: return '';
+  }
+}
+
 /** The pity rule from core: the ceil(1 / chance)-th counted kill in a row without the item drops it. */
 export const pityKills = (chance: number) => Math.ceil(1 / chance - 1e-9);
 
@@ -160,6 +182,7 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   const bosses = read(files, dir, 'bosses.yml');
   const progression = read(files, dir, 'progression.yml');
   const alloysYml = read(files, dir, 'alloys.yml');
+  const marksYml = read(files, dir, 'marks.yml');
 
   const families = entries(banners.families).map(([id, mobs]) => ({ id, mobs: mobs as string[] }));
 
@@ -237,8 +260,18 @@ export function readConfig(dir: string, files: GuideFiles): Config {
     endless: alloysYml.anvil?.endless ?? true, cap: alloysYml.anvil?.cap ?? 30,
   } : null;
 
+  const asList = (v: any): string[] => (Array.isArray(v) ? v : v == null ? [] : [v]).map(String);
+  const marks: MarkRow[] = entries(marksYml.marks).map(([id, m]) => ({
+    id, name: m.name ?? id, colour: m.colour ?? '#ffffff', unit: m.unit ?? 'block', counts: asList(m.counts),
+    ranksAt: m['ranks-at'] ?? [], tool: m.tool, materials: asList(m.material),
+    ranks: (m.ranks ?? []).map((r: any) => rankText(id, r)),
+  }));
+  const books: BookRow[] = entries(marksYml.books).map(([id, b]) => ({
+    id, name: b.name ?? id, enchant: b.enchant, unit: b.unit ?? 'block', counts: asList(b.counts), levelsAt: b['levels-at'] ?? [],
+  }));
+
   return {
-    alloys, alloyRules,
+    alloys, alloyRules, marks, books,
     families, allMobs: banners.counting?.['all-mobs'] ?? null,
     banners: bannerRows, heads, relics,
     wayfarerSet: set ? { families: set.families, reduction: set['damage-reduction'], hearts: set.hearts } : null,

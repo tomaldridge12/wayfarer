@@ -1,9 +1,10 @@
-# Making relic enchants exclusive (ExcellentEnchants)
+# Making reward enchants exclusive (ExcellentEnchants)
 
-Wayfarer's relics come with ExcellentEnchants enchants. Out of the box, ExcellentEnchants also gives these enchants out through
-enchanting tables, librarians, mob equipment and loot, so a relic's enchant would not be special. Wayfarer never edits
-ExcellentEnchants' files; this page says what to change, and Wayfarer warns at startup (and on `/wayfarer reload`) about any
-reward enchant that is still obtainable elsewhere.
+Wayfarer hands out ExcellentEnchants enchants as rewards: on relics, and as the Veinminer and Treefeller books the mark
+ladders pay. Out of the box, ExcellentEnchants also gives these enchants out through enchanting tables, librarians, mob
+equipment and loot, so a reward would not be special. Wayfarer never edits ExcellentEnchants' files; this page says what to
+change, and Wayfarer warns at startup (and on `/wayfarer reload` or `/wayfarer marks reload`) about any reward enchant that is
+still obtainable elsewhere, or whose max level is below the level a reward gives.
 
 ## For each enchant below
 
@@ -19,9 +20,29 @@ Open `plugins/ExcellentEnchants/enchants/<name>.yml` and, under `Distribution:`,
 | `Discoverable` | `false` | other discovery (e.g. loot tables that pick any enchant) |
 
 Then restart the server (ExcellentEnchants reads these only on boot). The startup log line
-`[banners] All N relic enchants are exclusive to Wayfarer` confirms it.
+`All N reward enchants are exclusive to Wayfarer` confirms it.
 
-## Reward enchants in the default kit
+## Veinminer and Treefeller (the mark books)
+
+Besides the distribution settings above, both books come in three levels, so in `veinminer.yml` and `treefeller.yml`:
+
+| File | Setting | Value | Why |
+|---|---|---|---|
+| `veinminer.yml` | `MaxLevel` | `3` | already 3 by default |
+| `veinminer.yml` | `Veinminer.Block_Limit` | `Base: 4.0`, `Per_Level: 4.0`, `Capacity: 12.0` | 4 / 8 / 12 blocks at I / II / III |
+| `treefeller.yml` | `MaxLevel` | `3` | the default is 1, so II and III books would be capped |
+| `treefeller.yml` | `Treefeller.Block_Limit` | `Base: 32.0`, `Per_Level: 32.0`, `Capacity: 96.0` | 32 / 64 / 96 logs at I / II / III |
+
+Check the block-limit formula against ExcellentEnchants' own comments in those files when you change them; the aim is a
+small vein at I and a whole tree only at III.
+
+## Every other ExcellentEnchants enchant
+
+The owner's plan is that every ExcellentEnchants enchant is a reward only. The startup check covers the enchants Wayfarer
+already gives; for the rest, the same distribution settings apply, and they will be handed out through objectives and the
+shop (spec 5).
+
+## Relic enchants in the default kit
 
 - `blindness` (enderman_weapon, enderman_weapon_2)
 - `double_strike` (enderman_weapon, enderman_weapon_2, wayfarers_blade)
@@ -41,7 +62,8 @@ Then restart the server (ExcellentEnchants reads these only on boot). The startu
 - `venom` (spider_weapon, spider_weapon_2)
 - `withered_arrows` (skeleton_weapon, skeleton_weapon_2)
 
-If you change relic presets in `banners.yml`, the startup check follows your config, not this list.
+If you change relic presets in `banners.yml` or the books in `marks.yml`, the startup check follows your config, not
+this list. The books add `veinminer` and `treefeller`.
 
 ## Without ExcellentEnchants
 
