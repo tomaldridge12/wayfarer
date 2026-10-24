@@ -228,6 +228,76 @@ def template(ramp):
     return png(TEMPLATE, palette)
 
 
+# --- marks ---
+
+MARKS = ["dune", "shepherd", "angler", "reaper"]
+# 8x8 emblems for the centre of a mark template: a sand dune, open shears, a fish, a wheat sheaf.
+MARK_EMBLEMS = {
+    "dune": [
+        "........",
+        "........",
+        "...ll...",
+        "..lLLl..",
+        ".lLLLLl.",
+        "lLLDDLLl",
+        "LLDDDDLL",
+        "DDDDDDDD",
+    ],
+    "shepherd": [
+        "L......L",
+        ".L....L.",
+        "..L..L..",
+        "...LL...",
+        "...LL...",
+        "..D..D..",
+        ".DD..DD.",
+        ".DD..DD.",
+    ],
+    "angler": [
+        "........",
+        "..LLL...",
+        ".LLLLL.L",
+        "LDLLLLLL",
+        "LLLLLLLL",
+        ".LLLLL.L",
+        "..DDD...",
+        "........",
+    ],
+    "reaper": [
+        "L.L.L...",
+        ".LLL....",
+        "L.L.L...",
+        ".LLL.L.L",
+        "..D...L.",
+        "..D..L.L",
+        "..D.....",
+        "..D.....",
+    ],
+}
+MARK_COLOURS = {  # dark, light
+    "dune": ((176, 128, 60), (240, 214, 150)),
+    "shepherd": ((150, 150, 160), (250, 250, 250)),
+    "angler": ((40, 96, 160), (120, 190, 240)),
+    "reaper": ((150, 104, 40), (236, 200, 96)),
+}
+
+
+def mark_template(mark):
+    """A mark template: the alloy templates' slate tablet bearing the mark's emblem (drawn for Wayfarer)."""
+    rows = [list(r) for r in TEMPLATE]
+    for y in range(4, 12):
+        for x in range(4, 12):
+            rows[y][x] = "s"
+    for y, line in enumerate(MARK_EMBLEMS[mark]):
+        for x, c in enumerate(line):
+            if c != ".":
+                rows[4 + y][4 + x] = c
+    dark, light = MARK_COLOURS[mark]
+    palette = {"o": (24, 24, 30, 255), "s": (58, 60, 70, 255), "S": (92, 96, 110, 255),
+               "D": dark + (255,), "L": light + (255,)}
+    return png(["".join(r) for r in rows], palette)
+
+
 def item_json(name):
     if name.endswith("_spear"):
         # Like vanilla spears: the flat icon in menus and on the ground, the long model in hand.
@@ -298,6 +368,14 @@ def generate():
                    {"layers": {layer: [{"texture": f"wayfarer:{alloy}"}] for layer in ["humanoid", "humanoid_leggings"]}})
 
 
+def generate_marks():
+    for mark in MARKS:
+        name = f"{mark}_mark_template"
+        write(f"{TEX}/item/{name}.png", mark_template(mark))
+        write_json(f"assets/wayfarer/items/{name}.json", item_json(name))
+        write_json(f"assets/wayfarer/models/item/{name}.json", model_json(name, "minecraft:item/generated"))
+
+
 def matcha_files():
     files = [f"{TEX}/item/{a}_{s}.png" for a in FROM_MATCHA for s in SHAPES + ["spear_in_hand"]]
     files += [f"{TEX}/entity/equipment/{layer}/{a}.png" for a in FROM_MATCHA for layer in ["humanoid", "humanoid_leggings"]]
@@ -310,6 +388,7 @@ def write_credits():
     recoloured += [f"{TEX}/entity/equipment/{layer}/{a}.png" for a in RAMPS for layer in ["humanoid", "humanoid_leggings"]]
     recoloured += [f"{TEX}/item/{a}_ingot.png" for a in ALLOYS if a != "steel"]
     drawn = ["pack.png", f"{TEX}/item/placeholder.png"] + [f"{TEX}/item/{a}_template.png" for a in ALLOYS]
+    drawn += [f"{TEX}/item/{m}_mark_template.png" for m in MARKS]
     lines = ["# Credits", "",
              "Every texture in this pack, with its author and source. The pack is CC BY-NC-SA 4.0 (see LICENSE.txt).",
              "Written by `scripts/pack_art.py`; do not edit by hand.", "",
@@ -329,6 +408,9 @@ if __name__ == "__main__":
     if len(sys.argv) == 3 and sys.argv[1] == "--import-matcha":
         import_matcha(sys.argv[2])
         sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "--mark-sheet":
+        sheet([os.path.join(ROOT, f"{TEX}/item/{m}_mark_template.png") for m in MARKS], sys.argv[2], scale=10, columns=4)
+        sys.exit(0)
     if len(sys.argv) == 3 and sys.argv[1] == "--sheet":
         order = SHAPES + ["ingot", "template"]
         sheet([os.path.join(ROOT, f"{TEX}/item/{a}_{s}.png") for a in ALLOYS for s in order], sys.argv[2], columns=12)
@@ -336,5 +418,6 @@ if __name__ == "__main__":
     write("pack.png", png(ROSE, ROSE_PALETTE, scale=8))
     write("assets/wayfarer/textures/item/placeholder.png", png(ROSE, ROSE_PALETTE))
     generate()
+    generate_marks()
     write_credits()
     sys.exit(0)

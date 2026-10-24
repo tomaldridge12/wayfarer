@@ -9,10 +9,23 @@ import java.util.Set;
  * reads every catch). {@code unit} names one step ("kill") for progress text.
  */
 public record Ladder(String id, String title, String unit, Set<String> selector, List<Rung> rungs, boolean announce) {
-    /** One reward and the summed count that earns it. */
-    public record Rung(long threshold, String reward) {
+    /**
+     * One reward and the summed count that earns it. {@code announce} overrides the ladder's server-wide announcement
+     * for this rung (a mark announces only its top rank); null follows the ladder.
+     */
+    public record Rung(long threshold, String reward, Boolean announce) {
         /** A rung no count reaches: the reward only comes from a drop, and shows once earned. */
         public static final long NEVER = Long.MAX_VALUE;
+
+        public Rung(long threshold, String reward) {
+            this(threshold, reward, null);
+        }
+    }
+
+    /** Whether earning this reward is announced server-wide. */
+    public boolean announces(String reward) {
+        return rungs.stream().filter(r -> r.reward().equals(reward)).findFirst()
+                .map(r -> r.announce() != null ? r.announce() : announce).orElse(announce);
     }
 
     public Ladder {

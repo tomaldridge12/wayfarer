@@ -1,4 +1,4 @@
-package dev.wayfarer.alloys;
+package dev.wayfarer.core;
 
 import org.bukkit.Keyed;
 import org.bukkit.event.EventHandler;
@@ -12,15 +12,15 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmithingTrimRecipe;
 
 /**
- * Alloy items are never the vanilla item they are built on: a recipe that is not Wayfarer's gives nothing when an
- * alloy item is in it (crafting, the grid's repair-by-combining, crafters, furnaces, vanilla smithing upgrades). Armour trims
- * still work on alloy armour.
+ * A module's items are never the vanilla item they are built on: a recipe that is not Wayfarer's gives nothing when
+ * one of them is in it (crafting, the grid's repair-by-combining, crafters, furnaces, vanilla smithing upgrades).
+ * Armour trims still work. Each module that needs it registers one guard with its own test for "ours".
  */
-final class AlloyGuard implements Listener {
-    private final AlloyItems items;
+public final class RecipeGuard implements Listener {
+    private final java.util.function.Predicate<ItemStack> guarded;
 
-    AlloyGuard(AlloyItems items) {
-        this.items = items;
+    public RecipeGuard(java.util.function.Predicate<ItemStack> guarded) {
+        this.guarded = guarded;
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -54,18 +54,18 @@ final class AlloyGuard implements Listener {
     /** Alloy gear built on iron would otherwise smelt down to nuggets. */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     void onSmelt(org.bukkit.event.inventory.FurnaceSmeltEvent event) {
-        if (items.tag(event.getSource()).isPresent()) {
+        if (guarded.test(event.getSource())) {
             event.setCancelled(true);
         }
     }
 
-    static boolean ours(Recipe recipe) {
+    public static boolean ours(Recipe recipe) {
         return recipe instanceof Keyed k && k.getKey().getNamespace().equals("wayfarer");
     }
 
     private boolean any(ItemStack[] stacks) {
         for (ItemStack s : stacks) {
-            if (items.tag(s).isPresent()) {
+            if (s != null && !s.isEmpty() && guarded.test(s)) {
                 return true;
             }
         }

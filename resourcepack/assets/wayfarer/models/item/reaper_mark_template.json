@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "wayfarer:item/reaper_mark_template"
+  }
+}

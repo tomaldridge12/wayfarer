@@ -44,6 +44,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         modules.register(new AlloysModule(this)); // first, so banners builds relics on alloy gear from the start
         modules.register(new BannersModule(this));
         modules.register(new BossesModule(this));
+        modules.register(new dev.wayfarer.marks.MarksModule(this));
         modules.enableAll(this);
         // After every plugin has enabled, so ExcellentEnchants can answer.
         getServer().getScheduler().runTask(this, rewardEnchants::check);

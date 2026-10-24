@@ -312,7 +312,7 @@ public final class ProgressionService implements Progression {
         plugin.getServer().getPluginManager().callEvent(new ProgressChangedEvent(id, outcome.raised()));
         for (ProgressionEngine.Earned earned : outcome.earned()) {
             logEarned(id, earned.reward(), how);
-            deliverEarned(id, earned.reward(), earned.ladder().announce());
+            deliverEarned(id, earned.reward(), earned.ladder().announces(earned.reward()));
         }
     }
 

@@ -46,6 +46,8 @@ class ProgressionTextTest {
         assertTrue(plain(ProgressionText.progress("Tom", LADDERS, data, ProgressionTextTest::name, false).getLast())
                 .endsWith("Skeleton Banner"));
         assertEquals("1 kill", ProgressionText.count(1, "kill"));
+        assertEquals("2 catches", ProgressionText.count(2, "catch|catches"));
+        assertEquals("1 sheep", ProgressionText.count(1, "sheep|sheep"));
     }
 
     @Test

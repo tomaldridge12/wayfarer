@@ -39,3 +39,6 @@ permissions:
   wayfarer.alloys.admin:
     description: List alloys, give alloy items and reload alloys.yml (testing tools)
     default: op
+  wayfarer.marks.admin:
+    description: List marks, give mark templates and reload marks.yml (testing tools)
+    default: op

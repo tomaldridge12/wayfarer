@@ -199,4 +199,15 @@ class LadderTest {
         assertEquals(List.of("x:hoe"), rewards(engine.craft(data, "wooden_hoe", 1)));
         assertFalse(engine.craft(data, "stick", 0).counted());
     }
+
+    @Test
+    void aRungCanOverrideTheLaddersAnnouncement() {
+        Ladder marks = new Ladder("dune", "Dune Mark", "block", Set.of("mine:sand"), List.of(
+                new Ladder.Rung(1, "mark:dune_1", false), new Ladder.Rung(2, "mark:dune_2", true),
+                new Ladder.Rung(3, "x:plain")), false);
+        assertFalse(marks.announces("mark:dune_1"));
+        assertTrue(marks.announces("mark:dune_2"));
+        assertFalse(marks.announces("x:plain"));
+        assertTrue(zombie(Set.of("kill:zombie")).announces("banner:zombie"));
+    }
 }

@@ -48,7 +48,7 @@ public final class AlloysModule implements Module {
         recipes = new AlloyRecipes(plugin.getServer(), () -> rules, items);
         load();
         listen(recipes);
-        listen(new AlloyGuard(items));
+        listen(new dev.wayfarer.core.RecipeGuard(i -> items.tag(i).isPresent()));
         listen(new AlloyAnvil(() -> rules, items));
         listen(new ShakudoLuck(() -> rules, items));
         listen(new GuardianTemplates(plugin.getServer(), () -> rules, items, core.logger()));

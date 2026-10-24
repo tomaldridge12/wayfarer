@@ -116,3 +116,7 @@ Drawn for this pack by `scripts/pack_art.py`.
 - `assets/wayfarer/textures/item/electrum_template.png`
 - `assets/wayfarer/textures/item/hepatizon_template.png`
 - `assets/wayfarer/textures/item/adamant_template.png`
+- `assets/wayfarer/textures/item/dune_mark_template.png`
+- `assets/wayfarer/textures/item/shepherd_mark_template.png`
+- `assets/wayfarer/textures/item/angler_mark_template.png`
+- `assets/wayfarer/textures/item/reaper_mark_template.png`
