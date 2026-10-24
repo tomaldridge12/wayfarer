@@ -2,7 +2,8 @@
 # Install and update the Paper server on the remote host. Usage: scripts/remote.sh <command>
 #   key      one-time: copy your default SSH key to the host (needs one from ssh-keygen; you type the password)
 #   setup    create ~/minecraft, download Paper, BlueMap, Chunky, Terralith, Incendium, Nullscape and Structory, write start.sh
-#   sync     build the Wayfarer jar and rsync it plus the other plugin jars to ~/minecraft/plugins, then enchants
+#   sync     build the Wayfarer jar and rsync it plus the other plugin jars to ~/minecraft/plugins, update unedited
+#            Wayfarer configs to the shipped ones (with backups), then enchants
 #   enchants make every ExcellentEnchants enchant reward-only on the host (scripts/ee_lockdown.py; restart to apply)
 #   all      setup then sync
 # Override with REMOTE=user@host REMOTE_DIR=minecraft PAPER_VERSION=26.3
@@ -67,8 +68,34 @@ cmd_sync() {
   cp "$jar" "$stage/Wayfarer.jar"
   for p in "${LOCAL_PLUGINS[@]}"; do cp "server/plugins/$p" "$stage/"; done
   rsync -avz --checksum "$stage"/ "$REMOTE:$REMOTE_DIR/plugins/"
+  cmd_configs
   cmd_enchants
-  echo "Synced. Restart the server on the host to load new jars (Wayfarer's configs on the host are left alone)."
+  echo "Synced. Restart the server on the host (or reload the changed modules) to load it."
+}
+
+# Wayfarer's configs on the host: one still identical to a version this repo once shipped (never edited there) is
+# replaced by the current shipped file, with a dated backup beside it; an edited one is left alone and reported.
+cmd_configs() {
+  local tmp f name host current same c
+  tmp=$(mktemp -d)
+  for f in plugin/src/main/resources/*.yml; do
+    name=$(basename "$f")
+    [ "$name" = paper-plugin.yml ] && continue
+    scp -q -o BatchMode=yes "$REMOTE:$REMOTE_DIR/plugins/Wayfarer/$name" "$tmp/host.yml" 2>/dev/null || continue
+    cmp -s "$tmp/host.yml" "$f" && continue
+    same=0
+    for c in $(git log --format=%h -- "$f"); do
+      git show "$c:$f" > "$tmp/old.yml" 2>/dev/null && cmp -s "$tmp/host.yml" "$tmp/old.yml" && { same=1; break; }
+    done
+    if [ $same -eq 1 ]; then
+      rsh "cp -p ~/$REMOTE_DIR/plugins/Wayfarer/$name ~/$REMOTE_DIR/plugins/Wayfarer/$name.bak-$(date +%F)"
+      scp -q -o BatchMode=yes "$f" "$REMOTE:$REMOTE_DIR/plugins/Wayfarer/$name"
+      echo "Config $name: was the shipped version from $c, updated (backup $name.bak-$(date +%F))"
+    else
+      echo "Config $name: edited on the host, left alone (compare with $f)"
+    fi
+  done
+  rm -rf "$tmp"
 }
 
 cmd_enchants() {
@@ -86,5 +113,5 @@ case "${1:-}" in
   sync) cmd_sync ;;
   enchants) cmd_enchants ;;
   all) cmd_setup; cmd_sync ;;
-  *) sed -n '2,9p' "$0"; exit 1 ;;
+  *) sed -n '2,10p' "$0"; exit 1 ;;
 esac
