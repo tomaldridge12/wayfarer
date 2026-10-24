@@ -27,6 +27,7 @@ public final class ModuleManager {
             } catch (Exception | LinkageError e) {
                 core.commands().drop(id);
                 core.progression().drop(id);
+                core.itemMakers().drop(id);
                 core.logger().log(Level.SEVERE, "Module " + id + " failed to start, skipped", e);
             }
         }
@@ -35,6 +36,7 @@ public final class ModuleManager {
     public void disableAll(Core core) {
         for (Module module : running.reversed()) {
             try {
+                core.itemMakers().drop(module.id());
                 module.disable();
             } catch (Exception e) {
                 core.logger().log(Level.WARNING, "Module " + module.id() + " failed to disable cleanly", e);

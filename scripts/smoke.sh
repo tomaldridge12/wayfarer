@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Boot a throwaway Paper server several times and assert log lines. Exit 0 = pass.
 # Boot 1: default config, /wayfarer commands, awards, bosses (spawn every variant, a forced defeat with loot). Boot 1b: restart (/mobbanners alias), player data, placed banner and head persisted.
-# Boot 2: banners module switched off. Boot 4: without ExcellentEnchants. Boot 3: unreadable banners config.
+# Boot 2: banners module switched off. Boot 5: alloys module off. Boot 4: without ExcellentEnchants. Boot 3: unreadable banners config.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # A throwaway server of its own (port 25566), so the smoke test never touches server/, the world you play in.
@@ -57,10 +57,10 @@ check() { # log file, pattern
 fail=0
 LOGS=build/smoke-logs
 rm -rf "$LOGS" && mkdir -p "$LOGS"
-rm -f "$CFG" "$RUN/plugins/Wayfarer/bosses.yml" # start from the shipped configs
+rm -f "$CFG" "$RUN/plugins/Wayfarer/bosses.yml" "$RUN/plugins/Wayfarer/alloys.yml" # start from the shipped configs
 rm -rf "$DATA"
 LOG1=$LOGS/log1.log; boot "$LOG1" "forceload add 20 20" "setblock 20 101 20 minecraft:air" "setblock 24 101 20 minecraft:air" "setblock 20 100 20 minecraft:campfire[lit=true]" "setblock 20 101 20 minecraft:cauldron" "setblock 24 101 20 minecraft:cauldron" "wayfarer alloys load 20 101 20 world iron_ingot 4 $PLAYER" "wayfarer alloys load 20 101 20 world coal_block 1 $PLAYER" "wayfarer alloys load 24 101 20 world iron_ingot 4 $PLAYER" "wayfarer alloys load 24 101 20 world coal_block 1 $PLAYER" "wayfarer alloys load 24 101 20 world dirt 1 $PLAYER" "wayfarer reload" "wayfarer give nobody nope" "wayfarer give nobody zombie" "wayfarer setcount $PLAYER kill:zombie 400" "wayfarer progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "wayfarer place zombie 0 100 0 world" "wayfarer placehead $PLAYER zombie 2 100 0" "wayfarer forcedrop $PLAYER2 skeleton" "wayfarer forcedrop $PLAYER2 relic:zombie_weapon_2" "wayfarer progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "wayfarer boss spawn rotting_warlord rotting_warlord 5" "wayfarer boss spawn bone_marshal bone_marshal 3 guardian" "wayfarer boss defeat $PLAYER" "forceload remove ~-16 ~-16 ~112 ~16" "wayfarer setcount $PLAYER kill:incendium:knight 2" "wayfarer setcount $PLAYER harvest:wheat 3" "wayfarer setcount $PLAYER discover:biome/terralith:alpine_grove 1" "wayfarer stats $PLAYER harvest:" "wayfarer stats $PLAYER discover:" "wayfarer pack" "wayfarer pack send nobody" "wayfarer setcount $PLAYER kill:zombie" "wayfarer stats $PLAYER kill:" "wayfarer alloys list" "wayfarer alloys give nobody ingot:steel" "wayfarer alloys reload" "wayfarer stats $PLAYER forge:" "forceload remove 20 20"
-check "$LOG1" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], banners [reload, give, place, placehead, forcedrop], bosses [boss], alloys [alloys]"
+check "$LOG1" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], banners [reload, give, place, placehead, forcedrop], bosses [boss]"
 check "$LOG1" "Module alloys enabled"
 check "$LOG1" "Alloy gear built: 60 of 60"
 check "$LOG1" "Alloy recipes registered: 10 smithing upgrades, 6 template duplications (16 live)"
@@ -103,7 +103,8 @@ check "$LOG1" "Banners loaded: 14 banners, 14 families, 0 problems"
 check "$LOG1" "Banner items built: 14 of 14"
 check "$LOG1" "Ladder loaded: 14 trophy heads, 76 relics"
 check "$LOG1" "Ladders registered by banners: 15 (all, zombie, skeleton, creeper, spider, enderman, rotting_warlord, "
-check "$LOG1" "Relic items built: 76 of 76"
+check "$LOG1" "Relic items built: 76 of 76 (22 on alloys)"
+check "$LOG1" "Relic check: zombie_weapon is iron_axe with model wayfarer:steel_axe, "
 check "$LOG1" "relic enchants can still be found outside Wayfarer"
 check "$LOG1" "Banner feedback: action bar on, damage numbers on (max 40), edge particles off, marker effect off (luck)"
 check "$LOG1" "Banners reloaded: 14 banners, 0 problems"
@@ -142,7 +143,18 @@ check "$LOG1B" "Banner labels refreshed: 2"
 printf 'version: 1\nenabled: false\n' >"$CFG"
 LOG2=$LOGS/log2.log; boot "$LOG2"
 check "$LOG2" "Module banners skipped (disabled in config)"
-check "$LOG2" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], bosses [boss], alloys [alloys]"
+check "$LOG2" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], bosses [boss]"
+
+# Boot 5: alloys module off; relics fall back to their vanilla items.
+rm -f "$CFG"
+ALLOYS_CFG=$RUN/plugins/Wayfarer/alloys.yml
+printf 'version: 1\nenabled: false\n' >"$ALLOYS_CFG"
+LOG5=$LOGS/log5.log; boot "$LOG5"
+rm -f "$ALLOYS_CFG"
+check "$LOG5" "Module alloys skipped (disabled in config)"
+check "$LOG5" "Relic items built: 76 of 76 (0 on alloys)"
+check "$LOG5" "Relic check: zombie_weapon is iron_axe with model minecraft:iron_axe, "
+check "$LOG5" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], banners [reload, give, place, placehead, forcedrop], bosses [boss]"
 
 # Boot 4: without ExcellentEnchants, relics still build and only lose those enchants.
 rm -f "$CFG"
@@ -152,7 +164,7 @@ if [ -n "$EE" ]; then
   mv "$EE" "$RUN/plugins-off/"
   trap 'rm -f "$CFG"; mv "$RUN"/plugins-off/*.jar "$RUN/plugins/" 2>/dev/null || true' EXIT
   LOG4=$LOGS/log4.log; boot "$LOG4"
-  check "$LOG4" "Relic items built: 76 of 76"
+  check "$LOG4" "Relic items built: 76 of 76 (22 on alloys)"
   check "$LOG4" "ExcellentEnchants is not installed; relics are given without its enchants"
   check "$LOG4" "Wayfarer enabled"
   mv "$RUN"/plugins-off/*.jar "$RUN/plugins/"
@@ -163,7 +175,7 @@ fi
 printf 'banners: [unclosed\n' >"$CFG"
 LOG3=$LOGS/log3.log; boot "$LOG3"
 check "$LOG3" "Module banners failed to start, skipped"
-check "$LOG3" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], bosses [boss], alloys [alloys]"
+check "$LOG3" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], bosses [boss]"
 check "$LOG3" "Wayfarer enabled"
 traces=0
 for log in "$LOG1" "$LOG1B" "$LOG2"; do

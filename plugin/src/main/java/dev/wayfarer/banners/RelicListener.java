@@ -9,7 +9,7 @@ import org.bukkit.event.inventory.PrepareSmithingEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
-/** Keeps relic text current (join, pickup) and blocks the netherite upgrade so relics stay a trade-off. */
+/** Keeps relic text current (join, pickup) and blocks smithing upgrades (netherite, alloys): relics never upgrade. */
 final class RelicListener implements Listener {
     private final RelicItems relics;
 
@@ -44,9 +44,10 @@ final class RelicListener implements Listener {
         }
     }
 
-    @EventHandler
+    /** Armour trims still work on relics. After the alloys module has set its upgrade result. */
+    @EventHandler(priority = EventPriority.HIGHEST)
     void onSmithing(PrepareSmithingEvent event) {
-        if (RelicItems.isNetheriteUpgrade(event.getInventory().getInputTemplate())
+        if (!(event.getInventory().getRecipe() instanceof org.bukkit.inventory.SmithingTrimRecipe)
                 && event.getInventory().getInputEquipment() != null
                 && relics.relicId(event.getInventory().getInputEquipment()).isPresent()) {
             event.setResult(null);

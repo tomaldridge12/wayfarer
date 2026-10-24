@@ -77,10 +77,16 @@ class ModuleManagerTest {
     private static Core core(Set<String> disabled, CommandTree<CommandSourceStack> commands, Progression progression) {
         Logger logger = Logger.getAnonymousLogger();
         logger.setUseParentHandlers(false);
+        ItemMakers<org.bukkit.inventory.ItemStack> makers = new ItemMakers<>();
         return new Core() {
             @Override
             public Logger logger() {
                 return logger;
+            }
+
+            @Override
+            public ItemMakers<org.bukkit.inventory.ItemStack> itemMakers() {
+                return makers;
             }
 
             @Override

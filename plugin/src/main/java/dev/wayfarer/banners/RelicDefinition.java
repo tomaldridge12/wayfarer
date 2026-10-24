@@ -6,11 +6,35 @@ import java.util.Map;
 /**
  * A relic on a family's ladder: one weapon or armour piece at one tier. {@code enchants} maps namespaced keys
  * ("minecraft:sharpness", "excellentenchants:vampire") to levels. {@code edgePercent} is the family edge: extra
- * damage dealt (weapons) or damage taken away (armour).
+ * damage dealt (weapons) or damage taken away (armour). {@code alloy} (or null) is the alloy its tier names, for
+ * relics in an alloy shape; {@code item} is then its shape and the fallback when the alloys module is off.
  */
 public record RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot,
         String item, Map<String, Integer> enchants, String trimPattern, String trimMaterial, int edgePercent,
-        java.util.List<Perk> perks, Integer dye) {
+        java.util.List<Perk> perks, Integer dye, String alloy) {
+
+    /** The alloys each tier may name: I steel or bronze, II shakudo or electrum, Ascended hepatizon or adamant. */
+    public static final Map<Integer, java.util.List<String>> TIER_ALLOYS = Map.of(
+            1, java.util.List.of("steel", "bronze"),
+            2, java.util.List.of("shakudo", "electrum"),
+            3, java.util.List.of("hepatizon", "adamant")); // Ascended
+
+    /** The vanilla shapes alloy gear comes in. */
+    public static final java.util.Set<String> ALLOY_SHAPES = java.util.Set.of("sword", "pickaxe", "axe", "shovel",
+            "hoe", "spear", "helmet", "chestplate", "leggings", "boots");
+
+    /** The alloy shape of a vanilla item key (diamond_axe -> axe), or null for bows, maces, shields ... */
+    public static String alloyShape(String item) {
+        int cut = item == null ? -1 : item.lastIndexOf('_');
+        String shape = cut < 0 ? null : item.substring(cut + 1);
+        return shape != null && ALLOY_SHAPES.contains(shape) ? shape : null;
+    }
+
+    public RelicDefinition(String id, String name, String family, int kills, int tier, Slot slot,
+            String item, Map<String, Integer> enchants, String trimPattern, String trimMaterial, int edgePercent,
+            java.util.List<Perk> perks, Integer dye) {
+        this(id, name, family, kills, tier, slot, item, enchants, trimPattern, trimMaterial, edgePercent, perks, dye, null);
+    }
 
     /** Tiers: 0 cosmetic regalia, 1 Rare (iron-level), 2 Epic (diamond-level), 3 Ascended, 4 Legendary. */
     public static final int REGALIA = 0;

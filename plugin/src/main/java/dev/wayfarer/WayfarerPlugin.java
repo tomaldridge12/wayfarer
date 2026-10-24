@@ -7,6 +7,7 @@ import dev.wayfarer.core.ChunkDataService;
 import dev.wayfarer.core.CommandTree;
 import dev.wayfarer.core.ConfigService;
 import dev.wayfarer.core.Core;
+import dev.wayfarer.core.ItemMakers;
 import dev.wayfarer.core.ItemTagService;
 import dev.wayfarer.core.ModuleManager;
 import dev.wayfarer.core.PaperConfigService;
@@ -15,6 +16,7 @@ import dev.wayfarer.core.progression.ProgressionService;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.util.logging.Logger;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class WayfarerPlugin extends JavaPlugin implements Core {
@@ -25,6 +27,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private ProgressionService progression;
     private PackService pack;
     private final CommandTree<CommandSourceStack> commands = new CommandTree<>("wayfarer");
+    private final ItemMakers<ItemStack> itemMakers = new ItemMakers<>();
 
     @Override
     public void onEnable() {
@@ -35,9 +38,9 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         progression.enable();
         pack = new PackService(this, this);
         pack.enable();
+        modules.register(new AlloysModule(this)); // first, so banners builds relics on alloy gear from the start
         modules.register(new BannersModule(this));
         modules.register(new BossesModule(this));
-        modules.register(new AlloysModule(this));
         modules.enableAll(this);
         // Fires after every module has enabled (and again on a datapack reload), so the tree is complete.
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
@@ -82,6 +85,11 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public ProgressionService progression() {
         return progression;
+    }
+
+    @Override
+    public ItemMakers<ItemStack> itemMakers() {
+        return itemMakers;
     }
 
     @Override

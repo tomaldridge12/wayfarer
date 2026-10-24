@@ -59,6 +59,8 @@ public final class AlloysModule implements Module {
         core.logger().info("Crucibles loaded: " + crucibles.loadAll() + " in loaded chunks");
         clock = plugin.getServer().getScheduler().runTaskTimer(plugin, crucibles::tick, Crucibles.PERIOD_TICKS, Crucibles.PERIOD_TICKS);
         core.commands().register(id(), commands());
+        // Relics are built on alloy gear through core: "alloy:steel_axe".
+        core.itemMakers().register(id(), "alloy", name -> name.contains(":") ? java.util.Optional.empty() : items.byName(name, 1));
     }
 
     @Override

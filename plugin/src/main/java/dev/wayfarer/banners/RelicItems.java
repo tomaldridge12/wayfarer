@@ -2,7 +2,6 @@ package dev.wayfarer.banners;
 
 import dev.wayfarer.core.ItemTagService;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.bukkit.Material;
@@ -25,14 +24,34 @@ final class RelicItems {
 
     private final ItemTagService tags;
     private final Supplier<BannerSet> banners;
+    private final java.util.function.Function<String, Optional<ItemStack>> made;
 
-    RelicItems(ItemTagService tags, Supplier<BannerSet> banners) {
+    /** @param made module-made items by key (core's item makers), for relics built on an alloy */
+    RelicItems(ItemTagService tags, Supplier<BannerSet> banners, java.util.function.Function<String, Optional<ItemStack>> made) {
         this.tags = tags;
         this.banners = banners;
+        this.made = made;
+    }
+
+    /** The item a relic is built on: its alloy's gear in its shape when the alloys module makes it, else its item. */
+    private ItemStack base(RelicDefinition def) {
+        if (def.alloy() != null) {
+            Optional<ItemStack> alloy = made.apply("alloy:" + def.alloy() + "_" + RelicDefinition.alloyShape(def.item()));
+            if (alloy.isPresent()) {
+                return alloy.get();
+            }
+        }
+        return new ItemStack(Material.matchMaterial(def.item()));
+    }
+
+    /** Whether a relic would be built on its alloy right now (false when the alloys module is off). */
+    boolean onAlloy(RelicDefinition def) {
+        return def.alloy() != null
+                && made.apply("alloy:" + def.alloy() + "_" + RelicDefinition.alloyShape(def.item())).isPresent();
     }
 
     ItemStack create(RelicDefinition def, long earnedAtMillis) {
-        ItemStack item = new ItemStack(Material.matchMaterial(def.item()));
+        ItemStack item = base(def);
         item.editMeta(meta -> {
             def.enchants().forEach((key, level) -> {
                 Enchantment e = Registry.ENCHANTMENT.get(NamespacedKey.fromString(key));
@@ -162,9 +181,6 @@ final class RelicItems {
         });
     }
 
-    static boolean isNetheriteUpgrade(ItemStack template) {
-        return template != null && template.getType().name().toLowerCase(Locale.ROOT).startsWith("netherite_upgrade");
-    }
 
     private static long parseLong(String text) {
         try {

@@ -17,6 +17,9 @@ public interface Core {
     /** Activities, counters and each player's progression record. */
     Progression progression();
 
+    /** Items modules make for each other by key ({@code alloy:steel_axe}). Main thread. */
+    ItemMakers<org.bukkit.inventory.ItemStack> itemMakers();
+
     /** The /wayfarer root; modules register their subtrees under their own id while enabling. */
     CommandTree<CommandSourceStack> commands();
 }

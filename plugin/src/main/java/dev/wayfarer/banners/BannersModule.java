@@ -68,7 +68,7 @@ public final class BannersModule implements Module {
     public void enable(Core core) throws Exception {
         this.core = core;
         this.items = new BannerItems(core.itemTags(), this::banners);
-        this.relics = new RelicItems(core.itemTags(), this::banners);
+        this.relics = new RelicItems(core.itemTags(), this::banners, key -> core.itemMakers().make(key));
         load(); // throws if the file is unreadable, which skips only this module
         listener = new BannerListener(this);
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
@@ -464,14 +464,23 @@ public final class BannersModule implements Module {
                 + set.families().size() + " families, " + set.problems().size() + " problems");
         core.logger().info("Ladder loaded: " + set.heads().size() + " trophy heads, " + set.relics().size() + " relics");
         int relicsBuilt = 0;
+        int onAlloys = 0;
         for (RelicDefinition def : set.relics().values()) {
             try {
                 relics.create(def, 0); // proves the item, enchants and trim exist on this server
                 relicsBuilt++;
+                onAlloys += relics.onAlloy(def) ? 1 : 0;
             } catch (RuntimeException e) {
                 core.logger().warning("[banners] Relic " + def.id() + " item could not be built: " + e);
             }
         }
-        core.logger().info("Relic items built: " + relicsBuilt + " of " + set.relics().size());
+        core.logger().info("Relic items built: " + relicsBuilt + " of " + set.relics().size() + " (" + onAlloys
+                + " on alloys)");
+        set.findRelic("zombie_weapon").ifPresent(def -> {
+            org.bukkit.inventory.ItemStack sample = relics.create(def, 0);
+            var model = sample.getData(io.papermc.paper.datacomponent.DataComponentTypes.ITEM_MODEL);
+            core.logger().info("Relic check: zombie_weapon is " + sample.getType().getKey().getKey() + " with model "
+                    + (model == null ? "none" : model.asString()) + ", " + sample.getEnchantments().size() + " enchants");
+        });
     }
 }

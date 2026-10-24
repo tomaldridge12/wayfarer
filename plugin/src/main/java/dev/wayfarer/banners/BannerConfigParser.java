@@ -211,9 +211,23 @@ public final class BannerConfigParser {
                 problems.add("Relic " + id + ": dye must be #RRGGBB; ignored");
             }
         }
+        String alloy = null;
+        if (l.raw().get("alloy") != null) {
+            String wanted = String.valueOf(l.raw().get("alloy")).toLowerCase(Locale.ROOT);
+            List<String> allowed = RelicDefinition.TIER_ALLOYS.getOrDefault(tier, List.of());
+            if (RelicDefinition.alloyShape(item) == null) {
+                problems.add("Relic " + id + ": alloy ignored, " + item + " is not an alloy shape (sword, pickaxe, axe,"
+                        + " shovel, hoe, spear or armour)");
+            } else if (!allowed.contains(wanted)) {
+                problems.add("Relic " + id + ": alloy '" + wanted + "' ignored; tier " + tier + " is made of "
+                        + (allowed.isEmpty() ? "no alloy" : String.join(" or ", allowed)));
+            } else {
+                alloy = wanted;
+            }
+        }
         int kills = Boolean.TRUE.equals(l.raw().get("drop-only")) ? RelicDefinition.DROP_ONLY : l.kills();
         return new RelicDefinition(id, l.name(id), l.family(), kills, tier, slot, item,
-                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge, List.copyOf(perks), dye);
+                parseEnchants(id, l.raw().get("enchants")), trimPattern, trimMaterial, edge, List.copyOf(perks), dye, alloy);
     }
 
     /**

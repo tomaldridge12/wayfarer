@@ -58,6 +58,13 @@ class ShippedConfigTest {
         });
         assertEquals(14, set.heads().size());
         assertEquals(76, set.relics().size());
+        // Every relic in an alloy shape at tiers I, II and Ascended names its alloy; nothing else does.
+        set.relics().values().forEach(r -> assertEquals(
+                r.tier() >= 1 && r.tier() <= RelicDefinition.ASCENDED && RelicDefinition.alloyShape(r.item()) != null,
+                r.alloy() != null, r.id()));
+        assertEquals(22, set.relics().values().stream().filter(r -> r.alloy() != null).count());
+        assertEquals("shakudo", set.findRelic("wayfarers_blade").orElseThrow().alloy());
+        assertEquals("adamant", set.findRelic("zombie_weapon_3").orElseThrow().alloy());
         assertEquals(9, set.bossBase().size());
         assertEquals("zombie", set.baseFamilyOf("rotting_warlord"));
         assertEquals(null, set.baseFamilyOf("sand_pharaoh"));

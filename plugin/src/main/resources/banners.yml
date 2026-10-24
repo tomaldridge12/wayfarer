@@ -248,7 +248,10 @@ heads:
     item: piglin_head
 # Relics: a themed weapon and one armour piece per family, in two tiers (I iron-level, II diamond-level).
 # kills: the family's kill count needed ('all' is the all-mobs count); drop-only relics come only from boss loot.
-# tier: 0 regalia (cosmetic), 1 rare (iron-level), 2 epic (diamond-level), 3 ascended, 4 legendary; dye: #hex for leather. item: the base item (never netherite).
+# tier: 0 regalia (cosmetic), 1 rare, 2 epic, 3 ascended, 4 legendary; dye: #hex for leather. item: the base item (never netherite).
+# alloy: what a relic in an alloy shape (sword, pickaxe, axe, shovel, hoe, spear, armour) is made of, as its tier
+# names: tier 1 steel or bronze, tier 2 shakudo or electrum, tier 3 hepatizon or adamant. It is built on that alloy's
+# gear (alloys.yml) with this relic's infusion on top; with the alloys module off it falls back to item.
 # edge: the family edge in percent (weapons: extra damage to the family; armour: less damage from it); omitted
 # means weapons 30 / 40 and armour 25 / 30 by tier. trim: pattern:material for armour. enchants: preset levels,
 # kept at or below each enchant's maximum. perks: from the fixed library (hunger_immunity, poison_immunity,
@@ -263,6 +266,7 @@ relics:
     tier: 1
     slot: weapon
     item: iron_axe
+    alloy: steel
     enchants:
       sharpness: 2
       unbreaking: 2
@@ -277,6 +281,7 @@ relics:
     tier: 1
     slot: chest
     item: iron_chestplate
+    alloy: steel
     trim: wild:emerald
     enchants:
       protection: 2
@@ -292,6 +297,7 @@ relics:
     tier: 2
     slot: weapon
     item: diamond_axe
+    alloy: shakudo
     enchants:
       sharpness: 3
       unbreaking: 3
@@ -306,6 +312,7 @@ relics:
     tier: 2
     slot: chest
     item: diamond_chestplate
+    alloy: shakudo
     trim: wild:emerald
     enchants:
       protection: 3
@@ -335,6 +342,7 @@ relics:
     tier: 1
     slot: head
     item: iron_helmet
+    alloy: bronze
     trim: rib:quartz
     enchants:
       protection: 2
@@ -364,6 +372,7 @@ relics:
     tier: 2
     slot: head
     item: diamond_helmet
+    alloy: electrum
     trim: rib:quartz
     enchants:
       protection: 3
@@ -379,6 +388,7 @@ relics:
     tier: 1
     slot: weapon
     item: iron_sword
+    alloy: bronze
     enchants:
       sharpness: 2
       unbreaking: 2
@@ -393,6 +403,7 @@ relics:
     tier: 1
     slot: feet
     item: iron_boots
+    alloy: bronze
     trim: eye:redstone
     enchants:
       protection: 2
@@ -409,6 +420,7 @@ relics:
     tier: 2
     slot: weapon
     item: diamond_sword
+    alloy: shakudo
     enchants:
       sharpness: 3
       unbreaking: 3
@@ -423,6 +435,7 @@ relics:
     tier: 2
     slot: feet
     item: diamond_boots
+    alloy: shakudo
     trim: eye:redstone
     enchants:
       protection: 3
@@ -452,6 +465,7 @@ relics:
     tier: 1
     slot: legs
     item: iron_leggings
+    alloy: steel
     trim: bolt:copper
     enchants:
       blast_protection: 2
@@ -480,6 +494,7 @@ relics:
     tier: 2
     slot: legs
     item: diamond_leggings
+    alloy: shakudo
     trim: bolt:copper
     enchants:
       blast_protection: 3
@@ -495,6 +510,7 @@ relics:
     tier: 1
     slot: weapon
     item: iron_sword
+    alloy: steel
     enchants:
       sharpness: 2
       unbreaking: 2
@@ -520,6 +536,7 @@ relics:
     tier: 2
     slot: weapon
     item: diamond_sword
+    alloy: electrum
     enchants:
       sharpness: 3
       unbreaking: 3
@@ -545,6 +562,7 @@ relics:
     tier: 2
     slot: weapon
     item: diamond_sword
+    alloy: shakudo
     enchants:
       sharpness: 3
       unbreaking: 3
@@ -846,6 +864,7 @@ relics:
     tier: 3
     slot: weapon
     item: diamond_axe
+    alloy: adamant
     enchants:
       sharpness: 4
       unbreaking: 3
@@ -861,6 +880,7 @@ relics:
     tier: 3
     slot: chest
     item: diamond_chestplate
+    alloy: adamant
     trim: wild:emerald
     enchants:
       protection: 4
@@ -891,6 +911,7 @@ relics:
     tier: 3
     slot: head
     item: diamond_helmet
+    alloy: hepatizon
     trim: rib:quartz
     enchants:
       protection: 4
@@ -906,6 +927,7 @@ relics:
     tier: 3
     slot: weapon
     item: diamond_sword
+    alloy: hepatizon
     enchants:
       sharpness: 4
       unbreaking: 3
@@ -921,6 +943,7 @@ relics:
     tier: 3
     slot: feet
     item: diamond_boots
+    alloy: hepatizon
     trim: eye:redstone
     enchants:
       protection: 4
@@ -951,6 +974,7 @@ relics:
     tier: 3
     slot: legs
     item: diamond_leggings
+    alloy: adamant
     trim: bolt:copper
     enchants:
       blast_protection: 4
@@ -966,6 +990,7 @@ relics:
     tier: 3
     slot: weapon
     item: diamond_sword
+    alloy: adamant
     enchants:
       sharpness: 4
       unbreaking: 3

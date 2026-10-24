@@ -207,4 +207,39 @@ class BannerConfigParserTest {
         assertEquals(List.of("excellentenchants:rage", "excellentenchants:vampire"), set.missingOptionalEnchants());
         assertEquals(Map.of("minecraft:sharpness", 2), set.findRelic("cleaver").orElseThrow().enchants());
     }
+
+    @Test
+    void relicsNameTheAlloyTheirTierAllowsInAnAlloyShape() {
+        Map<String, Object> root = new LinkedHashMap<>(root(ordered("zombie", List.of("zombie")), ordered()));
+        root.put("relics", ordered(
+                "cleaver", ordered("family", "zombie", "kills", 400, "tier", 1, "item", "iron_axe", "alloy", "steel"),
+                "cleaver2", ordered("family", "zombie", "kills", 900, "tier", 2, "item", "diamond_axe", "alloy", "Electrum"),
+                "ascended", ordered("family", "zombie", "drop-only", true, "tier", 3, "slot", "chest",
+                        "item", "diamond_chestplate", "alloy", "adamant"),
+                "wrongtier", ordered("family", "zombie", "kills", 10, "tier", 1, "item", "iron_sword", "alloy", "adamant"),
+                "bow", ordered("family", "zombie", "kills", 20, "tier", 1, "item", "bow", "alloy", "steel"),
+                "legend", ordered("family", "all", "drop-only", true, "tier", 4, "item", "diamond_axe", "alloy", "adamant"),
+                "plain", ordered("family", "zombie", "kills", 30, "tier", 1, "item", "iron_sword")));
+        BannerSet set = BannerConfigParser.parse(root, VOCAB);
+        assertEquals("steel", set.findRelic("cleaver").orElseThrow().alloy());
+        assertEquals("electrum", set.findRelic("cleaver2").orElseThrow().alloy());
+        assertEquals("adamant", set.findRelic("ascended").orElseThrow().alloy());
+        // A bad alloy is ignored with a problem; the relic still loads on its vanilla item.
+        assertEquals(null, set.findRelic("wrongtier").orElseThrow().alloy());
+        assertEquals(null, set.findRelic("bow").orElseThrow().alloy());
+        assertEquals(null, set.findRelic("legend").orElseThrow().alloy());
+        assertEquals(null, set.findRelic("plain").orElseThrow().alloy());
+        assertEquals(3, set.problems().size(), set.problems().toString());
+    }
+
+    @Test
+    void alloyShapesAreTheVanillaToolAndArmourShapes() {
+        assertEquals("axe", RelicDefinition.alloyShape("diamond_axe"));
+        assertEquals("chestplate", RelicDefinition.alloyShape("iron_chestplate"));
+        assertEquals("spear", RelicDefinition.alloyShape("iron_spear"));
+        assertEquals(null, RelicDefinition.alloyShape("bow"));
+        assertEquals(null, RelicDefinition.alloyShape("mace"));
+        assertEquals(null, RelicDefinition.alloyShape("shield"));
+        assertEquals(null, RelicDefinition.alloyShape("trident"));
+    }
 }
