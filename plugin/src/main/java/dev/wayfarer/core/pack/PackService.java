@@ -117,6 +117,9 @@ public final class PackService implements Listener {
         }
         Reach found = result;
         String why = detail;
+        if (!plugin.isEnabled()) {
+            return; // disabled while the request was out; nothing to do
+        }
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             reach = found;
             reachDetail = why;
@@ -160,6 +163,7 @@ public final class PackService implements Listener {
         statuses.put(player.getUniqueId(), status);
         core.logger().info("[pack] " + player.getName() + ": " + status);
         switch (PackOffer.onStatus(status)) {
+            // Kicked a tick later, so the status event finishes first.
             case KICK -> plugin.getServer().getScheduler().runTask(plugin, () -> player.kick(Component.text(
                     "Wayfarer needs its resource pack. To accept it next time: Multiplayer, select the server, Edit, "
                             + "set Server Resource Packs to Enabled, then join again.", NamedTextColor.YELLOW)));
@@ -215,6 +219,10 @@ public final class PackService implements Listener {
     private void model(CommandSender sender, String name) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Run this in game");
+            return;
+        }
+        if (!name.matches("[a-z0-9_./-]+")) {
+            sender.sendMessage("A model name is lower case letters, digits and _ . / -, such as steel_ingot");
             return;
         }
         ItemStack item = new ItemStack(Material.PAPER);

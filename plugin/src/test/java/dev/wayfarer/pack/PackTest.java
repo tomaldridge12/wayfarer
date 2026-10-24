@@ -56,7 +56,7 @@ class PackTest {
     void brokenReferencesBadJsonUncreditedAndOddSizedTexturesAreReported() throws IOException {
         write("pack.mcmeta", "{\"pack\": {\"description\": \"x\", \"min_format\": 96, \"max_format\": 97}}");
         write("LICENSE.txt", "CC BY-NC-SA 4.0");
-        write("CREDITS.md", "- `assets/wayfarer/textures/item/steel_ingot.png`\n");
+        write("CREDITS.md", "- `assets/wayfarer/textures/item/uncredited.png`\n\n## Wayfarer\n\n- `assets/wayfarer/textures/item/steel_ingot.png`\n");
         write("assets/wayfarer/items/steel_ingot.json", "{\"model\": {\"type\": \"minecraft:model\", \"model\": \"wayfarer:item/steel_ingot\"}}");
         write("assets/wayfarer/items/bronze_ingot.json", "{\"model\": {\"type\": \"minecraft:model\", \"model\": \"wayfarer:item/bronze_ingot\"}}");
         write("assets/wayfarer/models/item/steel_ingot.json", "{\"parent\": \"minecraft:item/generated\", \"textures\": {\"layer0\": \"wayfarer:item/steel_ingot\"}}");
@@ -65,6 +65,8 @@ class PackTest {
         copyTexture("assets/wayfarer/textures/item/steel_ingot.png");
         copyTexture("assets/wayfarer/textures/item/uncredited.png");
         Files.write(dir.resolve("assets/wayfarer/textures/item/odd.png"), new byte[] {1, 2, 3});
+        write("assets/wayfarer/textures/item/steel_ingot.png.mcmeta", "{\"animation\": {}}");
+        write("assets/wayfarer/lang/en_us.json", "{broken");
 
         List<String> problems = PackValidator.check(dir);
         assertTrue(problems.contains("pack.mcmeta must declare min_format and max_format 97"), problems.toString());
@@ -73,6 +75,24 @@ class PackTest {
         assertTrue(problems.contains("assets/wayfarer/equipment/steel.json: texture wayfarer:steel does not exist"), problems.toString());
         assertTrue(problems.contains("assets/wayfarer/textures/item/uncredited.png is not credited in CREDITS.md"), problems.toString());
         assertTrue(problems.contains("assets/wayfarer/textures/item/odd.png is not a PNG"), problems.toString());
-        assertEquals(7, problems.size(), problems.toString());
+        assertTrue(problems.contains("assets/wayfarer/textures/item/steel_ingot.png.mcmeta is not credited in CREDITS.md"), problems.toString());
+        assertTrue(problems.stream().anyMatch(p -> p.startsWith("assets/wayfarer/lang/en_us.json is not valid JSON")), problems.toString());
+        assertEquals(9, problems.size(), problems.toString());
+    }
+
+    /**
+     * Fixed timestamps (with Gradle's fixed entry order: files before folders at each level) are what make the same
+     * source always give the same SHA-1.
+     */
+    @Test
+    void theBuiltZipIsReproducible() throws IOException {
+        List<String> names = new java.util.ArrayList<>();
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(ZIP.toFile())) {
+            zip.stream().forEach(entry -> {
+                names.add(entry.getName());
+                assertEquals(java.time.LocalDateTime.of(1980, 2, 1, 0, 0), entry.getTimeLocal(), entry.getName());
+            });
+        }
+        assertTrue(names.contains("pack.mcmeta"));
     }
 }

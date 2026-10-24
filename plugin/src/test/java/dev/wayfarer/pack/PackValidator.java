@@ -88,16 +88,27 @@ final class PackValidator {
                 }));
             }
         }
-        String credits = Files.isRegularFile(root.resolve("CREDITS.md")) ? Files.readString(root.resolve("CREDITS.md")) : "";
-        List<Path> pngs = new ArrayList<>(files(root.resolve("assets"), ".png"));
-        if (Files.isRegularFile(root.resolve("pack.png"))) {
-            pngs.add(root.resolve("pack.png"));
+        // Every other JSON file (lang, atlases, animation .mcmeta) must at least parse.
+        for (Path file : files(root.resolve("assets"), "")) {
+            String n = file.toString();
+            if ((n.endsWith(".json") || n.endsWith(".mcmeta")) && !n.contains("/items/") && !n.contains("/models/")
+                    && !n.contains("/equipment/")) {
+                json(file);
+            }
         }
-        for (Path png : pngs) {
-            String relative = root.relativize(png).toString().replace('\\', '/');
-            if (!credits.contains("`" + relative + "`")) {
+        java.util.Set<String> credited = credited();
+        List<Path> art = new ArrayList<>(files(root.resolve("assets/wayfarer/textures"), ""));
+        if (Files.isRegularFile(root.resolve("pack.png"))) {
+            art.add(root.resolve("pack.png"));
+        }
+        for (Path file : art) {
+            String relative = name(file);
+            if (!credited.contains(relative)) {
                 problems.add(relative + " is not credited in CREDITS.md");
             }
+        }
+        for (Path png : files(root.resolve("assets"), ".png")) {
+            String relative = name(png);
             int[] size = pngSize(png);
             if (size == null) {
                 problems.add(relative + " is not a PNG");
@@ -105,6 +116,27 @@ final class PackValidator {
                 problems.add(relative + " is " + size[0] + "x" + size[1] + "; sides must be multiples of 16");
             }
         }
+    }
+
+    /**
+     * Files credited in CREDITS.md: "- `path`" lines under an author's "## " heading (Wayfarer, or a borrowed
+     * pack's author with its source). A path listed before any heading has no author and does not count.
+     */
+    private java.util.Set<String> credited() throws IOException {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        Path file = root.resolve("CREDITS.md");
+        if (!Files.isRegularFile(file)) {
+            return out;
+        }
+        boolean underAuthor = false;
+        for (String line : Files.readAllLines(file)) {
+            if (line.startsWith("## ")) {
+                underAuthor = !line.substring(3).isBlank();
+            } else if (underAuthor && line.startsWith("- `") && line.indexOf('`', 3) > 3) {
+                out.add(line.substring(3, line.indexOf('`', 3)));
+            }
+        }
+        return out;
     }
 
     /** A model reference: wayfarer: ones must exist; minecraft: ones are vanilla's. */
@@ -137,7 +169,7 @@ final class PackValidator {
             return List.of();
         }
         try (Stream<Path> s = Files.walk(dir)) {
-            return s.filter(p -> p.toString().endsWith(suffix)).sorted().toList();
+            return s.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(suffix)).sorted().toList();
         }
     }
 

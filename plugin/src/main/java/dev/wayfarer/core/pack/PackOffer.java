@@ -1,5 +1,6 @@
 package dev.wayfarer.core.pack;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,7 +30,7 @@ public record PackOffer(String url, String sha1, String tag, String prompt) {
 
     /** A stable id per pack version, so a client that already has this version is not asked again. */
     public UUID id() {
-        return UUID.nameUUIDFromBytes(sha1.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        return UUID.nameUUIDFromBytes(sha1.getBytes(StandardCharsets.US_ASCII));
     }
 
     /**
@@ -37,10 +38,17 @@ public record PackOffer(String url, String sha1, String tag, String prompt) {
      * A url override needs its sha1 too.
      */
     public static Optional<PackOffer> from(Map<String, Object> config, Properties jar, List<String> problems) {
-        if (Boolean.FALSE.equals(config.get("enabled"))) {
+        Object enabled = config.getOrDefault("enabled", true);
+        if (!(enabled instanceof Boolean)) {
+            problems.add("pack.yml: enabled must be true or false; using true");
+        } else if (!(Boolean) enabled) {
             return Optional.empty();
         }
-        String prompt = config.get("prompt") instanceof String p && !p.isBlank() ? p : DEFAULT_PROMPT;
+        Object rawPrompt = config.get("prompt");
+        if (rawPrompt != null && !(rawPrompt instanceof String p && !p.isBlank())) {
+            problems.add("pack.yml: prompt must be text; using the default");
+        }
+        String prompt = rawPrompt instanceof String p && !p.isBlank() ? p : DEFAULT_PROMPT;
         Object url = config.get("url");
         Object sha1 = config.get("sha1");
         if (url != null || sha1 != null) {

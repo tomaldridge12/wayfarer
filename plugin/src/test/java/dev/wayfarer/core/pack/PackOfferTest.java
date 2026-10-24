@@ -42,6 +42,14 @@ class PackOfferTest {
     }
 
     @Test
+    void badValuesAreReportedAndDefaultsUsed() {
+        List<String> problems = new ArrayList<>();
+        PackOffer offer = PackOffer.from(Map.of("enabled", "false", "prompt", 5), jar(), problems).orElseThrow();
+        assertEquals(PackOffer.DEFAULT_PROMPT, offer.prompt());
+        assertEquals(2, problems.size(), problems.toString());
+    }
+
+    @Test
     void aUrlOverrideNeedsItsHash() {
         List<String> problems = new ArrayList<>();
         String other = "a".repeat(40);
