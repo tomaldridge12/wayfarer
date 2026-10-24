@@ -24,6 +24,9 @@ final class BannerListener implements Listener {
 
     @EventHandler
     void onProgressChanged(dev.wayfarer.core.progression.ProgressChangedEvent event) {
-        module.progressChanged(event.player());
+        // Plaques show kill counts, so mining and the like (which fire this often) need no redraw.
+        if (event.raised().stream().anyMatch(a -> a.startsWith("kill:") || a.startsWith("defeat:"))) {
+            module.progressChanged(event.player());
+        }
     }
 }

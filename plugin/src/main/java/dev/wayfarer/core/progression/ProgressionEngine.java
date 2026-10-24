@@ -58,6 +58,28 @@ public final class ProgressionEngine {
         return record(data, Activity.KILL + ":" + kill.mobType());
     }
 
+    /**
+     * A block broken directly by a player ({@code block} is an activity target). A crop broken fully grown
+     * ({@code grown}: at its maximum age, or a melon or pumpkin) is also a harvest.
+     */
+    public Outcome mine(ProgressionData data, String block, boolean grown) {
+        String mine = Activity.MINE + ":" + block;
+        return grown && Activity.CROPS.contains(block)
+                ? record(data, List.of(mine, Activity.HARVEST + ":" + block))
+                : record(data, mine);
+    }
+
+    /** The first time a player stands in a biome; it counts once and stays at 1. */
+    public Outcome discoverBiome(ProgressionData data, String biome) {
+        String activity = Activity.DISCOVER + ":biome/" + biome;
+        return data.count(activity) > 0 ? Outcome.NOT_COUNTED : record(data, activity);
+    }
+
+    /** Entering one structure; counts only on the player's first visit to that structure instance. */
+    public Outcome discoverStructure(ProgressionData data, String structure, boolean firstVisit) {
+        return firstVisit ? record(data, Activity.DISCOVER + ":structure/" + structure) : Outcome.NOT_COUNTED;
+    }
+
     /** One more of an activity that has no credit rules of its own. */
     public Outcome record(ProgressionData data, String activity) {
         return record(data, List.of(activity));

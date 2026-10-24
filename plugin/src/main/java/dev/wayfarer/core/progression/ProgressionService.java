@@ -23,7 +23,11 @@ import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.generator.structure.GeneratedStructure;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -46,6 +50,8 @@ public final class ProgressionService implements Progression {
     static final String STATS_PERMISSION = "wayfarer.progression.stats";
     static final String SETCOUNT_PERMISSION = "wayfarer.progression.setcount";
     private static final long SAVE_INTERVAL_TICKS = 20L * 60;
+    private static final long PRESENCE_TICKS = 40;
+    private static final NamespacedKey VISITORS = new NamespacedKey("wayfarer", "progression_visitors");
 
     private record OwnedType(String owner, RewardType type) {
     }
@@ -60,6 +66,7 @@ public final class ProgressionService implements Progression {
     private volatile ProgressionEngine engine;
     private ProgressionListener listener;
     private BukkitTask saveTask;
+    private BukkitTask presenceTask;
 
     public ProgressionService(JavaPlugin plugin, Core core) {
         this.plugin = plugin;
@@ -79,6 +86,8 @@ public final class ProgressionService implements Progression {
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
         saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin, store::flush,
                 SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
+        presenceTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::presence,
+                PRESENCE_TICKS, PRESENCE_TICKS);
         core.commands().register(OWNER, progressCommand());
         core.commands().register(OWNER, claimCommand());
         core.commands().register(OWNER, statsCommand());
@@ -88,6 +97,9 @@ public final class ProgressionService implements Progression {
     public void disable() {
         if (saveTask != null) {
             saveTask.cancel();
+        }
+        if (presenceTask != null) {
+            presenceTask.cancel();
         }
         if (listener != null) {
             HandlerList.unregisterAll(listener);
@@ -196,12 +208,43 @@ public final class ProgressionService implements Progression {
     }
 
     void kill(Player killer, KillFacts kill) {
-        UUID id = killer.getUniqueId();
+        act(killer, (e, data) -> e.kill(data, kill));
+    }
+
+    /** Runs one engine call on an online player's record and acts on the outcome. */
+    void act(Player player, java.util.function.BiFunction<ProgressionEngine, ProgressionData, ProgressionEngine.Outcome> what) {
+        UUID id = player.getUniqueId();
         ProgressionData data = store.cached(id);
         if (data == null) {
             return; // data failed to load; already logged
         }
-        apply(id, engine.kill(data, kill), null);
+        apply(id, what.apply(engine, data), null);
+    }
+
+    /**
+     * The presence check: the biome each online player stands in, and the generated structures whose bounds
+     * contain them. A structure remembers who has entered it, so each instance counts once per player.
+     */
+    private void presence() {
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            Location at = player.getLocation();
+            NamespacedKey biome = org.bukkit.Registry.BIOME.getKey(at.getBlock().getBiome());
+            if (biome != null) {
+                act(player, (e, data) -> e.discoverBiome(data, Activity.target(biome.getNamespace(), biome.getKey())));
+            }
+            for (GeneratedStructure structure : at.getChunk().getStructures()) {
+                NamespacedKey key = org.bukkit.Registry.STRUCTURE.getKey(structure.getStructure());
+                if (key == null || !structure.getBoundingBox().contains(at.toVector())) {
+                    continue;
+                }
+                String visitors = structure.getPersistentDataContainer().get(VISITORS, PersistentDataType.STRING);
+                if (StructureVisitors.firstVisit(visitors, player.getUniqueId()) && store.cached(player.getUniqueId()) != null) {
+                    structure.getPersistentDataContainer().set(VISITORS, PersistentDataType.STRING,
+                            StructureVisitors.with(visitors, player.getUniqueId()));
+                    act(player, (e, data) -> e.discoverStructure(data, Activity.target(key.getNamespace(), key.getKey()), true));
+                }
+            }
+        }
     }
 
     /** Saves, redraws and rewards after an outcome. */
