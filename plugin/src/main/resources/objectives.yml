@@ -414,6 +414,22 @@ events:
       multiplier: 2
       goal: {name: "Rattle Their Bones", text: "Defeat {n} skeletons between you", counts: [kill:skeleton, kill:stray, kill:bogged, kill:parched, kill:wither_skeleton], target: 500}
 
+# The tokens shop: looks and conveniences, never power. Only these keys can be sold; relics, ingots, marks, curios and
+# enchants nobody has unlocked are not for sale and cannot be added. Prices in tokens.
+#   cosmetics: titles and trails (feat-only cosmetics are left out on purpose)
+#   extra-reroll: one more free reroll, once a day; template-copy: a copy of an alloy or mark template you have owned
+#   wayfinder: a Wayfinder pointing; beacon-kindling: calls a wandering trader (both need the exploration module)
+#   supplies: supply id -> price; enchant-per-level: a book of an enchant you have unlocked costs this times its level
+shop:
+  cosmetics: {wayfarer: 150, trailblazer: 200, night_owl: 200, hearth_keeper: 200, embers: 250, petals: 250, notes: 300,
+    sparkles: 300, bubbles: 250, snowfall: 250}
+  extra-reroll: 40
+  template-copy: 120
+  wayfinder: 60
+  beacon-kindling: 80
+  supplies: {seed_bundle: 30, floral_bundle: 30, mushy_bundle: 30, animal_crate: 80, wayfarers_bait: 40, tome_of_experience: 50}
+  enchant-per-level: 60
+
 # Reward tables: per theme, per tier (daily, weekly, goal for the server goal, event), weighted lines. reward: tokens
 # (amount a-b), supply:<id>, curio:<id>, gear:<id>, cosmetic:<id>, item:<vanilla item> (amount), or
 # enchant:<key> (level a-b, an enchanted book that also unlocks it in the shop). Between them, the tables reach every

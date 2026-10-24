@@ -39,6 +39,8 @@ public final class ObjectivesModule implements Module {
     private ServerGoals goals;
     private Events events;
     private volatile Events.Config eventConfig = Events.Config.empty();
+    private volatile ShopRules.Prices prices;
+    private CosmeticsDisplay display;
 
     public ObjectivesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -68,15 +70,24 @@ public final class ObjectivesModule implements Module {
         events = new Events(plugin, core, () -> pools, () -> eventConfig, goals, service, loot);
         events.start();
         listen(events);
+        display = new CosmeticsDisplay(plugin, service.store(), () -> cosmetics);
+        display.start();
+        listen(display);
         core.services().get(JournalPages.class).ifPresent(journal -> {
             journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page());
             journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals).page());
+            Shop shop = new Shop(core, service, loot, () -> pools, () -> prices, () -> cosmetics, journal, display);
+            journal.add(id(), shop.shopPage());
+            journal.add(id(), shop.wardrobePage());
         });
         core.commands().register(id(), commands());
     }
 
     @Override
     public void disable() {
+        if (display != null) {
+            display.stop();
+        }
         if (events != null) {
             events.stop();
         }
@@ -125,6 +136,13 @@ public final class ObjectivesModule implements Module {
         ev.problems().forEach(p -> core.logger().warning("[objectives] " + p));
         problems.addAll(ev.problems());
         eventConfig = new Events.Config(ev.rotation(), ev.events());
+        ShopConfigParser.Result shop = ShopConfigParser.parse(root.get("shop"), cosmetics,
+                java.util.Set.copyOf(core.itemIds().ids("supply")));
+        shop.problems().forEach(p -> core.logger().warning("[objectives] " + p));
+        problems.addAll(shop.problems());
+        prices = shop.prices();
+        core.logger().info("Shop loaded: " + prices.cosmetics().size() + " cosmetics, " + prices.supplies().size()
+                + " supplies, books at " + prices.enchantPerLevel() + " tokens a level, " + shop.problems().size() + " problems");
         Map<String, Integer> enchants = new LinkedHashMap<>(pool.tables().enchants());
         feats.values().forEach(f -> f.rewards().stream().filter(x -> x.startsWith("enchant:")).forEach(x -> enchantOf(x, enchants)));
         core.rewardEnchants().register(id(), enchants);

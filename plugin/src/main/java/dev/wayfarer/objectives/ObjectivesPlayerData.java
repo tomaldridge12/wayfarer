@@ -46,6 +46,8 @@ final class ObjectivesPlayerData {
     final Map<String, Integer> unlockedEnchants = new LinkedHashMap<>();
     final List<String> pending = new ArrayList<>();
     long shopRerollDay = Long.MIN_VALUE;
+    /** Alloy templates seen in the player's inventory ({@code alloy:template:steel}), for shop copies. */
+    final Set<String> ownedTemplates = new LinkedHashSet<>();
 
     void log(String line) {
         ledger.add(line);
@@ -83,6 +85,7 @@ final class ObjectivesPlayerData {
             }
             d.pending.addAll(strings(raw.get("pending")));
             d.shopRerollDay = raw.get("shopRerollDay") instanceof Number n ? n.longValue() : Long.MIN_VALUE;
+            d.ownedTemplates.addAll(strings(raw.get("ownedTemplates")));
             return d;
         }
 
@@ -111,6 +114,7 @@ final class ObjectivesPlayerData {
             out.put("unlockedEnchants", Map.copyOf(d.unlockedEnchants));
             out.put("pending", List.copyOf(d.pending));
             out.put("shopRerollDay", d.shopRerollDay);
+            out.put("ownedTemplates", List.copyOf(d.ownedTemplates));
             return out;
         }
 
