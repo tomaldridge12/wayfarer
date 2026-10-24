@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "wayfarer:bronze"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "wayfarer:bronze"
+      }
+    ]
+  }
+}

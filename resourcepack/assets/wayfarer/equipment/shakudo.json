@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "wayfarer:shakudo"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "wayfarer:shakudo"
+      }
+    ]
+  }
+}

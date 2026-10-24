@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "wayfarer:hepatizon"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "wayfarer:hepatizon"
+      }
+    ]
+  }
+}

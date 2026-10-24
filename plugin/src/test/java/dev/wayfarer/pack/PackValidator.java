@@ -112,7 +112,8 @@ final class PackValidator {
             int[] size = pngSize(png);
             if (size == null) {
                 problems.add(relative + " is not a PNG");
-            } else if (size[0] % 16 != 0 || size[1] % 16 != 0) {
+            } else if (!relative.contains("/trims/color_palettes/") // trim palettes are a row of 8 colours, as vanilla's
+                    && (size[0] % 16 != 0 || size[1] % 16 != 0)) {
                 problems.add(relative + " is " + size[0] + "x" + size[1] + "; sides must be multiples of 16");
             }
         }
