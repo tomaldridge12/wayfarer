@@ -10,6 +10,20 @@ use for the items nobody wants.
 2. **New gear is a sidegrade to netherite, not an upgrade.** A reason to swap gear, not to throw netherite away.
 3. **No end goal.** Build frameworks that new content slots into through config: quests, loot, events, bosses.
 4. **Group goals matter as much as solo ones.**
+5. **Every quest and milestone gives a reason to do it.** Each pays out something you can't get any other way: a unique
+   enchant, loot or item, not just a number.
+
+## Owner notes (2026-10-24)
+
+- **ExcellentEnchants are rewards only.** None of its enchants should come from enchanting tables, villager trades, loot
+  chests, fishing or mob gear. Today only the relic enchants are locked this way (`docs/wayfarer-relic-enchants.md`); extend
+  that to every ExcellentEnchants enchant, and hand them out through ladders, quests, boss loot and the shop.
+- **Lots of fun, odd milestones.** Beyond the big ladders, add many small one-off milestones with their own unique items,
+  such as "mine 10,000 moss" or "craft 100 hoes". They should be playful and surprising, and each should pay out a unique
+  enchant, item, cosmetic or loot.
+- **Loads of quests and milestones overall.** Variety matters more than size: every activity should have something to chase.
+- Crafting isn't counted yet. "Craft 100 hoes" needs a `craft:<item>` activity in the progression core; it's a small
+  listener, so it's worth adding early, since counters only start once recording does.
 
 ## Foundation: one activity tracker
 
