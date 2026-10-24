@@ -231,6 +231,25 @@ public final class AlloyRules {
         return ok ? OptionalDouble.of(alloy.get().repair().share()) : OptionalDouble.empty();
     }
 
+    /** A material repair: how many offered items it uses and the damage left after. */
+    public record RepairPlan(int itemsUsed, int damageLeft) {
+    }
+
+    /**
+     * Repairs {@code damage} of {@code maxDamage} with up to {@code offered} items restoring {@code share} each, as
+     * vanilla does: each item restores the share (rounded up), and no more items are used than the damage needs.
+     */
+    public static RepairPlan repair(int maxDamage, int damage, int offered, double share) {
+        int per = Math.max(1, (int) Math.ceil(maxDamage * share));
+        int used = Math.min(offered, (damage + per - 1) / per);
+        return new RepairPlan(used, Math.max(0, damage - used * per));
+    }
+
+    /** Vanilla's anvil cost for a material repair: the item's prior work, one level per item, one for a rename. */
+    public static int repairCost(int priorWork, int itemsUsed, boolean renamed) {
+        return priorWork + itemsUsed + (renamed ? 1 : 0);
+    }
+
     /** The level cost an anvil charges: vanilla's own, capped while endless repair is on. */
     public int anvilCost(int vanillaCost) {
         return anvil.endless() ? Math.min(vanillaCost, anvil.cap()) : vanillaCost;

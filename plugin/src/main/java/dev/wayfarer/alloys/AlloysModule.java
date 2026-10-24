@@ -49,6 +49,7 @@ public final class AlloysModule implements Module {
         load();
         listen(recipes);
         listen(new AlloyGuard(items));
+        listen(new AlloyAnvil(() -> rules, items));
         listen(new AlloyRefreshListener(items));
         crucibles = new Crucibles(plugin.getServer(), core.chunkData(), () -> rules, items,
                 (player, activity) -> core.progression().record(player, activity, "crucible"), core.logger());
@@ -85,7 +86,8 @@ public final class AlloysModule implements Module {
         rules = r.rules();
         core.logger().info("Alloys loaded: " + rules.alloys().size() + " alloys ("
                 + String.join(", ", rules.alloys().stream().map(AlloyDefinition::id).toList()) + "), "
-                + r.problems().size() + " problems");
+                + r.problems().size() + " problems; endless repair " + (rules.anvil().endless()
+                ? "on (cap " + rules.anvil().cap() + " levels)" : "off"));
         int built = 0;
         int all = 0;
         for (AlloyDefinition a : rules.alloys()) {
