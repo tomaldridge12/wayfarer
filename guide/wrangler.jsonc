@@ -1,0 +1,8 @@
+// Cloudflare deploys the Guide as plain static files: build, then serve dist/. Having this file stops
+// Cloudflare's automatic setup from adding its Astro adapter. "name" must match the Worker's name in the dashboard.
+{
+  "name": "wayfarer",
+  "compatibility_date": "2026-10-01",
+  "build": { "command": "npm run build" },
+  "assets": { "directory": "./dist", "not_found_handling": "404-page" }
+}

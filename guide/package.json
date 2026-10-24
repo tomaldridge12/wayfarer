@@ -3,12 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "node scripts/pack-textures.mjs",
+    "predev": "node scripts/prepare.mjs",
     "dev": "astro dev",
-    "prebuild": "node scripts/pack-textures.mjs",
+    "prebuild": "node scripts/prepare.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pretest": "node scripts/prepare.mjs"
   },
   "devDependencies": {
     "vitest": "^5.0.5"

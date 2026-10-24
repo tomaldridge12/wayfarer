@@ -3,10 +3,10 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadGuide } from '../src/data/guide';
-import { repoPaths } from '../src/data/repo';
+import { diskFiles, repoDiskPaths } from './disk';
 
 const page = (slug: string) => readFileSync(slug ? `dist/${slug}/index.html` : 'dist/index.html', 'utf8');
-const g = loadGuide(repoPaths);
+const g = loadGuide(repoDiskPaths, diskFiles);
 
 describe('built guide', () => {
   beforeAll(() => { execSync('npm run build', { stdio: 'pipe' }); }, 120_000);

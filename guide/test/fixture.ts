@@ -2,7 +2,8 @@
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import type { GuidePaths } from '../src/data/guide';
+import { loadGuide, type GuidePaths } from '../src/data/guide';
+import { diskFiles } from './disk';
 
 export const STAGES = `
 stages:
@@ -38,3 +39,5 @@ export function fixture(files: Record<string, string>): GuidePaths {
     config: join(root, 'config'),
   };
 }
+
+export const loadFixture = (paths: GuidePaths) => loadGuide(paths, diskFiles);

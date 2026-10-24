@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { loadGuide } from '../src/data/guide';
 import { pityKills } from '../src/data/config';
-import { STAGES, fixture } from './fixture';
-import { repoPaths } from '../src/data/repo';
+import { STAGES, fixture, loadFixture } from './fixture';
+import { diskFiles, repoDiskPaths } from './disk';
 
 const BANNERS = `
 families:
@@ -29,7 +29,7 @@ const base = (stages = withRewards()) => ({
 
 describe('ladders from config', () => {
   it('give families, banners, heads and relics with thresholds and stages', () => {
-    const g = loadGuide(fixture(base()));
+    const g = loadFixture(fixture(base()));
     expect(g.config.families).toEqual([{ id: 'zombie', mobs: ['zombie', 'husk', 'drowned'] }]);
     const banner = g.config.banners[0];
     expect([banner.name, banner.kills, banner.bonus, banner.reduction, banner.radius]).toEqual(['Zombie Banner', 100, 10, 10, 16]);
@@ -41,23 +41,23 @@ describe('ladders from config', () => {
   });
 
   it('fail when a reward is not on the stage map', () => {
-    expect(() => loadGuide(fixture(base(STAGES.replace('rewards: {}', 'rewards:\n  banner:zombie: iron')))))
+    expect(() => loadFixture(fixture(base(STAGES.replace('rewards: {}', 'rewards:\n  banner:zombie: iron')))))
       .toThrow(/'head:zombie' is not placed on a stage/);
   });
 
   it('fail when the stage map names a reward no longer in config', () => {
-    expect(() => loadGuide(fixture(base(withRewards('\n  banner:husk: iron')))))
+    expect(() => loadFixture(fixture(base(withRewards('\n  banner:husk: iron')))))
       .toThrow(/'banner:husk' is not in the plugin config any more/);
   });
 
   it('fail when a relic item has no texture', () => {
     const files = base();
     delete (files as any)['textures/minecraft/item/iron_axe.png'];
-    expect(() => loadGuide(fixture(files))).toThrow(/item 'iron_axe' has no texture/);
+    expect(() => loadFixture(fixture(files))).toThrow(/item 'iron_axe' has no texture/);
   });
 
   it('yield empty sections for config that does not exist yet', () => {
-    const g = loadGuide(fixture({}));
+    const g = loadFixture(fixture({}));
     expect([g.config.banners, g.config.bosses, g.config.pity, g.config.bossRules]).toEqual([[], [], [], null]);
   });
 });
@@ -72,7 +72,7 @@ describe('pity drops', () => {
 
 describe('the real repo', () => {
   it('loads: every reward placed, every item drawn, every chapter written', () => {
-    const g = loadGuide(repoPaths);
+    const g = loadGuide(repoDiskPaths, diskFiles);
     expect(g.config.banners.length).toBeGreaterThan(0);
     expect(g.config.bosses.length).toBeGreaterThan(0);
     expect(g.chapters[0].slug).toBe('welcome');

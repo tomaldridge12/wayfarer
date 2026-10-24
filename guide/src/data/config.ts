@@ -1,8 +1,7 @@
 // Reads the plugin's default config into the Guide's own shapes. Defaults mirror the plugin's parsers
 // (RelicDefinition.defaultEdge, Perk.describe); a missing file or section yields nothing, not an error.
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { parse } from 'yaml';
+import type { GuideFiles } from './files';
 
 export interface Family { id: string; mobs: string[] }
 
@@ -54,9 +53,9 @@ export interface Config {
   excludedSpawns: string[];
 }
 
-function read(dir: string, file: string): any {
-  const path = join(dir, file);
-  return existsSync(path) ? parse(readFileSync(path, 'utf8')) ?? {} : {};
+function read(files: GuideFiles, dir: string, file: string): any {
+  const text = files.text(`${dir}/${file}`);
+  return text === undefined ? {} : parse(text) ?? {};
 }
 
 const entries = (o: any): [string, any][] => Object.entries(o ?? {});
@@ -102,10 +101,10 @@ export function describePerk(p: { type: string; amount?: number; family?: string
 /** The pity rule from core: the ceil(1 / chance)-th counted kill in a row without the item drops it. */
 export const pityKills = (chance: number) => Math.ceil(1 / chance - 1e-9);
 
-export function readConfig(dir: string): Config {
-  const banners = read(dir, 'banners.yml');
-  const bosses = read(dir, 'bosses.yml');
-  const progression = read(dir, 'progression.yml');
+export function readConfig(dir: string, files: GuideFiles): Config {
+  const banners = read(files, dir, 'banners.yml');
+  const bosses = read(files, dir, 'bosses.yml');
+  const progression = read(files, dir, 'progression.yml');
 
   const families = entries(banners.families).map(([id, mobs]) => ({ id, mobs: mobs as string[] }));
 
