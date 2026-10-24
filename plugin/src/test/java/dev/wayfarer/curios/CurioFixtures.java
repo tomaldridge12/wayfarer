@@ -9,7 +9,8 @@ import org.yaml.snakeyaml.Yaml;
 final class CurioFixtures {
     static final Set<String> POTIONS = Set.of("night_vision", "speed", "poison", "hunger", "water_breathing",
             "dolphins_grace", "slow_falling", "haste", "regeneration");
-    static final Set<String> ATTRIBUTES = Set.of("luck", "armor", "movement_speed", "attack_damage");
+    static final Set<String> ATTRIBUTES = Set.of("luck", "armor", "movement_speed", "attack_damage", "max_health",
+            "armor_toughness", "jump_strength", "block_interaction_range");
 
     /** Knows real-looking names; anything starting "nope" is unknown. */
     static final CurioVocabulary SERVER = new CurioVocabulary() {
@@ -40,7 +41,7 @@ final class CurioFixtures {
 
         @Override
         public boolean isDamageCause(String key) {
-            return Set.of("fall", "hot_floor", "freeze", "fire").contains(key);
+            return Set.of("fall", "hot_floor", "freeze", "fire", "campfire").contains(key);
         }
 
         @Override

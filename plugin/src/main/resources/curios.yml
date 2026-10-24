@@ -313,6 +313,97 @@ curios:
     effect: immunity
     damage: [freeze]
 
+  ruby_circlet:
+    name: "Ruby Circlet"
+    colour: "#D94A5B"
+    description: ["One more heart."]
+    flavour: "Worn by a queen who outlived three kingdoms. It seems to like you."
+    effect: attribute
+    attribute: max_health
+    amount: 2
+
+  hepatizon_laurel:
+    name: "Hepatizon Laurel"
+    colour: "#6E5A8C"
+    description: ["+1 Armour Toughness."]
+    flavour: "Awarded to the victor of a race nobody else remembers running."
+    effect: attribute
+    attribute: armor_toughness
+    amount: 1
+
+  lapis_earrings:
+    name: "Lapis Earrings"
+    colour: "#3D6FD9"
+    description: ["Lapis ore gives up", "an extra piece."]
+    flavour: "The blue of a deep sky, hung where you can hear it."
+    effect: drop_bonus
+    blocks: [lapis_ore, deepslate_lapis_ore]
+    item: lapis_lazuli
+    amount: 2
+    chance: 1.0
+
+  artemis_blessing:
+    name: "Artemis' Blessing"
+    colour: "#B8C4E0"
+    description: ["Speed I at night,", "under the moon."]
+    flavour: "The huntress runs fastest when the moon is up. Now so do you."
+    effect: potion
+    potion: speed
+    when: night
+
+  icarus_blessing:
+    name: "Icarus' Blessing"
+    colour: "#F2D07A"
+    description: ["You jump higher."]
+    flavour: "Higher. Not too high. He never did listen."
+    effect: attribute
+    attribute: jump_strength
+    amount: 0.12
+
+  midas_blessing:
+    name: "Midas' Blessing"
+    colour: "#F2C744"
+    description: ["Gold ore gives up", "an extra raw gold."]
+    flavour: "Everything he touched turned to gold. Be grateful it's only the ore."
+    effect: drop_bonus
+    blocks: [gold_ore, deepslate_gold_ore]
+    item: raw_gold
+    chance: 1.0
+
+  prometheus_blessing:
+    name: "Prometheus' Blessing"
+    colour: "#E8743C"
+    description: ["Fire and campfires", "don't burn you."]
+    flavour: "He stole fire for us. The least it can do is not bite."
+    effect: immunity
+    damage: [fire, campfire]
+
+  daedalus_blessing:
+    name: "Daedalus' Blessing"
+    colour: "#C9A27A"
+    description: ["You reach one block further."]
+    flavour: "The craftsman of the labyrinth never needed a ladder."
+    effect: attribute
+    attribute: block_interaction_range
+    amount: 1
+
+  arachne_blessing:
+    name: "Arachne's Blessing"
+    colour: "#9B7FB5"
+    description: ["Spiders leave you be,", "unless you strike first."]
+    flavour: "The weaver's children know her favourites."
+    effect: ignored
+    mobs: [spider, cave_spider]
+
+  lu_ban_blessing:
+    name: "Lu Ban's Blessing"
+    colour: "#B5854A"
+    description: ["Haste I while you hold an axe."]
+    flavour: "The master carpenter could fell a tree in three strokes. Two, on a good day."
+    effect: potion
+    potion: haste
+    when: "holding axe"
+
 # Special gear: named pieces with fixed enchants, set when given (vanilla and ExcellentEnchants). No perks: those stay
 # with relics and curios. base: alloy:<alloy>_<shape> (through the alloys module; falls back to the iron piece, or to
 # fallback: when given) or a vanilla item. flavour: one line of story. unbreakable: true for the odd joke.
@@ -380,6 +471,7 @@ gear:
     name: "Tidecaller"
     colour: "#3FA7D9"
     base: fishing_rod
+    model: gear/tidecaller
     flavour: "The line is spun from a mermaid's hair. Allegedly."
     enchants: {lure: 3, luck_of_the_sea: 3, excellentenchants:auto_reel: 1}
 

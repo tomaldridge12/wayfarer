@@ -10,6 +10,7 @@ import sys
 import zlib
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "resourcepack")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # for pack_sprites, run with -I
 
 
 def png(rows, palette, scale=1):
@@ -383,6 +384,127 @@ def matcha_files():
     return files + [f"{TEX}/item/steel_ingot.png"]
 
 
+# --- objectives and collections: curios, supplies, special gear, fish, treasures, the Journal, keepsakes ---
+
+FISH = ["alaska_blackfish", "humpback_whitefish", "northern_pike", "walleye", "muskellunge", "siberian_sturgeon", "lamprey",
+        "bass", "bluegill", "carp", "catfish", "crappie", "striped_perch", "shad", "european_eel", "gar", "sturgeon",
+        "arapaima", "armoured_catfish", "piranha", "guppy", "freshwater_pufferfish", "tunisian_barb", "bujurqui",
+        "mediterranean_killifish", "herring", "wolffish", "skate", "spoonhead_sculpin", "gurnard", "black_seabass",
+        "flounder", "anchovy", "monkfish", "opah", "mahi_mahi", "flying_fish", "rainbow_wrasse", "painted_moray",
+        "swordfish", "oarfish", "echo_fish", "pale_fish", "pride_fish"]
+# Klei's file (in Matcha's textures/item) -> Wayfarer's texture under textures/item, used as it is.
+MATCHA_ITEMS = {**{f: f"fish/{f}" for f in FISH if f != "pride_fish"}, "gay_fish": "fish/pride_fish",
+                "amber": "treasure/amber", "opal": "treasure/opal", "ruby": "treasure/ruby", "topaz": "treasure/topaz",
+                "cheerful_clay_statue": "treasure/cheerful_clay_statue", "mournful_clay_statue": "treasure/mournful_clay_statue",
+                "nazar": "treasure/nazar", "ofuda": "treasure/ofuda", "shipwreck_map": "treasure/shipwreck_chart",
+                "trail_ruins_map": "treasure/trail_ruins_chart",
+                "amethyst_earrings": "curio/amethyst_earrings", "lapis_earrings": "curio/lapis_earrings",
+                "blessing_glaucus": "curio/glaucus_blessing", "blessing_aeolus": "curio/aeolus_blessing",
+                "blessing_demeter": "curio/demeters_blessing", "blessing_apollo": "curio/apollos_blessing",
+                "blessing_talos": "curio/talos_blessing", "blessing_hyacinthus": "curio/hyacinthus_blessing",
+                "blessing_artemis": "curio/artemis_blessing", "blessing_icarus": "curio/icarus_blessing",
+                "blessing_midas": "curio/midas_blessing", "blessing_prometheus": "curio/prometheus_blessing",
+                "blessing_daedalus": "curio/daedalus_blessing", "blessing_arachnae": "curio/arachne_blessing",
+                "blessing_lu_ban": "curio/lu_ban_blessing", "archaeologists_brush": "curio/archaeologists_brush",
+                "brown_feather": "curio/owl_feather", "ruby_circlet": "curio/ruby_circlet",
+                "hepatizon_laurel": "curio/hepatizon_laurel", "golden_compass17": "curio/explorers_compass",
+                "seed_bundle": "supply/seed_bundle", "floral_bundle": "supply/floral_bundle",
+                "mushy_bundle": "supply/mushy_bundle", "crate_empty": "supply/animal_crate",
+                "beacon_kindling": "beacon_kindling", "heart": "source/heart"}
+# Matcha's 32 compass frames (1-based) become vanilla-style 0-based frames for the Wayfinder and the Guardian's Chart.
+MATCHA_COMPASSES = {"golden_compass": "wayfinder_compass", "titanium_compass": "guardians_chart"}
+# Klei's art recoloured, so a curio does not look like the treasure it is named after: (source, target, hue shift).
+RECOLOURED = [("source/heart", "curio/moss_heart", 125), ("treasure/nazar", "curio/pharaohs_nazar", 175),
+              ("treasure/ofuda", "curio/ofuda_charm", 200)]
+
+
+def import_collections(src):
+    """Copies Klei's textures, fetched flat into src under Matcha's own file names, into the pack."""
+    import shutil
+    for name, target in MATCHA_ITEMS.items():
+        os.makedirs(os.path.dirname(os.path.join(ROOT, f"{TEX}/item/{target}.png")), exist_ok=True)
+        shutil.copyfile(os.path.join(src, f"{name}.png"), os.path.join(ROOT, f"{TEX}/item/{target}.png"))
+        print("imported", target)
+    for source, target in MATCHA_COMPASSES.items():
+        os.makedirs(os.path.join(ROOT, f"{TEX}/item/{target}"), exist_ok=True)
+        for n in range(1, 33):
+            shutil.copyfile(os.path.join(src, f"{source}{n}.png"), os.path.join(ROOT, f"{TEX}/item/{target}/{n - 1:02d}.png"))
+        print("imported", target, "frames")
+
+
+def hue_shift(rows, degrees):
+    """Turns every coloured pixel's hue by the given degrees, keeping its lightness and saturation."""
+    import colorsys
+    out = []
+    for row in rows:
+        line = []
+        for r, g, b, a in row:
+            if a == 0 or max(r, g, b) - min(r, g, b) < 20:
+                line.append((r, g, b, a))
+                continue
+            h, l, s = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+            nr, ng, nb = colorsys.hls_to_rgb((h + degrees / 360) % 1, l, s)
+            line.append((round(nr * 255), round(ng * 255), round(nb * 255), a))
+        out.append(line)
+    return out
+
+
+def compass_json(name):
+    """Like vanilla's compass: points at its lodestone target, else spins (Matcha's frames, renamed)."""
+    def dispatch(target):
+        entries = [{"threshold": 0.0, "model": {"type": "minecraft:model", "model": f"wayfarer:item/{name}/16"}}]
+        entries += [{"threshold": k + 0.5, "model": {"type": "minecraft:model", "model": f"wayfarer:item/{name}/{(17 + k) % 32:02d}"}}
+                    for k in range(31)]
+        entries.append({"threshold": 31.5, "model": {"type": "minecraft:model", "model": f"wayfarer:item/{name}/16"}})
+        return {"type": "minecraft:range_dispatch", "property": "minecraft:compass", "target": target, "scale": 32.0,
+                "entries": entries}
+    return {"model": {"type": "minecraft:condition", "property": "minecraft:has_component",
+                      "component": "minecraft:lodestone_tracker", "on_true": dispatch("lodestone"), "on_false": dispatch("none")}}
+
+
+def collection_models():
+    """Every model name the curios, collections and objectives modules use, with its parent."""
+    import pack_sprites
+    names = [t for t in MATCHA_ITEMS.values() if not t.startswith("source/")]
+    names += [t for _, t, _ in RECOLOURED]
+    names += [n for n in pack_sprites.SPRITES if n != "gear/tidecaller_cast"]
+    return sorted(set(names))
+
+
+def generate_collections():
+    import pack_sprites
+    for name, (rows, palette) in pack_sprites.SPRITES.items():
+        write(f"{TEX}/item/{name}.png", png(rows, palette))
+    for source, target, shift in RECOLOURED:
+        write(f"{TEX}/item/{target}.png", png_pixels(hue_shift(read(f"{TEX}/item/{source}.png"), shift)))
+    for name in collection_models():
+        if name == "gear/tidecaller":
+            write_json(f"assets/wayfarer/items/{name}.json", {"model": {"type": "minecraft:condition",
+                "property": "minecraft:fishing_rod/cast",
+                "on_true": {"type": "minecraft:model", "model": "wayfarer:item/gear/tidecaller_cast"},
+                "on_false": {"type": "minecraft:model", "model": "wayfarer:item/gear/tidecaller"}}})
+            for model in ["gear/tidecaller", "gear/tidecaller_cast"]:
+                write_json(f"assets/wayfarer/models/item/{model}.json", model_json(model, "minecraft:item/handheld_rod"))
+            continue
+        write_json(f"assets/wayfarer/items/{name}.json", item_json(name))
+        write_json(f"assets/wayfarer/models/item/{name}.json", model_json(name))
+    for compass in MATCHA_COMPASSES.values():
+        write_json(f"assets/wayfarer/items/{compass}.json", compass_json(compass))
+        for n in range(32):
+            write_json(f"assets/wayfarer/models/item/{compass}/{n:02d}.json", model_json(f"{compass}/{n:02d}"))
+
+
+def collection_credits():
+    """(Klei's files as they are, Klei's recoloured, Wayfarer's drawn) for CREDITS.md."""
+    import pack_sprites
+    klei = [f"{TEX}/item/{t}.png" for t in MATCHA_ITEMS.values() if not t.startswith("source/")]
+    klei += [f"{TEX}/item/source/heart.png"]
+    klei += [f"{TEX}/item/{c}/{n:02d}.png" for c in MATCHA_COMPASSES.values() for n in range(32)]
+    recoloured = [f"{TEX}/item/{t}.png" for _, t, _ in RECOLOURED]
+    drawn = [f"{TEX}/item/{n}.png" for n in pack_sprites.SPRITES]
+    return sorted(klei), recoloured, sorted(drawn)
+
+
 def write_credits():
     recoloured = [f"{TEX}/item/{a}_{s}.png" for a in RAMPS for s in SHAPES + ["spear_in_hand"]]
     recoloured += [f"{TEX}/entity/equipment/{layer}/{a}.png" for a in RAMPS for layer in ["humanoid", "humanoid_leggings"]]
@@ -395,18 +517,34 @@ def write_credits():
              "## Klei (Matcha Flavoured)", "",
              "From Matcha Flavoured by Klei (kleiwright), https://github.com/kleiwright/matcha-flavoured, licensed",
              "CC BY-NC-SA 4.0. Renamed to Wayfarer's names; otherwise unchanged.", ""]
-    lines += [f"- `{f}`" for f in matcha_files()]
-    lines += ["", "## Wayfarer, recoloured from Klei's Matcha Flavoured steel", "",
-              "Klei's steel textures (above) with the metal recoloured by `scripts/pack_art.py`; CC BY-NC-SA 4.0.", ""]
-    lines += [f"- `{f}`" for f in recoloured]
-    lines += ["", "## Wayfarer", "", "Drawn for this pack by `scripts/pack_art.py`.", ""]
-    lines += [f"- `{f}`" for f in drawn]
+    klei, klei_recoloured, oc_drawn = collection_credits()
+    lines += [f"- `{f}`" for f in matcha_files() + klei]
+    lines += ["", "## Wayfarer, recoloured from Klei's Matcha Flavoured", "",
+              "Klei's textures (above) recoloured by `scripts/pack_art.py`: bronze and adamant from Klei's steel; the",
+              "Moss Heart from Klei's heart, the Pharaoh's Nazar and Ofuda Charm from Klei's nazar and ofuda. CC BY-NC-SA 4.0.", ""]
+    lines += [f"- `{f}`" for f in recoloured + klei_recoloured]
+    lines += ["", "## Wayfarer", "", "Drawn for this pack by `scripts/pack_art.py` (sprites in `scripts/pack_sprites.py`).", ""]
+    lines += [f"- `{f}`" for f in drawn + oc_drawn]
     write("CREDITS.md", ("\n".join(lines) + "\n").encode())
 
 
 if __name__ == "__main__":
     if len(sys.argv) == 3 and sys.argv[1] == "--import-matcha":
         import_matcha(sys.argv[2])
+        sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "--import-collections":
+        import_collections(sys.argv[2])
+        sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "--collection-sheets":
+        out = sys.argv[2]
+        groups = {}
+        for name in collection_models():
+            groups.setdefault(name.split("/")[0] if "/" in name else "misc", []).append(name)
+        for group, names in groups.items():
+            sheet([os.path.join(ROOT, f"{TEX}/item/{n}.png") for n in names], os.path.join(out, f"{group}.png"), scale=6,
+                  columns=12 if len(names) > 12 else len(names))
+        sheet([os.path.join(ROOT, f"{TEX}/item/{c}/{n:02d}.png") for c in MATCHA_COMPASSES.values() for n in range(0, 32, 4)],
+              os.path.join(out, "compasses.png"), scale=6, columns=8)
         sys.exit(0)
     if len(sys.argv) == 3 and sys.argv[1] == "--mark-sheet":
         sheet([os.path.join(ROOT, f"{TEX}/item/{m}_mark_template.png") for m in MARKS], sys.argv[2], scale=10, columns=4)
@@ -419,5 +557,6 @@ if __name__ == "__main__":
     write("assets/wayfarer/textures/item/placeholder.png", png(ROSE, ROSE_PALETTE))
     generate()
     generate_marks()
+    generate_collections()
     write_credits()
     sys.exit(0)
