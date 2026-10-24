@@ -1,0 +1,48 @@
+# Exploration module: the Wayfinder compass and Guardian's Chart, safe surface after the first dragon, and beacon
+# kindling. Set enabled: false to skip the module.
+version: 1
+enabled: true
+
+# Sneak and right-click a cartography table with a compass to choose a structure or a land you have found; pay XP
+# levels and the compass points to the nearest within range. A search is one per player per cooldown (seconds).
+wayfinder:
+  range: 3200
+  cooldown: 300
+  structure-levels: 5
+  biome-levels: 3
+  chart-levels: 8
+  # Rarer targets cost more (structure or biome path -> levels).
+  rare: {mansion: 15, ancient_city: 12, stronghold: 10, monument: 8, trial_chambers: 8, end_city: 10, bastion_remnant: 8,
+    fortress: 6, jungle_pyramid: 6, mushroom_fields: 10, ice_spikes: 8, pale_garden: 8, deep_dark: 10, cherry_grove: 6,
+    bamboo_jungle: 6, badlands: 6}
+  # The structures it offers, in this order (key -> name shown).
+  structures:
+    village_plains: "Plains Village"
+    village_desert: "Desert Village"
+    village_savanna: "Savanna Village"
+    village_taiga: "Taiga Village"
+    village_snowy: "Snowy Village"
+    pillager_outpost: "Pillager Outpost"
+    desert_pyramid: "Desert Pyramid"
+    jungle_pyramid: "Jungle Temple"
+    swamp_hut: "Witch Hut"
+    igloo: "Igloo"
+    shipwreck: "Shipwreck"
+    ocean_ruin_warm: "Warm Ocean Ruin"
+    ocean_ruin_cold: "Cold Ocean Ruin"
+    ruined_portal: "Ruined Portal"
+    trail_ruins: "Trail Ruins"
+    trial_chambers: "Trial Chambers"
+    monument: "Ocean Monument"
+    mansion: "Woodland Mansion"
+    ancient_city: "Ancient City"
+    stronghold: "Stronghold"
+    fortress: "Nether Fortress"
+    bastion_remnant: "Bastion Remnant"
+    end_city: "End City"
+
+# Beacon kindling (from the shop): right-click a lit campfire; it burns as a signal for seconds, and a wandering
+# trader arrives trader-after seconds in.
+beacon-kindling:
+  seconds: 90
+  trader-after: 12

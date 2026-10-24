@@ -58,6 +58,20 @@ public final class BossesModule implements Module {
         plugin.getServer().getPluginManager().registerEvents(spawning, plugin);
         guardianTask = plugin.getServer().getScheduler().runTaskTimer(plugin, spawning::checkGuardians, 40, 40);
         core.commands().register(id(), commands());
+        core.services().register(id(), dev.wayfarer.core.GuardianSites.class, new dev.wayfarer.core.GuardianSites() {
+            @Override
+            public java.util.Map<String, String> guardians() {
+                java.util.Map<String, String> out = new java.util.LinkedHashMap<>();
+                roster.bosses().values().forEach(b -> b.spawn().structures().forEach(s -> out.putIfAbsent(s, b.id())));
+                return out;
+            }
+
+            @Override
+            public String bossName(String bossId) {
+                BossDefinition b = roster.bosses().get(bossId);
+                return b == null ? bossId : b.name();
+            }
+        });
     }
 
     @Override

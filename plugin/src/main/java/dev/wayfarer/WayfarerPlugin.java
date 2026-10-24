@@ -50,6 +50,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         modules.register(new dev.wayfarer.curios.CuriosModule(this));
         modules.register(new dev.wayfarer.collections.CollectionsModule(this)); // after every module whose items or ladders it lists
         modules.register(new dev.wayfarer.objectives.ObjectivesModule(this)); // after collections, whose Journal it adds pages to
+        modules.register(new dev.wayfarer.exploration.ExplorationModule(this));
         modules.enableAll(this);
         // After every plugin has enabled, so ExcellentEnchants can answer.
         getServer().getScheduler().runTask(this, rewardEnchants::check);

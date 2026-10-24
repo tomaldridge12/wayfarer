@@ -54,3 +54,6 @@ permissions:
   wayfarer.objectives.admin:
     description: List feats and objectives, set tokens, reroll, reset, run events and roll reward tables (testing tools)
     default: op
+  wayfarer.exploration.admin:
+    description: Turn safe surface on or off and give Wayfarer exploration items (testing tools)
+    default: op
