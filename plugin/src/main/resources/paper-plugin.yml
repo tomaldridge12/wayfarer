@@ -3,6 +3,9 @@ version: ${version}
 main: dev.wayfarer.WayfarerPlugin
 api-version: "26.3"
 permissions:
+  wayfarer.pack.admin:
+    description: See the resource pack's status, resend it, and give pack model test items
+    default: op
   wayfarer.progression.stats:
     description: List any player's activity counters
     default: op

@@ -1,0 +1,14 @@
+Wayfarer resource pack
+======================
+
+This resource pack (everything in this folder and the zip built from it) is licensed under the
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International licence (CC BY-NC-SA 4.0):
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+It builds on textures from Matcha Flavoured, which are licensed CC BY-NC-SA 4.0; see CREDITS.md for
+every file's author and source. You may share and adapt it for non-commercial purposes, with credit,
+under the same licence. It may never be sold.
+
+This licence covers only the resource pack, not the Wayfarer plugin's code.
+
+Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.

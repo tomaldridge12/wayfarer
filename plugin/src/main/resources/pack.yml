@@ -1,0 +1,9 @@
+# Wayfarer's resource pack, offered to every player on join as a required pack.
+# The URL and SHA-1 come from the plugin jar: each pack version is a GitHub release built from the same commit.
+# Declining kicks the player with a note on how to accept; a failed download only warns them.
+version: 1
+enabled: true
+prompt: "Wayfarer's alloys, relics and marks need this pack to look right. Accept once and your game remembers."
+# To test a pack hosted elsewhere, set both (the sha1 is the zip's SHA-1, 40 hex digits):
+# url: https://example.org/wayfarer-pack.zip
+# sha1: 0000000000000000000000000000000000000000

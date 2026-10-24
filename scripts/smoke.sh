@@ -59,8 +59,8 @@ LOGS=build/smoke-logs
 rm -rf "$LOGS" && mkdir -p "$LOGS"
 rm -f "$CFG" "$RUN/plugins/Wayfarer/bosses.yml" # start from the shipped configs
 rm -rf "$DATA"
-LOG1=$LOGS/log1.log; boot "$LOG1" "wayfarer reload" "wayfarer give nobody nope" "wayfarer give nobody zombie" "wayfarer setcount $PLAYER kill:zombie 400" "wayfarer progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "wayfarer place zombie 0 100 0 world" "wayfarer placehead $PLAYER zombie 2 100 0" "wayfarer forcedrop $PLAYER2 skeleton" "wayfarer forcedrop $PLAYER2 relic:zombie_weapon_2" "wayfarer progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "wayfarer boss spawn rotting_warlord rotting_warlord 5" "wayfarer boss defeat $PLAYER" "forceload remove ~-16 ~-16 ~112 ~16" "wayfarer setcount $PLAYER kill:incendium:knight 2" "wayfarer setcount $PLAYER harvest:wheat 3" "wayfarer setcount $PLAYER discover:biome/terralith:alpine_grove 1" "wayfarer stats $PLAYER harvest:" "wayfarer stats $PLAYER discover:" "wayfarer setcount $PLAYER kill:zombie" "wayfarer stats $PLAYER kill:"
-check "$LOG1" "Command /wayfarer registered: core [progress, claim, stats, setcount], banners [reload, give, place, placehead, forcedrop], bosses [boss]"
+LOG1=$LOGS/log1.log; boot "$LOG1" "wayfarer reload" "wayfarer give nobody nope" "wayfarer give nobody zombie" "wayfarer setcount $PLAYER kill:zombie 400" "wayfarer progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "wayfarer place zombie 0 100 0 world" "wayfarer placehead $PLAYER zombie 2 100 0" "wayfarer forcedrop $PLAYER2 skeleton" "wayfarer forcedrop $PLAYER2 relic:zombie_weapon_2" "wayfarer progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "wayfarer boss spawn rotting_warlord rotting_warlord 5" "wayfarer boss defeat $PLAYER" "forceload remove ~-16 ~-16 ~112 ~16" "wayfarer setcount $PLAYER kill:incendium:knight 2" "wayfarer setcount $PLAYER harvest:wheat 3" "wayfarer setcount $PLAYER discover:biome/terralith:alpine_grove 1" "wayfarer stats $PLAYER harvest:" "wayfarer stats $PLAYER discover:" "wayfarer pack" "wayfarer pack send nobody" "wayfarer setcount $PLAYER kill:zombie" "wayfarer stats $PLAYER kill:"
+check "$LOG1" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], banners [reload, give, place, placehead, forcedrop], bosses [boss]"
 check "$LOG1" "Progression loaded: 8 excluded spawn reasons, min lifetime 0 ticks, 0 problems"
 check "$LOG1" "Pity table loaded: 2 drops (wither_skeleton_skull every 40, trident every 12)"
 check "$LOG1" "Stage markers loaded: 6 (story/smelt_iron, story/mine_diamond, story/enter_the_nether, nether/netherite_armor, end/kill_dragon, end/elytra)"
@@ -71,6 +71,9 @@ check "$LOG1" "kill:incendium:knight = 2"
 check "$LOG1" "kill:zombie = 400"
 check "$LOG1" "starting 'harvest:': 1"
 check "$LOG1" "discover:biome/terralith:alpine_grove = 1"
+check "$LOG1" "Resource pack offered: pack-"
+check "$LOG1" "not offering it this run"
+check "$LOG1" "unreachable (HTTP 404), loaded by 0 of 0 online"
 check "$LOG1" "Module banners enabled"
 check "$LOG1" "Module bosses enabled"
 check "$LOG1" "Bosses loaded: 9 bosses, 23 variants, 0 problems; 8 spawn naturally, 7 guard structures"
@@ -123,7 +126,7 @@ check "$LOG1B" "Banner labels refreshed: 2"
 printf 'version: 1\nenabled: false\n' >"$CFG"
 LOG2=$LOGS/log2.log; boot "$LOG2"
 check "$LOG2" "Module banners skipped (disabled in config)"
-check "$LOG2" "Command /wayfarer registered: core [progress, claim, stats, setcount], bosses [boss]"
+check "$LOG2" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], bosses [boss]"
 
 # Boot 4: without ExcellentEnchants, relics still build and only lose those enchants.
 rm -f "$CFG"
@@ -144,7 +147,7 @@ fi
 printf 'banners: [unclosed\n' >"$CFG"
 LOG3=$LOGS/log3.log; boot "$LOG3"
 check "$LOG3" "Module banners failed to start, skipped"
-check "$LOG3" "Command /wayfarer registered: core [progress, claim, stats, setcount], bosses [boss]"
+check "$LOG3" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], bosses [boss]"
 check "$LOG3" "Wayfarer enabled"
 traces=0
 for log in "$LOG1" "$LOG1B" "$LOG2"; do

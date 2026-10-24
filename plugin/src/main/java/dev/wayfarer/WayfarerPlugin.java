@@ -9,6 +9,7 @@ import dev.wayfarer.core.Core;
 import dev.wayfarer.core.ItemTagService;
 import dev.wayfarer.core.ModuleManager;
 import dev.wayfarer.core.PaperConfigService;
+import dev.wayfarer.core.pack.PackService;
 import dev.wayfarer.core.progression.ProgressionService;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -21,6 +22,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private ItemTagService itemTags;
     private ChunkDataService chunkData;
     private ProgressionService progression;
+    private PackService pack;
     private final CommandTree<CommandSourceStack> commands = new CommandTree<>("wayfarer");
 
     @Override
@@ -30,6 +32,8 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         chunkData = new ChunkDataService(this);
         progression = new ProgressionService(this, this);
         progression.enable();
+        pack = new PackService(this, this);
+        pack.enable();
         modules.register(new BannersModule(this));
         modules.register(new BossesModule(this));
         modules.enableAll(this);
@@ -45,6 +49,9 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public void onDisable() {
         modules.disableAll(this);
+        if (pack != null) {
+            pack.disable();
+        }
         if (progression != null) {
             progression.disable();
         }
