@@ -32,4 +32,24 @@ public final class TextStyle {
     public static double luminance(int rgb) {
         return (0.2126 * ((rgb >> 16) & 0xFF) + 0.7152 * ((rgb >> 8) & 0xFF) + 0.0722 * (rgb & 0xFF)) / 255;
     }
+
+    /** Text broken into lines of at most {@code width} characters at spaces (a longer word gets a line of its own). */
+    public static java.util.List<String> wrap(String text, int width) {
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        for (String word : text.trim().split("\\s+")) {
+            if (word.isEmpty()) {
+                continue;
+            }
+            if (!line.isEmpty() && line.length() + 1 + word.length() > width) {
+                lines.add(line.toString());
+                line.setLength(0);
+            }
+            line.append(line.isEmpty() ? "" : " ").append(word);
+        }
+        if (!line.isEmpty()) {
+            lines.add(line.toString());
+        }
+        return lines;
+    }
 }

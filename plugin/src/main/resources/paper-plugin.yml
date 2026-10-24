@@ -42,3 +42,6 @@ permissions:
   wayfarer.marks.admin:
     description: List marks, give mark templates and reload marks.yml (testing tools)
     default: op
+  wayfarer.curios.admin:
+    description: List curios, special gear and supplies, give them and reload curios.yml (testing tools)
+    default: op

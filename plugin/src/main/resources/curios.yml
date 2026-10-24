@@ -1,0 +1,486 @@
+# Curios module: small reward items with their own art and one effect each, not tied to a mob family.
+# Feats, objectives and collection milestones pay them; the Journal collects them. Set enabled: false to skip the module.
+# Every number here is a first pass, to be tuned from play.
+version: 1
+enabled: true
+
+# Each curio:
+#   name, colour (#RRGGBB, the name's colour), description (one or two short lines: what it does),
+#   flavour (one line of story, shown in italics), effect and its settings, when (charms only), cooldown (tools, seconds).
+# A charm works while it is anywhere in your inventory; two copies of the same curio do nothing more than one.
+# Effects (charms): potion (potions, amplifier), attribute (attribute, amount, operation add|multiply_base|multiply_total),
+#   immunity (effects + causes, damage, splash-from), ignored (mobs, even-when-hit), drop_bonus (blocks, item, amount,
+#   chance), grow (radius, every), xp_bonus (sources fishing|ores|mobs, multiplier), fall_guard (distance),
+#   magnet (radius), boost (what, factor), chorus.
+# Effects (tools, right-click): spread (radius, chance, turns), light (seconds), sense (blocks, radius, seconds),
+#   recall (channel), locate.
+# when: always, underground, underwater, nether, end, night, rain, near_water, wearing_alloy, "below <y>",
+#   "biome #<tag>", "holding <tool>"; a list means all of them.
+curios:
+  moss_heart:
+    name: "Moss Heart"
+    colour: "#7DB356"
+    description: ["Wakes moss in the stone and", "grass in the soil around you."]
+    flavour: "Still beating, faintly. It smells of rain on old walls."
+    effect: spread
+    radius: 4
+    chance: 0.55
+    turns:
+      stone: moss_block
+      cobblestone: mossy_cobblestone
+      stone_bricks: mossy_stone_bricks
+      tuff: moss_block
+      dirt: grass_block
+      coarse_dirt: grass_block
+      rooted_dirt: grass_block
+    cooldown: 120
+
+  lantern_of_the_deep:
+    name: "Lantern of the Deep"
+    colour: "#7FD4C1"
+    description: ["Night Vision while you are", "below y 0."]
+    flavour: "Lit once, in the dark under the dark. It has never gone out."
+    effect: potion
+    potion: night_vision
+    when: "below 0"
+
+  flint_tooth:
+    name: "Flint Tooth"
+    colour: "#A39A92"
+    description: ["Gravel always gives up its flint."]
+    flavour: "Chipped from the jaw of something that ate quarries."
+    effect: drop_bonus
+    blocks: [gravel]
+    item: flint
+    chance: 1.0
+
+  debris_dowser:
+    name: "Debris Dowser"
+    colour: "#B5724F"
+    description: ["Ancient Debris within 12 blocks", "glows through the rock for 10s."]
+    flavour: "The fork dips, shivers, and points down. Always down."
+    effect: sense
+    blocks: [ancient_debris]
+    radius: 12
+    seconds: 10
+    cooldown: 300
+
+  amethyst_earrings:
+    name: "Amethyst Earrings"
+    colour: "#B48CE6"
+    description: ["Amethyst clusters drop", "an extra shard."]
+    flavour: "They hum the same note as the geode they came from."
+    effect: drop_bonus
+    blocks: [amethyst_cluster]
+    item: amethyst_shard
+    chance: 1.0
+
+  jacks_ember:
+    name: "Jack's Ember"
+    colour: "#F29B38"
+    description: ["Endermen don't mind your stare."]
+    flavour: "A coal from a carved lantern that burned all night and never flickered."
+    effect: ignored
+    mobs: [enderman]
+
+  reed_pipe:
+    name: "Reed Pipe"
+    colour: "#B8C46A"
+    description: ["Speed I when you are near water."]
+    flavour: "Play three notes and the riverbank plays the fourth."
+    effect: potion
+    potion: speed
+    when: near_water
+
+  queens_comb:
+    name: "Queen's Comb"
+    colour: "#F2C744"
+    description: ["Bees never turn on you,", "not even when you deserve it."]
+    flavour: "The hive knows whose this was, and forgives you on her behalf."
+    effect: ignored
+    mobs: [bee]
+    even-when-hit: true
+
+  lucky_bobber:
+    name: "Lucky Bobber"
+    colour: "#E8524A"
+    description: ["+1 Luck while you hold", "a fishing rod."]
+    flavour: "Painted red and white by someone who caught the same fish twice."
+    effect: attribute
+    attribute: luck
+    amount: 1
+    when: "holding fishing_rod"
+
+  puffer_charm:
+    name: "Puffer Charm"
+    colour: "#E3C84E"
+    description: ["You can't be poisoned."]
+    flavour: "Two hundred stings later, your blood has opinions about venom."
+    effect: immunity
+    effects: [poison]
+
+  insomniacs_charm:
+    name: "Insomniac's Charm"
+    colour: "#7A86C9"
+    description: ["Phantoms leave you be."]
+    flavour: "Sewn by someone who hadn't slept in a week. The phantoms took pity."
+    effect: ignored
+    mobs: [phantom]
+    even-when-hit: true
+
+  ofuda_charm:
+    name: "Ofuda Charm"
+    colour: "#E9DFC4"
+    description: ["Witches' potions splash", "harmlessly off you."]
+    flavour: "Paper, ink and one old word. Glass breaks against it like rain."
+    effect: immunity
+    splash-from: [witch]
+
+  glaucus_blessing:
+    name: "Glaucus' Blessing"
+    colour: "#3FA7B5"
+    description: ["Water Breathing and Dolphin's", "Grace in any ocean."]
+    flavour: "A fisherman ate a strange herb and became a god of the sea. This is its stem."
+    effect: potion
+    potions: [water_breathing, dolphins_grace]
+    when: "biome #minecraft:is_ocean"
+
+  aeolus_blessing:
+    name: "Aeolus' Blessing"
+    colour: "#CFE6F2"
+    description: ["Slow Falling once you have", "fallen more than 6 blocks."]
+    flavour: "The keeper of the winds owes you a favour, and pays it in gusts."
+    effect: fall_guard
+    distance: 6
+
+  explorers_compass:
+    name: "Explorer's Compass"
+    colour: "#D9A55B"
+    description: ["A free Wayfinder pointing,", "once an hour."]
+    flavour: "Its needle has never once agreed with north."
+    effect: locate
+    cooldown: 3600
+
+  pharaohs_nazar:
+    name: "Pharaoh's Nazar"
+    colour: "#3D7FD9"
+    description: ["Husks can't make you hungry."]
+    flavour: "The blue eye stares back so the desert doesn't have to."
+    effect: immunity
+    effects: [hunger]
+    causes: [attack]
+
+  demeters_blessing:
+    name: "Demeter's Blessing"
+    colour: "#D9C25B"
+    description: ["Crops and saplings near you", "grow while you linger."]
+    flavour: "Wherever you stand a little longer, the harvest comes a little sooner."
+    effect: grow
+    radius: 6
+    every: 4
+
+  apollos_blessing:
+    name: "Apollo's Blessing"
+    colour: "#FFD966"
+    description: ["You shine like noon", "for a minute."]
+    flavour: "Borrowed sunrise. Please return when finished."
+    effect: light
+    seconds: 60
+    cooldown: 120
+
+  talos_blessing:
+    name: "Talos' Blessing"
+    colour: "#C98B4A"
+    description: ["+2 Armour while you wear", "any piece of alloy gear."]
+    flavour: "The bronze giant walked his island three times a day. Now he walks with you."
+    effect: attribute
+    attribute: armor
+    amount: 2
+    when: wearing_alloy
+
+  archaeologists_brush:
+    name: "Archaeologist's Brush"
+    colour: "#C9A27A"
+    description: ["Doubles your chance of a", "treasure when you brush."]
+    flavour: "Every bristle has found something. Most of it was worth finding."
+    effect: boost
+    what: treasure
+    factor: 2
+
+  hyacinthus_blessing:
+    name: "Hyacinthus' Blessing"
+    colour: "#9B7FE0"
+    description: ["Records you play ring the", "jukebox with a chorus of notes."]
+    flavour: "The flower that grew where the music stopped."
+    effect: chorus
+
+  stormglass:
+    name: "Stormglass"
+    colour: "#8FB3C9"
+    description: ["You run 10% faster in the rain."]
+    flavour: "The crystals inside cloud over a day before the sky does."
+    effect: attribute
+    attribute: movement_speed
+    amount: 0.10
+    operation: multiply_total
+    when: rain
+
+  owl_feather:
+    name: "Owl Feather"
+    colour: "#B59B7A"
+    description: ["Night Vision at night", "under the open sky."]
+    flavour: "Soft enough that nothing hears it fall."
+    effect: potion
+    potion: night_vision
+    when: night
+
+  lodestone_pendant:
+    name: "Lodestone Pendant"
+    colour: "#9FA4AD"
+    description: ["Pulls nearby items to you.", "Sneak to let them lie."]
+    flavour: "A chip of lodestone that has decided you are north."
+    effect: magnet
+    radius: 6
+
+  hunters_tooth:
+    name: "Hunter's Tooth"
+    colour: "#E6DCC8"
+    description: ["+1 Attack Damage with a sword."]
+    flavour: "From the wolf that taught you to keep your guard up."
+    effect: attribute
+    attribute: attack_damage
+    amount: 1
+    when: "holding sword"
+
+  mermaids_comb:
+    name: "Mermaid's Comb"
+    colour: "#6FD0C5"
+    description: ["Half again the experience", "from fishing."]
+    flavour: "Combed through a hundred tangled lines and kept every lesson."
+    effect: xp_bonus
+    sources: [fishing]
+    multiplier: 1.5
+
+  prospectors_pan:
+    name: "Prospector's Pan"
+    colour: "#D4B05A"
+    description: ["Half again the experience", "from ores."]
+    flavour: "Shake it and it rattles, though it's empty."
+    effect: xp_bonus
+    sources: [ores]
+    multiplier: 1.5
+
+  bone_dice:
+    name: "Bone Dice"
+    colour: "#E8E2D0"
+    description: ["A quarter more experience", "from mobs."]
+    flavour: "They always roll two skulls. Somehow that's lucky."
+    effect: xp_bonus
+    sources: [mobs]
+    multiplier: 1.25
+
+  hearthstone:
+    name: "Hearthstone"
+    colour: "#E07A4F"
+    description: ["Stand still for 5 seconds", "and you are home in bed."]
+    flavour: "Warm on one side. The side that faces home."
+    effect: recall
+    channel: 5
+    cooldown: 1200
+
+  glow_jar:
+    name: "Glow Jar"
+    colour: "#5FE0D0"
+    description: ["Soft light around you", "for 30 seconds."]
+    flavour: "Glow squid ink and a little patience."
+    effect: light
+    seconds: 30
+    cooldown: 60
+
+  strider_sole:
+    name: "Strider Sole"
+    colour: "#B5463C"
+    description: ["Magma blocks don't burn you."]
+    flavour: "Peeled from a strider who walked on lava for a living."
+    effect: immunity
+    damage: [hot_floor]
+
+  north_mitten:
+    name: "North Mitten"
+    colour: "#DDE8F0"
+    description: ["Powder snow can't freeze you."]
+    flavour: "Knitted in the north, where the sheep are mostly frost."
+    effect: immunity
+    damage: [freeze]
+
+# Special gear: named pieces with fixed enchants, set when given (vanilla and ExcellentEnchants). No perks: those stay
+# with relics and curios. base: alloy:<alloy>_<shape> (through the alloys module; falls back to the iron piece, or to
+# fallback: when given) or a vanilla item. flavour: one line of story. unbreakable: true for the odd joke.
+gear:
+  hoe_of_a_hundred_hoes:
+    name: "Hoe of a Hundred Hoes"
+    colour: "#D9A441"
+    base: alloy:bronze_hoe
+    flavour: "Forged from ninety-nine lesser hoes. The hundredth was this one all along."
+    enchants: {efficiency: 5, unbreaking: 3, excellentenchants:replanter: 1, excellentenchants:telekinesis: 1}
+
+  will_of_stone:
+    name: "Will of Stone"
+    colour: "#6E5A8C"
+    base: alloy:adamant_pickaxe
+    flavour: "A thousand blocks of obsidian taught it patience. It taught them nothing back."
+    enchants: {efficiency: 5, unbreaking: 3, excellentenchants:haste: 2}
+
+  waders:
+    name: "Waders"
+    colour: "#5BA3B8"
+    base: alloy:electrum_boots
+    fallback: diamond_boots
+    flavour: "Still smells faintly of the hundred old boots they were patched from."
+    enchants: {depth_strider: 3, frost_walker: 2, feather_falling: 4}
+
+  hogbane:
+    name: "Hogbane"
+    colour: "#B34A3C"
+    base: alloy:hepatizon_axe
+    fallback: netherite_axe
+    flavour: "Five hundred hoglins, one axe, and not a single regret."
+    enchants: {sharpness: 4, excellentenchants:bane_of_netherspawn: 5}
+
+  wyrmscale:
+    name: "Wyrmscale"
+    colour: "#8E5AC7"
+    base: alloy:adamant_chestplate
+    fallback: netherite_chestplate
+    flavour: "Three dragons fell for it. One scale from each, still warm."
+    enchants: {protection: 4, excellentenchants:dragon_heart: 3}
+
+  old_strike:
+    name: "Old Strike"
+    colour: "#C9A55B"
+    base: alloy:steel_pickaxe
+    flavour: "A prospector's pick that still remembers every seam it ever struck."
+    enchants: {efficiency: 4, fortune: 2, excellentenchants:lucky_miner: 2}
+
+  glassblowers_spade:
+    name: "Glassblower's Spade"
+    colour: "#9FD6E0"
+    base: alloy:steel_shovel
+    flavour: "Hot enough to turn a beach into a window."
+    enchants: {efficiency: 4, unbreaking: 2, excellentenchants:smelter: 1}
+
+  woodsmans_bearded_axe:
+    name: "Woodsman's Bearded Axe"
+    colour: "#8C6A43"
+    base: alloy:steel_axe
+    flavour: "The beard is the blade. Nobody knows why it's called that."
+    enchants: {efficiency: 5, unbreaking: 3, sharpness: 2}
+
+  tidecaller:
+    name: "Tidecaller"
+    colour: "#3FA7D9"
+    base: fishing_rod
+    flavour: "The line is spun from a mermaid's hair. Allegedly."
+    enchants: {lure: 3, luck_of_the_sea: 3, excellentenchants:auto_reel: 1}
+
+  featherstep_boots:
+    name: "Featherstep Boots"
+    colour: "#E0D7C3"
+    base: alloy:bronze_boots
+    flavour: "You could walk across a wheat field and leave it standing."
+    enchants: {feather_falling: 4, unbreaking: 3, excellentenchants:lightweight: 1}
+
+  miners_lamp_helm:
+    name: "Miner's Lamp Helm"
+    colour: "#E8C35A"
+    base: alloy:steel_helmet
+    flavour: "The lamp was lit by the first miner to wear it and never blown out."
+    enchants: {protection: 3, respiration: 2, excellentenchants:night_vision: 1}
+
+# Supplies: everyday reward loot, opened by right-click. opens: loot (rolls from loot: item, amount n or a-b, weight),
+# crate (pick a baby animal from choices: cow/pig/chicken with temperate|warm|cold, or sheep/<colour>),
+# bait (amount: catches whose rare odds double) or xp (amount: experience points).
+supplies:
+  seed_bundle:
+    name: "Seed Bundle"
+    colour: "#A8C25E"
+    description: ["A handful of seeds and", "the odd sapling."]
+    flavour: "Saved from a dozen harvests by someone who never planted any."
+    opens: loot
+    rolls: 4
+    loot:
+      - {item: wheat_seeds, amount: 3-6, weight: 5}
+      - {item: beetroot_seeds, amount: 2-5, weight: 4}
+      - {item: melon_seeds, amount: 1-3, weight: 3}
+      - {item: pumpkin_seeds, amount: 1-3, weight: 3}
+      - {item: torchflower_seeds, amount: 1-2, weight: 1}
+      - {item: pitcher_pod, amount: 1, weight: 1}
+      - {item: oak_sapling, amount: 1-2, weight: 2}
+      - {item: birch_sapling, amount: 1-2, weight: 2}
+      - {item: cherry_sapling, amount: 1, weight: 1}
+      - {item: pale_oak_sapling, amount: 1, weight: 1}
+      - {item: mangrove_propagule, amount: 1, weight: 1}
+
+  floral_bundle:
+    name: "Floral Bundle"
+    colour: "#E58BB5"
+    description: ["A posy of flowers,", "some of them rare."]
+    flavour: "Picked at dawn, tied with grass, and somehow never wilting."
+    opens: loot
+    rolls: 5
+    loot:
+      - {item: poppy, amount: 1-3, weight: 4}
+      - {item: dandelion, amount: 1-3, weight: 4}
+      - {item: cornflower, amount: 1-2, weight: 3}
+      - {item: allium, amount: 1-2, weight: 3}
+      - {item: azure_bluet, amount: 1-2, weight: 3}
+      - {item: oxeye_daisy, amount: 1-2, weight: 3}
+      - {item: lily_of_the_valley, amount: 1, weight: 2}
+      - {item: blue_orchid, amount: 1, weight: 2}
+      - {item: pink_petals, amount: 2-4, weight: 2}
+      - {item: wildflowers, amount: 2-4, weight: 2}
+      - {item: torchflower, amount: 1, weight: 1}
+      - {item: pitcher_plant, amount: 1, weight: 1}
+      - {item: open_eyeblossom, amount: 1, weight: 1}
+      - {item: wither_rose, amount: 1, weight: 1}
+
+  mushy_bundle:
+    name: "Mushy Bundle"
+    colour: "#B5856A"
+    description: ["Mushrooms and fungi from", "both sides of the portal."]
+    flavour: "Damp, dark, and best not sniffed."
+    opens: loot
+    rolls: 4
+    loot:
+      - {item: brown_mushroom, amount: 2-4, weight: 4}
+      - {item: red_mushroom, amount: 2-4, weight: 4}
+      - {item: crimson_fungus, amount: 1-2, weight: 2}
+      - {item: warped_fungus, amount: 1-2, weight: 2}
+      - {item: glow_lichen, amount: 2-4, weight: 2}
+      - {item: mycelium, amount: 1-2, weight: 1}
+      - {item: shroomlight, amount: 1, weight: 1}
+
+  animal_crate:
+    name: "Animal Crate"
+    colour: "#C49A5E"
+    description: ["Open it and choose who", "comes out: a baby animal."]
+    flavour: "Air holes, straw, and a lot of indignant noises."
+    opens: crate
+    choices: [cow/temperate, cow/cold, cow/warm, pig/temperate, pig/cold, pig/warm, chicken/temperate, chicken/cold,
+      chicken/warm, sheep/white, sheep/black, sheep/brown, sheep/pink, sheep/light_blue, sheep/lime, sheep/orange]
+
+  wayfarers_bait:
+    name: "Wayfarer's Bait"
+    colour: "#D97A5B"
+    description: ["Your next 10 catches tempt", "the rarer Almanac fish."]
+    flavour: "Secret recipe. The secret is worms."
+    opens: bait
+    amount: 10
+
+  tome_of_experience:
+    name: "Tome of Experience"
+    colour: "#9BE05A"
+    description: ["Read it for a burst of", "experience."]
+    flavour: "Every page a lesson somebody else had to learn the hard way."
+    opens: xp
+    amount: 250
