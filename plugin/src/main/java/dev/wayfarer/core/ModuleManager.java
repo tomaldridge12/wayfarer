@@ -26,6 +26,7 @@ public final class ModuleManager {
                 core.logger().info("Module " + id + " enabled");
             } catch (Exception | LinkageError e) {
                 core.commands().drop(id);
+                core.progression().drop(id);
                 core.logger().log(Level.SEVERE, "Module " + id + " failed to start, skipped", e);
             }
         }

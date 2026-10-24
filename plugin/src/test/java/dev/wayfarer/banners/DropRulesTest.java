@@ -83,7 +83,6 @@ class DropRulesTest {
             public boolean isMob(String n) { return List.of("wither", "skeleton").contains(n); }
             public boolean isPattern(String n) { return true; }
             public boolean isColour(String n) { return true; }
-            public boolean isSpawnReason(String n) { return true; }
             public boolean isParticle(String n) { return true; }
             public boolean isEffect(String n) { return true; }
         };

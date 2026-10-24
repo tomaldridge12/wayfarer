@@ -28,10 +28,6 @@ class ShippedConfigTest {
             return true;
         }
 
-        @Override
-        public boolean isSpawnReason(String name) {
-            return true;
-        }
 
         @Override
         public boolean isParticle(String name) {

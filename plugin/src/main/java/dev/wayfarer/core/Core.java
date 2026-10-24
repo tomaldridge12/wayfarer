@@ -1,6 +1,6 @@
 package dev.wayfarer.core;
 
-import dev.wayfarer.core.progression.ProgressionService;
+import dev.wayfarer.core.progression.Progression;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import java.util.logging.Logger;
 
@@ -15,7 +15,7 @@ public interface Core {
     ChunkDataService chunkData();
 
     /** Activities, counters and each player's progression record. */
-    ProgressionService progression();
+    Progression progression();
 
     /** The /wayfarer root; modules register their subtrees under their own id while enabling. */
     CommandTree<CommandSourceStack> commands();

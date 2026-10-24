@@ -4,7 +4,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.EntityType;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 
 /** The server's own mob types, banner patterns and dye colours. */
 final class PaperVocabulary implements Vocabulary {
@@ -31,15 +30,6 @@ final class PaperVocabulary implements Vocabulary {
         }
     }
 
-    @Override
-    public boolean isSpawnReason(String name) {
-        try {
-            CreatureSpawnEvent.SpawnReason.valueOf(name);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
 
     @Override
     public boolean isParticle(String name) {
@@ -85,5 +75,19 @@ final class PaperVocabulary implements Vocabulary {
     @Override
     public boolean hasExcellentEnchants() {
         return org.bukkit.Bukkit.getPluginManager().getPlugin("ExcellentEnchants") != null;
+    }
+
+    @Override
+    public java.util.Set<String> mobTypes(boolean hostileOnly) {
+        java.util.Set<String> out = new java.util.TreeSet<>();
+        for (EntityType type : Registry.ENTITY_TYPE) {
+            Class<?> cls = type.getEntityClass();
+            if (type.isAlive() && type != EntityType.PLAYER && cls != null
+                    && (!hostileOnly || org.bukkit.entity.Enemy.class.isAssignableFrom(cls))) {
+                NamespacedKey key = type.getKey();
+                out.add(dev.wayfarer.core.progression.Activity.target(key.getNamespace(), key.getKey()));
+            }
+        }
+        return out;
     }
 }

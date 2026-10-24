@@ -8,9 +8,6 @@ public interface Vocabulary {
 
     boolean isColour(String name);
 
-    /** An upper-case spawn reason name such as SPAWNER. */
-    boolean isSpawnReason(String name);
-
     /** An upper-case particle name such as HAPPY_VILLAGER. */
     boolean isParticle(String name);
 
@@ -38,5 +35,10 @@ public interface Vocabulary {
 
     default boolean isTrimMaterial(String name) {
         return true;
+    }
+
+    /** Every living mob type as an activity target ("husk"), or only the hostile ones. */
+    default java.util.Set<String> mobTypes(boolean hostileOnly) {
+        return java.util.Set.of();
     }
 }

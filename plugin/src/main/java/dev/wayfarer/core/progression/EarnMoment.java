@@ -1,7 +1,6 @@
-package dev.wayfarer.banners;
+package dev.wayfarer.core.progression;
 
 import java.time.Duration;
-import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.EntityEffect;
@@ -18,17 +17,18 @@ import org.bukkit.inventory.ItemStack;
  */
 final class EarnMoment {
     private final Server server;
-    private final Supplier<FeedbackSettings> settings;
 
-    EarnMoment(Server server, Supplier<FeedbackSettings> settings) {
+    EarnMoment(Server server) {
         this.server = server;
-        this.settings = settings;
     }
 
-    /** @param earner online earner, or null if they are offline (then only the announcement happens) */
-    void celebrate(Player earner, String earnerName, Component rewardName, ItemStack item) {
+    /**
+     * @param earner online earner, or null if they are offline (then only the announcement happens)
+     * @param announce whether the whole server hears of it (the ladder's setting)
+     */
+    void celebrate(Player earner, String earnerName, Component rewardName, ItemStack item, boolean announce) {
         if (earner != null) {
-            earner.showTitle(Title.title(rewardName, BannerText.earnedSubtitle(),
+            earner.showTitle(Title.title(rewardName, ProgressionText.earnedSubtitle(),
                     Title.Times.times(Duration.ofMillis(250), Duration.ofMillis(2500), Duration.ofMillis(750))));
             earner.playEffect(EntityEffect.PROTECTED_FROM_DEATH); // the totem pop, without using a totem
             Location at = earner.getLocation().add(0, 1, 0);
@@ -36,9 +36,9 @@ final class EarnMoment {
             earner.getWorld().spawnParticle(Particle.END_ROD, at, 20, 0.3, 0.5, 0.3, 0.05);
             earner.playSound(earner.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1f);
         }
-        if (settings.get().announceEarned()) {
+        if (announce) {
             Component shown = item == null ? rewardName : rewardName.hoverEvent(item.asHoverEvent());
-            server.broadcast(BannerText.announcement(earnerName, shown));
+            server.broadcast(ProgressionText.announcement(earnerName, shown));
         }
     }
 }

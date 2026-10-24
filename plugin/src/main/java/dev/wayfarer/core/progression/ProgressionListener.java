@@ -29,6 +29,11 @@ final class ProgressionListener implements Listener {
     }
 
     @EventHandler
+    void onBossDefeated(dev.wayfarer.core.BossDefeatedEvent event) {
+        service.defeated(event);
+    }
+
+    @EventHandler
     void onQuit(PlayerQuitEvent event) {
         service.quit(event.getPlayer().getUniqueId());
     }

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import dev.wayfarer.banners.PlayerData;
-import dev.wayfarer.banners.PlayerDataCodec;
+import dev.wayfarer.core.progression.ProgressionCodec;
+import dev.wayfarer.core.progression.ProgressionData;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,32 +21,32 @@ class PlayerStoreTest {
     @TempDir
     Path dir;
 
-    private PlayerStore<PlayerData> store() {
+    private PlayerStore<ProgressionData> store() {
         Logger log = Logger.getAnonymousLogger();
         log.setUseParentHandlers(false);
-        return new PlayerStore<>(dir, PlayerDataCodec.VERSION, new PlayerDataCodec(), log, id -> false);
+        return new PlayerStore<>(dir, ProgressionCodec.VERSION, new ProgressionCodec(), log, id -> false);
     }
 
     @Test
     void dataSurvivesSaveAndReloadIncludingOfflinePlayers() {
-        PlayerStore<PlayerData> first = store();
-        PlayerData data = first.load(ID).join();
-        data.setKills("zombie", 42);
-        data.markEarned(dev.wayfarer.banners.RewardKey.banner("zombie"));
+        PlayerStore<ProgressionData> first = store();
+        ProgressionData data = first.load(ID).join();
+        data.set("kill:zombie", 42);
+        data.markEarned("banner:zombie", 1L);
         first.markDirty(ID);
         first.close();
 
-        PlayerData again = store().load(ID).join();
-        assertEquals(42, again.kills("zombie"));
-        assertTrue(again.isEarned(dev.wayfarer.banners.RewardKey.banner("zombie")));
+        ProgressionData again = store().load(ID).join();
+        assertEquals(42, again.count("kill:zombie"));
+        assertTrue(again.isEarned("banner:zombie"));
     }
 
     @Test
     void fileCarriesAVersionAndMissingKeysDefault() throws IOException {
-        Files.writeString(dir.resolve(ID + ".json"), "{\"version\":3}");
-        PlayerData data = store().load(ID).join();
-        assertEquals(0, data.kills("zombie"));
-        assertEquals(java.util.Set.of(), data.earnedView());
+        Files.writeString(dir.resolve(ID + ".json"), "{\"version\":1}");
+        ProgressionData data = store().load(ID).join();
+        assertEquals(0, data.count("kill:zombie"));
+        assertEquals(java.util.Map.of(), data.earnedView());
     }
 
     @Test
@@ -60,34 +60,10 @@ class PlayerStoreTest {
     @Test
     void corruptFileIsSetAsideNotDeleted() throws IOException {
         Files.writeString(dir.resolve(ID + ".json"), "{not json");
-        PlayerData data = store().load(ID).join();
-        assertEquals(0, data.kills("zombie"));
+        ProgressionData data = store().load(ID).join();
+        assertEquals(0, data.count("kill:zombie"));
         try (var files = Files.list(dir)) {
             assertTrue(files.anyMatch(p -> p.getFileName().toString().contains(".corrupt-")));
         }
-    }
-
-    @Test
-    void version1FilesAreReadWithBareBannerIdsAsBannerRewards() throws IOException {
-        Files.writeString(dir.resolve(ID + ".json"),
-                "{\"version\":1,\"kills\":{\"zombie\":100},\"earned\":[\"zombie\"]}");
-        PlayerStore<PlayerData> store = store();
-        PlayerData data = store.load(ID).join();
-        assertTrue(data.isEarned(dev.wayfarer.banners.RewardKey.banner("zombie")));
-        assertEquals(100, data.kills("zombie"));
-        store.markDirty(ID);
-        store.close();
-        String saved = Files.readString(dir.resolve(ID + ".json"));
-        assertTrue(saved.contains("\"version\":3") && saved.contains("\"banner:zombie\""), saved);
-    }
-
-    @Test
-    void claimTimesSurviveSaveAndReload() {
-        PlayerStore<PlayerData> first = store();
-        PlayerData data = first.load(ID).join();
-        data.setLastClaim(dev.wayfarer.banners.RewardKey.banner("zombie"), 1234L);
-        first.markDirty(ID);
-        first.close();
-        assertEquals(1234L, store().load(ID).join().lastClaim(dev.wayfarer.banners.RewardKey.banner("zombie")));
     }
 }

@@ -11,19 +11,15 @@ families:
   spider: [spider, cave_spider]
   enderman: [enderman]
 
-# Which kills count. Spawn reasons are Paper's CreatureSpawnEvent.SpawnReason names. Listing them replaces the
-# default list, so include all you want excluded. "custom" (used by MythicMobs) is deliberately not excluded.
-# Tamed and leashed mobs, and kills not made by a player (or their projectile), never count.
+# Which kills count at all (spawn reasons, minimum lifetime) is in progression.yml.
 counting:
-  exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
-  min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
-  all-mobs: hostile           # the "all" kill count: hostile mobs only (hostile), or every counted mob (any)
+  all-mobs: hostile           # the "all" ladder reads kills of hostile mobs only (hostile), or of every mob (any)
 
 # How players are told about boosts and rewards. The only sound is the fanfare when you earn a reward.
 feedback:
   action-bar: true            # styled message on entering and leaving a boost zone
   show-blocked: true          # action bar flash when a banner softens a hit on you
-  announce-earned: true       # tell everyone when someone earns a reward (hover shows the item); never for claims
+  announce-earned: true       # tell everyone when someone earns a banners reward (hover shows the item); never for claims
   damage-numbers:             # a floating number over every mob a player hits; boosted hits add ▲ and the extra in red
     enabled: true
     max-active: 40            # new ones are skipped while this many exist

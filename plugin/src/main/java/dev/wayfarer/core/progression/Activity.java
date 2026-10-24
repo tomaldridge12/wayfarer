@@ -3,6 +3,7 @@ package dev.wayfarer.core.progression;
 /** Activity keys: {@code verb:target}, the target being a vanilla key without its namespace or a full datapack key. */
 public final class Activity {
     public static final String KILL = "kill";
+    public static final String DEFEAT = "defeat";
 
     private Activity() {
     }

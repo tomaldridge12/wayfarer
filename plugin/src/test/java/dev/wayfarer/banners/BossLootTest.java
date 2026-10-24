@@ -48,24 +48,4 @@ class BossLootTest {
         assertTrue(picked.equals("zw3") || picked.equals("za3"));
         assertTrue(BossLoot.pickAscended(set, "creeper", () -> 0.0).isEmpty());
     }
-
-    @Test
-    void bossKillsCountForTheBossFamilyAndAllMobsAndBaseOnlyWhenSwitchedOn() {
-        Map<String, MobFamily> families = Map.of("zombie", new MobFamily("zombie", java.util.Set.of("zombie")),
-                "rotting_warlord", new MobFamily("rotting_warlord", java.util.Set.of()));
-        BannerSet off = new BannerSet(families, Map.of(), Map.of(), Map.of(), CountingSettings.defaults(), Map.of(),
-                List.of(), List.of(), Map.of("rotting_warlord", "zombie"), BossLoot.Settings.defaults(), Map.of());
-        PlayerData data = new PlayerData();
-        assertEquals(List.of("rotting_warlord", MobFamily.ALL), RewardRules.recordBossKill(data, off, "rotting_warlord").families());
-        assertEquals(0, data.kills("zombie"));
-        BossLoot.Settings d = BossLoot.Settings.defaults();
-        BannerSet on = new BannerSet(families, Map.of(), Map.of(), Map.of(), CountingSettings.defaults(), Map.of(),
-                List.of(), List.of(), Map.of("rotting_warlord", "zombie"),
-                new BossLoot.Settings(d.ascendedChance(), d.legendaryChance(), d.xpPerStar(), d.materials(), true), Map.of());
-        assertEquals(List.of("rotting_warlord", "zombie", MobFamily.ALL),
-                RewardRules.recordBossKill(new PlayerData(), on, "rotting_warlord").families());
-        assertEquals("rotting_warlord", on.familyOf("boss:rotting_warlord"));
-        assertEquals("zombie", on.baseFamilyOf("boss:rotting_warlord"));
-        assertFalse(on.isBossFamily("zombie"));
-    }
 }

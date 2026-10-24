@@ -104,16 +104,6 @@ public final class BannerText {
         return lines;
     }
 
-    /** "✦ Tom earned the Zombie Cleaver II", for everyone on the server. */
-    public static Component announcement(String earnerName, Component rewardName) {
-        return plain("✦ ", EARNED).append(plain(earnerName, NamedTextColor.WHITE))
-                .append(plain(" earned the ", NamedTextColor.GRAY)).append(rewardName);
-    }
-
-    public static Component earnedSubtitle() {
-        return gradient("✦ Reward earned ✦", 0xFFE7A0, 0xFF9F1C);
-    }
-
     /** A reward's name in its theme, for titles and announcements. */
     public static Component rewardTitle(Reward reward, BannerSet set) {
         String colour = familyColour(set, reward.family());
@@ -144,7 +134,7 @@ public final class BannerText {
     }
 
     /** A plaque: ☠ Tom's Zombie Trophy over a live "1,342 zombies slain". */
-    public static Component plaque(HeadDefinition def, String colour, String earnerName, Integer kills) {
+    public static Component plaque(HeadDefinition def, String colour, String earnerName, Long kills) {
         String count = kills == null ? "…" : String.format(Locale.ROOT, "%,d", kills);
         return plain("☠ ", NamedTextColor.WHITE).append(themed(earnerName + "'s " + def.name(), colour))
                 .append(Component.newline())
@@ -225,59 +215,8 @@ public final class BannerText {
                 .append(plain(" +" + DamageNumbers.format(split.extra()), EXTRA).decorate(TextDecoration.BOLD));
     }
 
-    private static final int BAR_WIDTH = 25;
-    static final TextColor EARNED = TextColor.color(0xFFC94A);
-
-    /**
-     * The /wayfarer progress card: a header, the all-mobs count, then each family with its rewards as
-     * fixed-width bars (chat is not monospaced, so bars go first to line up). Hovering a reward shows its item
-     * tooltip; with {@code claimButtons}, earned rewards get a clickable claim.
-     */
-    public static List<Component> progress(String who, PlayerData data, BannerSet set, boolean claimButtons) {
-        List<Component> lines = new ArrayList<>();
-        lines.add(plain("⚔ ", NamedTextColor.WHITE).append(gradient("Kill progress", 0xFFE7A0, 0xFF9F1C)
-                .decorate(TextDecoration.BOLD)).append(plain(" · " + who, NamedTextColor.GRAY)));
-        lines.add(plain("All mobs", NamedTextColor.WHITE).append(plain(" · ", NamedTextColor.DARK_GRAY))
-                .append(plain(count(data.kills(MobFamily.ALL)), NamedTextColor.GRAY)));
-        java.util.Map<String, List<Reward>> byFamily = new java.util.LinkedHashMap<>();
-        set.rewards().stream().filter(r -> r.kills() != RelicDefinition.DROP_ONLY || data.isEarned(r.rewardKey()))
-                .forEach(r -> byFamily.computeIfAbsent(r.family(), f -> new ArrayList<>()).add(r));
-        byFamily.forEach((family, rewards) -> {
-            lines.add(plain(title(family), NamedTextColor.WHITE).append(plain(" · ", NamedTextColor.DARK_GRAY))
-                    .append(plain(count(data.kills(family)), NamedTextColor.GRAY)));
-            for (Reward reward : rewards) {
-                lines.add(rewardLine(reward, data, set, claimButtons));
-            }
-        });
-        if (byFamily.isEmpty()) {
-            lines.add(plain("No rewards are set up yet.", NamedTextColor.DARK_GRAY));
-        }
-        return lines;
-    }
-
-    private static Component rewardLine(Reward reward, PlayerData data, BannerSet set, boolean claimButtons) {
-        int kills = data.kills(reward.family());
-        boolean earned = data.isEarned(reward.rewardKey());
-        int filled = earned ? BAR_WIDTH : (int) Math.min(BAR_WIDTH, (long) kills * BAR_WIDTH / Math.max(1, reward.kills()));
-        Component bar = plain("|".repeat(filled), earned ? EARNED : DAMAGE_UP)
-                .append(plain("|".repeat(BAR_WIDTH - filled), NamedTextColor.DARK_GRAY));
-        Component status = earned ? plain(" ✔", EARNED)
-                : plain(" " + Math.min(kills, reward.kills()) + "/" + reward.kills(), NamedTextColor.GRAY);
-        Component name = rewardName(reward, set);
-        Component line = plain("  ", NamedTextColor.GRAY).append(bar).append(status)
-                .append(plain("  ", NamedTextColor.GRAY)).append(name);
-        if (earned && claimButtons) {
-            line = line.append(plain("  ", NamedTextColor.GRAY)).append(plain("[Claim copy]", GUARD)
-                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(
-                            plain("Get another " + reward.name() + " if you lost yours", NamedTextColor.GRAY)))
-                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand(
-                            "/wayfarer claim " + reward.rewardKey())));
-        }
-        return line;
-    }
-
     /** The reward's themed name; hovering it shows the same tooltip as the item. */
-    private static Component rewardName(Reward reward, BannerSet set) {
+    static Component rewardName(Reward reward, BannerSet set) {
         if (RewardKey.BANNER.equals(reward.rewardKey().type())) {
             var def = set.find(reward.rewardKey().id());
             if (def.isPresent()) {
@@ -309,11 +248,6 @@ public final class BannerText {
             }
         }
         return plain(reward.name(), NamedTextColor.WHITE);
-    }
-
-    /** "1 kill", "1,342 kills". */
-    static String count(int kills) {
-        return String.format(Locale.ROOT, "%,d", kills) + (kills == 1 ? " kill" : " kills");
     }
 
     private static Component effects(BannerDefinition def) {

@@ -33,10 +33,6 @@ class BannerConfigParserTest {
             return name.equals("luck") || name.equals("glowing");
         }
 
-        @Override
-        public boolean isSpawnReason(String name) {
-            return Set.of("SPAWNER", "CUSTOM", "NATURAL").contains(name);
-        }
 
         @Override
         public boolean isColour(String name) {
@@ -168,7 +164,6 @@ class BannerConfigParserTest {
             public boolean isMob(String n) { return n.equals("zombie"); }
             public boolean isPattern(String n) { return true; }
             public boolean isColour(String n) { return true; }
-            public boolean isSpawnReason(String n) { return true; }
             public boolean isParticle(String n) { return true; }
             public boolean isEffect(String n) { return true; }
             @Override public boolean isItem(String n) { return n.equals("iron_axe"); }
@@ -199,7 +194,6 @@ class BannerConfigParserTest {
             public boolean isMob(String n) { return n.equals("zombie"); }
             public boolean isPattern(String n) { return true; }
             public boolean isColour(String n) { return true; }
-            public boolean isSpawnReason(String n) { return true; }
             public boolean isParticle(String n) { return true; }
             public boolean isEffect(String n) { return true; }
             @Override public int enchantMax(String k) { return k.startsWith("minecraft:") ? 5 : -1; }

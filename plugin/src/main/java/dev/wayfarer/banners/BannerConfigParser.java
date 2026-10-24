@@ -76,7 +76,7 @@ public final class BannerConfigParser {
                 relics.put(id, relic);
             }
         });
-        CountingSettings counting = CountingSettings.parse(root.get("counting"), vocabulary, problems);
+        CountingSettings counting = CountingSettings.parse(root.get("counting"), problems);
         BossLoot.Settings loot = parseBossLoot(asMap(bossRoot.get("loot")), Boolean.TRUE.equals(bossRoot.get("count-toward-base-family")));
         Map<String, String> legendaries = new LinkedHashMap<>();
         asMap(bossRoot.get("legendaries")).forEach((boss, relicId) -> {
