@@ -8,3 +8,29 @@ version: 1
 counting:
   exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
+
+# Pity drops: a ceiling on bad luck for rare mob drops. After ceil(1 / chance) counted kills without the item
+# (1 / 0.025 = 40), the next counted kill drops it. Only the player who landed the killing blow advances their
+# counter; a real drop of the item resets it. Looting improves the real chance but never changes the threshold.
+# held-item: only mobs holding this item count (a drowned with a trident).
+pity:
+  wither_skeleton_skull:
+    item: wither_skeleton_skull
+    mobs: [wither_skeleton]
+    chance: 0.025   # vanilla base chance
+  trident:
+    item: trident
+    mobs: [drowned]
+    held-item: trident
+    chance: 0.085   # vanilla chance a drowned drops its held trident (an equipment drop, not a loot table)
+
+# Stage snapshots: when a player earns one of these advancements, one line with all their counters is appended to
+# plugins/Wayfarer/stage-snapshots.csv, for tuning ladder thresholds against real play. Players never see it.
+snapshots:
+  markers:
+    - story/smelt_iron         # Acquire Hardware
+    - story/mine_diamond       # Diamonds!
+    - story/enter_the_nether   # We Need to Go Deeper
+    - nether/netherite_armor   # Cover Me in Debris
+    - end/kill_dragon          # Free the End
+    - end/elytra               # Sky's the Limit

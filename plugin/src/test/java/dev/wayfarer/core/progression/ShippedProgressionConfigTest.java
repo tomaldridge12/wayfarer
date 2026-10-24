@@ -16,8 +16,11 @@ class ShippedProgressionConfigTest {
         try (InputStream in = getClass().getResourceAsStream("/progression.yml")) {
             root = new Yaml().load(in);
         }
-        ProgressionSettings settings = ProgressionSettings.parse(root, name -> true);
+        ProgressionSettings settings = ProgressionSettings.parse(root, ProgressionSettings.ANY);
         assertEquals(List.of(), settings.problems());
         assertEquals(CreditRules.defaults(), settings.credit());
+        assertEquals(java.util.List.of("wither_skeleton_skull 40", "trident 12"),
+                settings.pity().stream().map(p -> p.id() + " " + p.threshold()).toList());
+        assertEquals(StageSnapshots.defaults(), settings.snapshots());
     }
 }

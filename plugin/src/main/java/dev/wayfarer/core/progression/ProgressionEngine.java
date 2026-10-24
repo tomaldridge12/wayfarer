@@ -16,9 +16,16 @@ public final class ProgressionEngine {
     public record Earned(Ladder ladder, String reward) {
     }
 
-    /** What one activity did: whether it counted, which counters went up, and rewards newly earned in order. */
-    public record Outcome(boolean counted, List<String> raised, List<Earned> earned) {
-        static final Outcome NOT_COUNTED = new Outcome(false, List.of(), List.of());
+    /**
+     * What one activity did: whether it counted, which counters went up, rewards newly earned in order, and the
+     * items pity adds to this death's drops.
+     */
+    public record Outcome(boolean counted, List<String> raised, List<Earned> earned, List<String> pityItems) {
+        static final Outcome NOT_COUNTED = new Outcome(false, List.of(), List.of(), List.of());
+
+        Outcome(boolean counted, List<String> raised, List<Earned> earned) {
+            this(counted, raised, earned, List.of());
+        }
     }
 
     public enum ClaimResult {
@@ -52,10 +59,32 @@ public final class ProgressionEngine {
 
     /** A mob death credited to its killer; bosses and minions are counted from their defeat, so never pass them. */
     public Outcome kill(ProgressionData data, KillFacts kill) {
+        return kill(data, kill, null, Set.of());
+    }
+
+    /**
+     * A mob death credited to the player who landed the killing blow, with what the mob held ({@code null} for
+     * nothing) and the items it really dropped. Each pity drop for that mob advances on a counted kill, resets when
+     * its item really dropped, and when it reaches its threshold is added to the drops and resets.
+     */
+    public Outcome kill(ProgressionData data, KillFacts kill, String heldItem, Set<String> droppedItems) {
         if (!settings.credit().counts(kill)) {
             return Outcome.NOT_COUNTED;
         }
-        return record(data, Activity.KILL + ":" + kill.mobType());
+        Outcome counted = record(data, Activity.KILL + ":" + kill.mobType());
+        List<String> pityItems = new ArrayList<>();
+        for (PityDrop pity : settings.pity()) {
+            if (!pity.applies(kill.mobType(), heldItem)) {
+                continue;
+            }
+            int misses = droppedItems.contains(pity.item()) ? 0 : data.pity(pity.id()) + 1;
+            if (misses >= pity.threshold()) {
+                pityItems.add(pity.item());
+                misses = 0;
+            }
+            data.setPity(pity.id(), misses);
+        }
+        return new Outcome(true, counted.raised(), counted.earned(), List.copyOf(pityItems));
     }
 
     /**

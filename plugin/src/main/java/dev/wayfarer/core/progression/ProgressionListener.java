@@ -3,7 +3,12 @@ package dev.wayfarer.core.progression;
 import dev.wayfarer.core.BossMark;
 import dev.wayfarer.core.MinionMark;
 import io.papermc.paper.entity.Leashable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.bukkit.Keyed;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -40,12 +45,18 @@ final class ProgressionListener implements Listener {
         service.defeated(event);
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    void onAdvancement(org.bukkit.event.player.PlayerAdvancementDoneEvent event) {
+        service.advancement(event.getPlayer(), event.getAdvancement().getKey());
+    }
+
     @EventHandler
     void onQuit(PlayerQuitEvent event) {
         service.quit(event.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    /** HIGHEST, not MONITOR: a due pity drop is added to this death's drops. */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     void onDeath(EntityDeathEvent event) {
         LivingEntity victim = event.getEntity();
         // Bosses are counted from their defeat (every damager); boss minions never count.
@@ -56,13 +67,23 @@ final class ProgressionListener implements Listener {
         if (!(cause instanceof Player killer)) {
             return;
         }
-        service.kill(killer, new KillFacts(
+        ItemStack held = victim.getEquipment() == null ? null : victim.getEquipment().getItemInMainHand();
+        Set<String> dropped = new HashSet<>();
+        event.getDrops().forEach(drop -> dropped.add(target(drop.getType())));
+        List<String> pity = service.kill(killer, new KillFacts(
                 KillFacts.Killer.PLAYER,
                 target(victim.getType()),
                 victim.getEntitySpawnReason().name(),
                 victim instanceof Tameable t && t.isTamed(),
                 victim instanceof Leashable l && l.isLeashed(),
-                victim.getTicksLived()));
+                victim.getTicksLived()),
+                held == null || held.getType().isAir() ? null : target(held.getType()), dropped);
+        for (String item : pity) {
+            Material material = Material.matchMaterial(item);
+            if (material != null) {
+                event.getDrops().add(new ItemStack(material));
+            }
+        }
     }
 
     /** Only a player breaking a block fires this; explosions, pistons and the like never count. */

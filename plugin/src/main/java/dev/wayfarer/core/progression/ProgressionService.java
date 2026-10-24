@@ -63,6 +63,7 @@ public final class ProgressionService implements Progression {
     private final Ladders ladders = new Ladders();
     private final Map<String, OwnedType> rewardTypes = new LinkedHashMap<>();
     private final EarnMoment moment;
+    private final SnapshotWriter snapshots;
     private volatile ProgressionEngine engine;
     private ProgressionListener listener;
     private BukkitTask saveTask;
@@ -73,6 +74,7 @@ public final class ProgressionService implements Progression {
         this.core = core;
         this.mainThread = task -> plugin.getServer().getScheduler().runTask(plugin, task);
         this.moment = new EarnMoment(plugin.getServer());
+        this.snapshots = new SnapshotWriter(plugin.getDataFolder().toPath().resolve("stage-snapshots.csv"), core.logger());
         this.engine = new ProgressionEngine(ProgressionSettings.defaults(), ladders, System::currentTimeMillis);
         this.store = new PlayerStore<>(plugin.getDataFolder().toPath().resolve("data").resolve(CONFIG_ID),
                 ProgressionCodec.VERSION, new ProgressionCodec(), core.logger(),
@@ -105,13 +107,14 @@ public final class ProgressionService implements Progression {
             HandlerList.unregisterAll(listener);
         }
         store.close();
+        snapshots.close();
     }
 
     /** Reads progression.yml; an unreadable file keeps the defaults so counting never stops. */
     private void load() {
         ProgressionSettings settings;
         try {
-            settings = ProgressionSettings.parse(core.config().load(CONFIG_ID), ProgressionService::isSpawnReason);
+            settings = ProgressionSettings.parse(core.config().load(CONFIG_ID), new PaperNames());
         } catch (Exception e) {
             core.logger().log(Level.SEVERE, "progression.yml could not be read; using the defaults", e);
             settings = ProgressionSettings.defaults();
@@ -122,15 +125,55 @@ public final class ProgressionService implements Progression {
         core.logger().info("Progression loaded: " + credit.excludedSpawnReasons().size()
                 + " excluded spawn reasons, min lifetime " + credit.minLifetimeTicks() + " ticks, "
                 + settings.problems().size() + " problems");
+        core.logger().info("Pity table loaded: " + settings.pity().size() + " drops ("
+                + String.join(", ", settings.pity().stream().map(p -> p.id() + " every " + p.threshold()).toList()) + ")");
+        core.logger().info("Stage markers loaded: " + settings.snapshots().markers().size() + " ("
+                + String.join(", ", settings.snapshots().markers()) + ")");
     }
 
-    private static boolean isSpawnReason(String name) {
-        try {
-            CreatureSpawnEvent.SpawnReason.valueOf(name);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
+    /** The server's own spawn reasons, items and mob types. */
+    private static final class PaperNames implements ProgressionSettings.Names {
+        @Override
+        public boolean isSpawnReason(String name) {
+            try {
+                CreatureSpawnEvent.SpawnReason.valueOf(name);
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
         }
+
+        @Override
+        public boolean isItem(String name) {
+            NamespacedKey key = NamespacedKey.fromString(name);
+            return key != null && org.bukkit.Registry.ITEM.get(key) != null;
+        }
+
+        @Override
+        public boolean isMob(String name) {
+            NamespacedKey key = NamespacedKey.fromString(name);
+            org.bukkit.entity.EntityType type = key == null ? null : org.bukkit.Registry.ENTITY_TYPE.get(key);
+            return type != null && type.isAlive();
+        }
+
+        @Override
+        public boolean isAdvancement(String name) {
+            NamespacedKey key = NamespacedKey.fromString(name);
+            return key != null && org.bukkit.Bukkit.getAdvancement(key) != null;
+        }
+    }
+
+    /** A marker advancement snapshots every counter to stage-snapshots.csv, written off the main thread. */
+    void advancement(Player player, NamespacedKey key) {
+        ProgressionData data = store.cached(player.getUniqueId());
+        if (data == null) {
+            return;
+        }
+        engine.settings().snapshots().line(Activity.target(key.getNamespace(), key.getKey()), System.currentTimeMillis(),
+                player.getUniqueId(), player.getName(), data.countersView()).ifPresent(line -> {
+                    snapshots.append(line);
+                    core.logger().info("[progression] Stage snapshot for " + player.getName() + ": " + key.getKey());
+                });
     }
 
     // --- the module API ---
@@ -207,18 +250,26 @@ public final class ProgressionService implements Progression {
         event.damagers().forEach(id -> record(id, Activity.DEFEAT + ":" + boss, "defeating " + boss));
     }
 
-    void kill(Player killer, KillFacts kill) {
-        act(killer, (e, data) -> e.kill(data, kill));
+    /** @return the items pity adds to this death's drops (empty when none is due) */
+    List<String> kill(Player killer, KillFacts kill, String heldItem, java.util.Set<String> droppedItems) {
+        ProgressionEngine.Outcome outcome = act(killer, (e, data) -> e.kill(data, kill, heldItem, droppedItems));
+        List<String> pity = outcome == null ? List.of() : outcome.pityItems();
+        pity.forEach(item -> core.logger().info("[progression] Pity drop " + item + " for " + killer.getUniqueId()
+                + " from " + kill.mobType()));
+        return pity;
     }
 
-    /** Runs one engine call on an online player's record and acts on the outcome. */
-    void act(Player player, java.util.function.BiFunction<ProgressionEngine, ProgressionData, ProgressionEngine.Outcome> what) {
+    /** Runs one engine call on an online player's record and acts on the outcome; null if the record is not loaded. */
+    ProgressionEngine.Outcome act(Player player,
+            java.util.function.BiFunction<ProgressionEngine, ProgressionData, ProgressionEngine.Outcome> what) {
         UUID id = player.getUniqueId();
         ProgressionData data = store.cached(id);
         if (data == null) {
-            return; // data failed to load; already logged
+            return null; // data failed to load; already logged
         }
-        apply(id, what.apply(engine, data), null);
+        ProgressionEngine.Outcome outcome = what.apply(engine, data);
+        apply(id, outcome, null);
+        return outcome;
     }
 
     /**
