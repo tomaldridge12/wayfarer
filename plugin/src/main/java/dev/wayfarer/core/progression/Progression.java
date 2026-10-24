@@ -27,4 +27,30 @@ public interface Progression {
 
     /** Loads a player's record, for callers that want to redraw once it is ready. */
     CompletableFuture<Void> load(UUID player);
+
+    /** A read-only copy of a player's counters and earned rewards (with when), if their record is loaded. */
+    record Snapshot(java.util.Map<String, Long> counters, java.util.Map<String, Long> earned) {
+        public long count(String activity) {
+            return counters.getOrDefault(activity, 0L);
+        }
+    }
+
+    default java.util.Optional<Snapshot> snapshot(UUID player) {
+        return java.util.Optional.empty();
+    }
+
+    /** Every registered ladder, in registration order. */
+    default List<Ladder> ladders() {
+        return List.of();
+    }
+
+    /** A reward's themed name ("curio:moss_heart" gives Moss Heart in its colour), or the raw text when unknown. */
+    default net.kyori.adventure.text.Component rewardTitle(String reward) {
+        return net.kyori.adventure.text.Component.text(reward);
+    }
+
+    /** The item a reward makes for this player, for showing it (not given); empty when no type makes it. */
+    default java.util.Optional<org.bukkit.inventory.ItemStack> rewardItem(String reward, UUID player) {
+        return java.util.Optional.empty();
+    }
 }

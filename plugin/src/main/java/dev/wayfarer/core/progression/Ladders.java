@@ -37,7 +37,7 @@ public final class Ladders {
         Map<String, List<Ladder>> index = new LinkedHashMap<>();
         List<Ladder> prefixed = new ArrayList<>();
         for (Ladder ladder : list) {
-            ladder.selector().stream().filter(a -> !Ladder.isPrefix(a))
+            ladder.selector().stream().filter(a -> !Ladder.isPrefix(a)).flatMap(a -> Ladder.alternatives(a).stream())
                     .forEach(a -> index.computeIfAbsent(a, k -> new ArrayList<>()).add(ladder));
             if (ladder.selector().stream().anyMatch(Ladder::isPrefix)) {
                 prefixed.add(ladder);
@@ -57,9 +57,9 @@ public final class Ladders {
         List<Ladder> exact = byActivity.getOrDefault(activity, List.of());
         List<Ladder> prefixed = withPrefixes;
         if (prefixed.isEmpty()) {
-            return exact;
+            return exact.stream().distinct().toList();
         }
-        List<Ladder> out = new ArrayList<>(exact);
+        List<Ladder> out = new ArrayList<>(exact.stream().distinct().toList());
         for (Ladder ladder : prefixed) {
             if (!out.contains(ladder) && ladder.reads(activity)) {
                 out.add(ladder);

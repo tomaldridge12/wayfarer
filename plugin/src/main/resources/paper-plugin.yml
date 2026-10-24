@@ -45,3 +45,9 @@ permissions:
   wayfarer.curios.admin:
     description: List curios, special gear and supplies, give them and reload curios.yml (testing tools)
     default: op
+  wayfarer.journal:
+    description: Open your Journal
+    default: true
+  wayfarer.collections.admin:
+    description: List collections, give fish and treasures and reload collections.yml (testing tools)
+    default: op

@@ -79,12 +79,13 @@ public final class CuriosModule implements Module {
         core.itemMakers().register(id(), CurioItems.KIND, name -> items.make(name));
         core.itemMakers().register(id(), LootItems.GEAR, lootItems::gear);
         core.itemMakers().register(id(), LootItems.SUPPLY, name -> lootItems.supply(name, 1));
-        core.itemIds().register(id(), CurioItems.KIND, name -> rules.curio(name).isPresent());
-        core.itemIds().register(id(), LootItems.GEAR, name -> loot.gear().containsKey(name));
-        core.itemIds().register(id(), LootItems.SUPPLY, name -> loot.supplies().containsKey(name));
+        core.itemIds().register(id(), CurioItems.KIND, () -> rules.curios().stream().map(CurioDefinition::id).toList());
+        core.itemIds().register(id(), LootItems.GEAR, () -> loot.gear().keySet());
+        core.itemIds().register(id(), LootItems.SUPPLY, () -> loot.supplies().keySet());
         core.progression().registerRewardType(id(), CurioItems.KIND, new Curios());
         core.progression().registerRewardType(id(), LootItems.GEAR, new Gear());
         core.progression().registerRewardType(id(), LootItems.SUPPLY, new Supply());
+        core.progression().registerRewardType(id(), "enchant", new EnchantBook());
         core.services().register(id(), Bait.class, supplies::useCast);
         core.services().register(id(), CurioBoosts.class, (player, what) -> CurioRules.boost(effects.working(player), what));
         core.commands().register(id(), commands());
@@ -227,6 +228,52 @@ public final class CuriosModule implements Module {
         @Override
         public Component describe(String id) {
             return lootItems.gear(id).map(i -> title(id).hoverEvent(i.asHoverEvent())).orElse(null);
+        }
+    }
+
+    /**
+     * An enchanted book as a reward: {@code enchant:excellentenchants:double_catch_3}. Earning one also unlocks the enchant
+     * for buying again in the shop.
+     */
+    private final class EnchantBook implements RewardType {
+        private static final String[] ROMAN = {"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+
+        /** The enchantment and level, or null when the id is malformed or the server lacks the enchant. */
+        private org.bukkit.enchantments.Enchantment enchant(String id) {
+            int cut = id.lastIndexOf('_');
+            org.bukkit.NamespacedKey key = cut <= 0 ? null : org.bukkit.NamespacedKey.fromString(id.substring(0, cut));
+            return key == null ? null : org.bukkit.Registry.ENCHANTMENT.get(key);
+        }
+
+        private int level(String id) {
+            String n = id.substring(id.lastIndexOf('_') + 1);
+            return n.matches("\\d{1,2}") ? Integer.parseInt(n) : 1;
+        }
+
+        @Override
+        public ItemStack create(String id, UUID earner, String earnerName, long earnedAt) {
+            org.bukkit.enchantments.Enchantment e = enchant(id);
+            if (e == null) {
+                core.logger().warning("[curios] Enchant reward " + id + " cannot be made (is its plugin installed?); it stays"
+                        + " earned and can be claimed later");
+                return null;
+            }
+            ItemStack book = ItemStack.of(org.bukkit.Material.ENCHANTED_BOOK);
+            book.editMeta(org.bukkit.inventory.meta.EnchantmentStorageMeta.class, m -> m.addStoredEnchant(e, level(id), true));
+            return book;
+        }
+
+        @Override
+        public Component title(String id) {
+            int cut = id.lastIndexOf('_');
+            if (cut <= 0 || !id.contains(":")) {
+                return null;
+            }
+            String key = id.substring(0, cut);
+            int level = level(id);
+            String name = CurioConfigParser.title(key.substring(key.indexOf(':') + 1));
+            return ItemLook.name(name + " " + (level < ROMAN.length ? ROMAN[level] : level) + " Book",
+                    key.startsWith("excellentenchants:") ? 0x279CF5 : 0xC9A0FF);
         }
     }
 

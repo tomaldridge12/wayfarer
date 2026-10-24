@@ -61,8 +61,8 @@ rm -f "$CFG" "$RUN/plugins/Wayfarer/bosses.yml" "$RUN/plugins/Wayfarer/alloys.ym
 rm -rf "$DATA"
 # ExcellentEnchants enchants are rewards only, as on the real server (idempotent; its files exist after its first boot).
 [ -d "$RUN/plugins/ExcellentEnchants/enchants" ] && python3 scripts/ee_lockdown.py "$RUN/plugins/ExcellentEnchants/enchants" | tail -1
-LOG1=$LOGS/log1.log; boot "$LOG1" "forceload add 20 20" "setblock 20 101 20 minecraft:air" "setblock 24 101 20 minecraft:air" "setblock 20 100 20 minecraft:campfire[lit=true]" "setblock 20 101 20 minecraft:cauldron" "setblock 24 101 20 minecraft:cauldron" "wayfarer alloys load 20 101 20 world iron_ingot 4 $PLAYER" "wayfarer alloys load 20 101 20 world coal_block 1 $PLAYER" "wayfarer alloys load 24 101 20 world iron_ingot 4 $PLAYER" "wayfarer alloys load 24 101 20 world coal_block 1 $PLAYER" "wayfarer alloys load 24 101 20 world dirt 1 $PLAYER" "wayfarer reload" "wayfarer give nobody nope" "wayfarer give nobody zombie" "wayfarer setcount $PLAYER kill:zombie 400" "wayfarer progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "wayfarer place zombie 0 100 0 world" "wayfarer placehead $PLAYER zombie 2 100 0" "wayfarer forcedrop $PLAYER2 skeleton" "wayfarer forcedrop $PLAYER2 relic:zombie_weapon_2" "wayfarer progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "wayfarer boss spawn rotting_warlord rotting_warlord 5" "wayfarer boss spawn bone_marshal bone_marshal 3 guardian" "wayfarer boss defeat $PLAYER" "forceload remove ~-16 ~-16 ~112 ~16" "wayfarer setcount $PLAYER kill:incendium:knight 2" "wayfarer setcount $PLAYER harvest:wheat 3" "wayfarer setcount $PLAYER discover:biome/terralith:alpine_grove 1" "wayfarer stats $PLAYER harvest:" "wayfarer stats $PLAYER discover:" "wayfarer pack" "wayfarer pack send nobody" "wayfarer setcount $PLAYER kill:zombie" "wayfarer stats $PLAYER kill:" "wayfarer alloys list" "wayfarer alloys give nobody ingot:steel" "wayfarer alloys reload" "wayfarer stats $PLAYER forge:" "wayfarer marks list" "wayfarer marks give nobody dune_1" "wayfarer setcount $PLAYER mine:sand 500" "wayfarer setcount $PLAYER mine:coal_ore 250" "wayfarer setcount $PLAYER catch:cod 99" "wayfarer setcount $PLAYER catch:salmon 1" "wayfarer marks reload" "wayfarer curios list" "wayfarer curios give nobody curio:moss_heart" "forceload remove 20 20"
-check "$LOG1" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], banners [reload, give, place, placehead, forcedrop], bosses [boss], marks [marks], curios [curios]"
+LOG1=$LOGS/log1.log; boot "$LOG1" "forceload add 20 20" "setblock 20 101 20 minecraft:air" "setblock 24 101 20 minecraft:air" "setblock 20 100 20 minecraft:campfire[lit=true]" "setblock 20 101 20 minecraft:cauldron" "setblock 24 101 20 minecraft:cauldron" "wayfarer alloys load 20 101 20 world iron_ingot 4 $PLAYER" "wayfarer alloys load 20 101 20 world coal_block 1 $PLAYER" "wayfarer alloys load 24 101 20 world iron_ingot 4 $PLAYER" "wayfarer alloys load 24 101 20 world coal_block 1 $PLAYER" "wayfarer alloys load 24 101 20 world dirt 1 $PLAYER" "wayfarer reload" "wayfarer give nobody nope" "wayfarer give nobody zombie" "wayfarer setcount $PLAYER kill:zombie 400" "wayfarer progress $PLAYER" "forceload add 4000 4000" "forceload remove 4000 4000" "wayfarer place zombie 0 100 0 world" "wayfarer placehead $PLAYER zombie 2 100 0" "wayfarer forcedrop $PLAYER2 skeleton" "wayfarer forcedrop $PLAYER2 relic:zombie_weapon_2" "wayfarer progress $PLAYER2" "forceload add ~-16 ~-16 ~112 ~16" "wayfarer boss spawnall 1" "wayfarer boss killall" "wayfarer boss spawnall 5" "wayfarer boss killall" "wayfarer boss spawn rotting_warlord rotting_warlord 5" "wayfarer boss spawn bone_marshal bone_marshal 3 guardian" "wayfarer boss defeat $PLAYER" "forceload remove ~-16 ~-16 ~112 ~16" "wayfarer setcount $PLAYER kill:incendium:knight 2" "wayfarer setcount $PLAYER harvest:wheat 3" "wayfarer setcount $PLAYER discover:biome/terralith:alpine_grove 1" "wayfarer stats $PLAYER harvest:" "wayfarer stats $PLAYER discover:" "wayfarer pack" "wayfarer pack send nobody" "wayfarer setcount $PLAYER kill:zombie" "wayfarer stats $PLAYER kill:" "wayfarer alloys list" "wayfarer alloys give nobody ingot:steel" "wayfarer alloys reload" "wayfarer stats $PLAYER forge:" "wayfarer marks list" "wayfarer marks give nobody dune_1" "wayfarer setcount $PLAYER mine:sand 500" "wayfarer setcount $PLAYER mine:coal_ore 250" "wayfarer setcount $PLAYER catch:cod 99" "wayfarer setcount $PLAYER catch:salmon 1" "wayfarer marks reload" "wayfarer curios list" "wayfarer curios give nobody curio:moss_heart" "wayfarer collections list" "wayfarer setcount $PLAYER find:wayfarer:curio/moss_heart 1" "wayfarer setcount $PLAYER find:wayfarer:curio/glow_jar 1" "wayfarer setcount $PLAYER find:wayfarer:curio/bone_dice 1" "wayfarer setcount $PLAYER find:wayfarer:curio/hearthstone 1" "wayfarer setcount $PLAYER find:wayfarer:curio/stormglass 1" "forceload remove 20 20"
+check "$LOG1" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], banners [reload, give, place, placehead, forcedrop], bosses [boss], marks [marks], curios [curios], collections [journal, collections]"
 check "$LOG1" "Module alloys enabled"
 check "$LOG1" "Alloy gear built: 60 of 60"
 check "$LOG1" "Alloy recipes registered: 10 smithing upgrades, 6 template duplications (16 live)"
@@ -93,6 +93,11 @@ check "$LOG1" "Curio items built: 32 of 32"
 check "$LOG1" "Special gear built: 11 of 11 (10 on alloys); supplies built: 6 of 6; 0 problems"
 check "$LOG1" "Moss Heart (moss_heart): tool, 120s, spread"
 check "$LOG1" "Gear Hoe of a Hundred Hoes (hoe_of_a_hundred_hoes): alloy:bronze_hoe"
+check "$LOG1" "Module collections enabled"
+check "$LOG1" "Collections loaded: 4 collections (bestiary "
+check "$LOG1" "Ladders registered by collections: 4 (collection_bestiary, collection_atlas, collection_cabinet, collection_curios)"
+check "$LOG1" "Curios: 32 curios, milestones at [5, 8, 16, 32]"
+check "$LOG1" "$PLAYER earned supply animal_crate*2"
 check "$LOG1" "Progression loaded: 8 excluded spawn reasons, min lifetime 0 ticks, 0 problems"
 check "$LOG1" "Pity table loaded: 2 drops (wither_skeleton_skull every 40, trident every 12)"
 check "$LOG1" "Stage markers loaded: 6 (story/smelt_iron, story/mine_diamond, story/enter_the_nether, nether/netherite_armor, end/kill_dragon, end/elytra)"
@@ -161,7 +166,7 @@ check "$LOG1B" "Banner labels refreshed: 2"
 printf 'version: 1\nenabled: false\n' >"$CFG"
 LOG2=$LOGS/log2.log; boot "$LOG2"
 check "$LOG2" "Module banners skipped (disabled in config)"
-check "$LOG2" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], bosses [boss], marks [marks], curios [curios]"
+check "$LOG2" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], bosses [boss], marks [marks], curios [curios], collections [journal, collections]"
 
 # Boot 5: alloys module off; relics fall back to their vanilla items.
 rm -f "$CFG"
@@ -173,7 +178,7 @@ check "$LOG5" "Module alloys skipped (disabled in config)"
 check "$LOG5" "Relic items built: 76 of 76 (0 on alloys)"
 check "$LOG5" "Special gear built: 11 of 11 (0 on alloys)"
 check "$LOG5" "Relic check: zombie_weapon is iron_axe with model minecraft:iron_axe, "
-check "$LOG5" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], banners [reload, give, place, placehead, forcedrop], bosses [boss], marks [marks], curios [curios]"
+check "$LOG5" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], banners [reload, give, place, placehead, forcedrop], bosses [boss], marks [marks], curios [curios], collections [journal, collections]"
 
 # Boot 4: without ExcellentEnchants, relics still build and only lose those enchants.
 rm -f "$CFG"
@@ -194,7 +199,7 @@ fi
 printf 'banners: [unclosed\n' >"$CFG"
 LOG3=$LOGS/log3.log; boot "$LOG3"
 check "$LOG3" "Module banners failed to start, skipped"
-check "$LOG3" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], bosses [boss], marks [marks], curios [curios]"
+check "$LOG3" "Command /wayfarer registered: core [progress, claim, stats, setcount, pack], alloys [alloys], bosses [boss], marks [marks], curios [curios], collections [journal, collections]"
 check "$LOG3" "Wayfarer enabled"
 traces=0
 for log in "$LOG1" "$LOG1B" "$LOG2"; do

@@ -236,6 +236,27 @@ public final class ProgressionService implements Progression {
         return store.load(player).thenApplyAsync(d -> null, mainThread); // completes on the main thread
     }
 
+    @Override
+    public Optional<Snapshot> snapshot(UUID player) {
+        ProgressionData data = store.cached(player);
+        return data == null ? Optional.empty() : Optional.of(new Snapshot(data.countersView(), data.earnedView()));
+    }
+
+    @Override
+    public List<Ladder> ladders() {
+        return ladders.all();
+    }
+
+    @Override
+    public Component rewardTitle(String reward) {
+        return title(reward);
+    }
+
+    @Override
+    public Optional<ItemStack> rewardItem(String reward, UUID player) {
+        return Optional.ofNullable(build(player, PlayerNames.nameOf(plugin.getServer(), player), reward));
+    }
+
     // --- events (called by the listener, main thread unless noted) ---
 
     /** Runs on the next tick (main thread). */

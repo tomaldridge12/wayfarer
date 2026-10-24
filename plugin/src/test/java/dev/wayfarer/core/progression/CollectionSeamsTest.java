@@ -80,4 +80,17 @@ class CollectionSeamsTest {
         engine.brush(data, "suspicious_sand");
         assertEquals(2, data.count("brush:suspicious_sand"));
     }
+
+    @Test
+    void aGroupCountsOnceInADistinctLadderAndIsReadByEachAlternative() {
+        String villages = "discover:structure/village_plains|discover:structure/village_desert";
+        ladders.set("collections", List.of(distinct("atlas", Set.of(villages, "discover:structure/igloo"), 2)));
+        ProgressionData data = new ProgressionData();
+        engine.discoverStructure(data, "village_plains", true);
+        engine.discoverStructure(data, "village_desert", true);
+        assertEquals(1, ladders.find("atlas").orElseThrow().progress(data));
+        assertEquals(List.of("test:atlas_0"), rewards(engine.discoverStructure(data, "igloo", true)));
+        assertTrue(ladders.find("atlas").orElseThrow().reads("discover:structure/village_desert"));
+        assertEquals(1, ladders.reading("discover:structure/village_plains").size());
+    }
 }

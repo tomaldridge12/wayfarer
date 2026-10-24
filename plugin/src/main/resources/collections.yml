@@ -1,0 +1,284 @@
+# Collections module: the Journal (every player's book of pages) and its collections. Each collection is a Journal page
+# that asks you to find every one of something; milestones on it pay reward loot. Everything you found before a
+# collection existed already counts. Set enabled: false to skip the module (its pages and ladders go with it).
+version: 1
+enabled: true
+
+journal:
+  # Every player gets the Journal item once, on their first join after this module starts.
+  book-on-first-join: true
+  # How many entries one Journal page shows before turning over.
+  entries-per-page: 16
+
+# Each collection:
+#   title, colour (#RRGGBB), blurb (one line under the title), unit (one entry, singular|plural)
+#   milestones: "10" (a count) or "25%" (a share of the collection, rounded up) -> rewards ("curio:bone_dice",
+#     "supply:seed_bundle", "gear:old_strike", "enchant:<key>_<level>", "supply:animal_crate*2" for two).
+#     Each reward is earned once per player, so a reward string may appear only once across all collections.
+#   hints: what an entry you have not found yet says (keys: mob type, biome/<key>, structure/<group>, item).
+collections:
+  bestiary:
+    title: "Bestiary"
+    colour: "#C25B4A"
+    blurb: "Every creature you have felled, and every boss you have beaten."
+    unit: "creature"
+    milestones:
+      "10": [supply:tome_of_experience]
+      "25%": [curio:bone_dice]
+      "50%": [curio:hunters_tooth]
+      "100%": ["enchant:excellentenchants:decapitator_1"]
+    # Never asked for: unkillable, unobtainable, or a friend nobody should have to hurt.
+    exclude: [giant, illusioner, mannequin, villager, wandering_trader, allay, player, armor_stand]
+    hints:
+      armadillo: "Rolls into a ball in the savanna and the badlands."
+      axolotl: "Smiles up at you from the water of lush caves."
+      bat: "Squeaks in the dark of any cave."
+      bee: "Busy around flowers and hives in the meadows."
+      blaze: "Burns and floats in Nether fortresses."
+      bogged: "A mossy archer that rises in swamps and trial chambers."
+      breeze: "Whirls through the corridors of trial chambers."
+      camel: "Plods through desert villages, two humps and all."
+      camel_husk: "Something long dead rides the dunes at night."
+      cat: "Naps in villages and sits by witches' huts."
+      cave_spider: "Guards the cobwebbed spawners of old mineshafts."
+      chicken: "Scratches about on almost any grassy plain."
+      cod: "Shoals in cold and temperate oceans."
+      copper_golem: "Built from copper and a carved pumpkin. Tidies chests."
+      cow: "Grazes grasslands warm, cold and in between."
+      creaking: "Stands still in the pale garden while you watch it."
+      creeper: "Hisses behind you. Any dark place, anywhere."
+      dolphin: "Leaps beside boats in warm and temperate seas."
+      donkey: "Wanders the plains and savanna in small herds."
+      drowned: "Walks the riverbeds and ocean floors, sometimes with a trident."
+      elder_guardian: "Rules the heart of an ocean monument. There are three."
+      ender_dragon: "Circles the obsidian towers at the End."
+      enderman: "Tall and silent; don't meet its eyes. Thick in the warped forest."
+      endermite: "Sometimes crawls out where an ender pearl lands."
+      evoker: "Casts fangs from the floor in woodland mansions and raids."
+      fox: "Sleeps by day in the taiga and pounces on chickens by night."
+      frog: "Croaks in swamps; its colour follows the climate."
+      ghast: "Wails and spits fire over the Nether's open wastes."
+      glow_squid: "Lights the deep water of caves."
+      goat: "Rams the unwary off snowy slopes and peaks."
+      guardian: "Lasers from the walls of ocean monuments."
+      happy_ghast: "Grown from a dried ghast. Gentle. Please be gentle."
+      hoglin: "Charges through the crimson forest."
+      horse: "Gallops across plains and savanna."
+      husk: "A zombie the desert sun can't burn."
+      iron_golem: "Guards villages. It will not thank you."
+      llama: "Spits from the windswept hills and savanna."
+      magma_cube: "Bounces through basalt deltas and fortresses."
+      mooshroom: "Grazes only on the mushroom fields."
+      mule: "Born of a horse and a donkey."
+      nautilus: "Drifts in its spiral shell through warm seas."
+      ocelot: "Hides in the jungle undergrowth."
+      panda: "Rolls about in bamboo jungles."
+      parched: "A skeleton dried to dust by the desert."
+      parrot: "Sings in the jungle canopy."
+      phantom: "Swoops on anyone who hasn't slept for three nights."
+      pig: "Snuffles about on grassy plains."
+      piglin: "Trades gold in the crimson forest and bastions."
+      piglin_brute: "Stands guard in bastion remnants. Gold won't help."
+      pillager: "Patrols out of outposts with a crossbow."
+      polar_bear: "Lumbers across ice and snow with its cubs."
+      pufferfish: "Puffs up in warm oceans. Don't eat it."
+      rabbit: "Hops in deserts, flower fields and snowy plains."
+      ravager: "Tramples in at the front of a raid."
+      salmon: "Swims up cold rivers and oceans."
+      sheep: "Every colour of wool, grazing on the plains."
+      shulker: "Hides in its shell on the walls of End cities."
+      silverfish: "Bursts out of infested stone in strongholds and mountains."
+      skeleton: "Rattles in the dark with a bow."
+      skeleton_horse: "Appears with a thunderstorm, and its riders."
+      slime: "Bounces in swamps by moonlight and in certain deep chunks."
+      sniffer: "Hatched from an egg found in warm ocean ruins."
+      snow_golem: "Built from snow and a pumpkin. Throws snowballs."
+      squid: "Inks the water of rivers and oceans."
+      stray: "A frozen skeleton of the snowy plains."
+      strider: "Walks the lava seas of the Nether, cold and shivering on land."
+      sulfur_cube: "Bubbles in the sulfur caves."
+      tadpole: "Hatches from frogspawn."
+      trader_llama: "Follows wandering traders on their rounds."
+      tropical_fish: "Every colour of the reef, in warm water."
+      turtle: "Comes back to the beach it hatched on."
+      vex: "Summoned by evokers. Small, fast and furious."
+      vindicator: "Swings an axe in woodland mansions and raids."
+      warden: "Rises from the deep dark when the sculk shrieks. Go quietly."
+      witch: "Brews in swamp huts and throws what she brews."
+      wither: "Built, not born: soul sand and three skulls."
+      wither_skeleton: "Stalks the halls of Nether fortresses."
+      wolf: "Hunts in packs through forests, taiga and savanna."
+      zoglin: "A hoglin that strayed into the Overworld and rotted."
+      zombie: "Shambles out of the dark in every land."
+      zombie_horse: "A horse that should have stayed dead."
+      zombie_nautilus: "A nautilus that died and kept swimming."
+      zombie_villager: "A villager that met a zombie. It can be cured."
+      zombified_piglin: "Wanders the Nether in groups. Leave them be."
+      boss: "A boss Wayfarer knows of. Its banner shows where it roams."
+
+  atlas:
+    title: "Atlas"
+    colour: "#5B9BD5"
+    blurb: "Every land you have stood in and every structure you have stepped inside."
+    unit: "place"
+    milestones:
+      "10": [curio:owl_feather]
+      "25%": [curio:stormglass]
+      "50%": [curio:hearthstone]
+      "100%": [gear:featherstep_boots]
+    # Structures that live outside the Overworld (anything not listed is on the Overworld tab).
+    structure-dimensions:
+      nether: [fortress, bastion_remnant, nether_fossil, ruined_portal_nether]
+      end: [end_city]
+    # Structures that come in variants count as one (structure/<group> in hints). A group takes keys ending * as prefixes.
+    groups:
+      abandoned_camp: [abandoned_camp_*]
+      village: [village_*]
+      ruined_portal: [ruined_portal, ruined_portal_desert, ruined_portal_jungle, ruined_portal_mountain, ruined_portal_ocean, ruined_portal_swamp]
+      shipwreck: [shipwreck, shipwreck_beached]
+      mineshaft: [mineshaft, mineshaft_mesa]
+      ocean_ruin: [ocean_ruin_cold, ocean_ruin_warm]
+    hints:
+      biome/plains: "Wide open grass and the odd village."
+      biome/sunflower_plains: "Plains where every flower turns to the sun."
+      biome/forest: "Oak and birch, as far as you can see."
+      biome/flower_forest: "A forest carpeted in every flower."
+      biome/birch_forest: "Pale trunks, all in rows."
+      biome/old_growth_birch_forest: "Birches grown impossibly tall."
+      biome/dark_forest: "A roof of dark oak; mansions hide here."
+      biome/dappled_forest: "Sunlight falls through the leaves in coins."
+      biome/pale_garden: "Grey trees, and something that creaks."
+      biome/taiga: "Spruce and ferns and the smell of pine."
+      biome/snowy_taiga: "Spruce under snow; foxes are white here."
+      biome/old_growth_pine_taiga: "Giant pines over mossy boulders."
+      biome/old_growth_spruce_taiga: "Spruces older than anyone remembers."
+      biome/swamp: "Murky water, lily pads and witches."
+      biome/mangrove_swamp: "Roots in the mud and frogs in the roots."
+      biome/jungle: "Thick, hot and loud with parrots."
+      biome/sparse_jungle: "A jungle that thinned out to look around."
+      biome/bamboo_jungle: "Bamboo to the sky, and pandas rolling in it."
+      biome/savanna: "Flat-topped acacias and dry grass."
+      biome/savanna_plateau: "A savanna lifted up on a table of stone."
+      biome/windswept_savanna: "Savanna broken into wild, jagged hills."
+      biome/desert: "Sand, sun, and not much else."
+      biome/badlands: "Banded terracotta in red and orange."
+      biome/wooded_badlands: "Badlands with a scrub of oak on top."
+      biome/eroded_badlands: "Badlands worn into spires."
+      biome/meadow: "High grass and flowers below the peaks."
+      biome/cherry_grove: "Pink petals falling on the mountainside."
+      biome/grove: "Snowy spruce on the shoulders of mountains."
+      biome/snowy_slopes: "Powder snow and goats."
+      biome/frozen_peaks: "Packed ice at the top of the world."
+      biome/jagged_peaks: "Sharp stone teeth capped in snow."
+      biome/stony_peaks: "Bare stone mountains with seams of calcite."
+      biome/windswept_hills: "Grey hills scoured by the wind."
+      biome/windswept_gravelly_hills: "Hills of loose gravel."
+      biome/windswept_forest: "Spruce clinging to windswept hills."
+      biome/snowy_plains: "Endless snow, and strays at night."
+      biome/ice_spikes: "Spires of packed ice rising from the snow."
+      biome/mushroom_fields: "Mycelium and mooshrooms; nothing hostile spawns."
+      biome/beach: "Sand between land and sea."
+      biome/snowy_beach: "A beach under snow."
+      biome/stony_shore: "Where the mountains walk into the sea."
+      biome/river: "Fresh water winding through the land."
+      biome/frozen_river: "A river iced over."
+      biome/ocean: "Open water, all the way down."
+      biome/deep_ocean: "Deeper water; monuments sleep here."
+      biome/warm_ocean: "Coral reefs in bright water."
+      biome/lukewarm_ocean: "Mild seas with kelp and fish."
+      biome/deep_lukewarm_ocean: "Deep, mild water."
+      biome/cold_ocean: "Grey water and salmon."
+      biome/deep_cold_ocean: "Cold water that goes down a long way."
+      biome/frozen_ocean: "Icebergs and polar bears."
+      biome/deep_frozen_ocean: "Deep under the pack ice."
+      biome/dripstone_caves: "Stone teeth hanging from the roof."
+      biome/lush_caves: "Glow berries and axolotls underground."
+      biome/deep_dark: "Sculk, silence, and something listening."
+      biome/sulfur_caves: "Yellow stone and a smell you won't forget."
+      biome/nether_wastes: "Netherrack and lava under a red sky."
+      biome/crimson_forest: "Red fungus trees; hoglins and piglins."
+      biome/warped_forest: "Blue fungus and endermen. Strangely calm."
+      biome/soul_sand_valley: "Blue fire and ghasts over soul sand."
+      biome/basalt_deltas: "Black pillars and magma cubes."
+      biome/the_end: "The central island and its dragon."
+      biome/end_highlands: "The tall outer islands, where cities stand."
+      biome/end_midlands: "The slopes of the outer islands."
+      biome/end_barrens: "The bare edges of the outer islands."
+      biome/small_end_islands: "Lumps of end stone floating in the void."
+      structure/village: "Bells, farms and haggling, on the plains and beyond."
+      structure/abandoned_camp: "A cold campfire and someone's left-behind things."
+      structure/pillager_outpost: "A watchtower flying a banner. Expect crossbows."
+      structure/mansion: "A dark forest hides a house the size of a hill."
+      structure/desert_pyramid: "A sandstone pyramid with a pressure plate below."
+      structure/jungle_pyramid: "Mossy stone in the jungle, and tripwires."
+      structure/swamp_hut: "A hut on stilts; someone brews inside."
+      structure/igloo: "A snow dome, sometimes with a basement."
+      structure/ruined_portal: "A broken portal of crying obsidian."
+      structure/ruined_portal_nether: "A broken portal, on the wrong side."
+      structure/shipwreck: "A wrecked ship, its map chest still aboard."
+      structure/ocean_ruin: "Drowned stone under the waves."
+      structure/buried_treasure: "X marks the spot. You need the map."
+      structure/monument: "Prismarine halls under the ocean, guarded."
+      structure/mineshaft: "Old rails and cobwebs, deep underground."
+      structure/stronghold: "Eyes of ender lead here, and down."
+      structure/ancient_city: "A city in the deep dark. Walk softly."
+      structure/trail_ruins: "Buried roofs and suspicious gravel."
+      structure/trial_chambers: "Copper halls full of spawners and keys."
+      structure/fortress: "Dark brick bridges over the Nether's lava."
+      structure/bastion_remnant: "Blackstone halls, gold and piglin guards."
+      structure/nether_fossil: "Bones in the soul sand valley."
+      structure/end_city: "Purpur towers on the outer islands, with ships."
+
+  cabinet:
+    title: "Cabinet"
+    colour: "#B88A5A"
+    blurb: "Vanilla's own collectibles: records, sherds, smithing templates and banner patterns."
+    unit: "piece"
+    milestones:
+      "10": [supply:floral_bundle]
+      "25%": [curio:glow_jar]
+      "50%": [curio:lodestone_pendant]
+      "100%": ["enchant:excellentenchants:silk_chest_1"]
+    hints:
+      music_disc: "A record. Creepers, dungeons, vaults and old cities keep them."
+      pottery_sherd: "A shard of old pottery, brushed from suspicious sand or gravel."
+      trim_template: "A smithing template, kept in a structure's chests."
+      banner_pattern: "A banner pattern, crafted or found."
+      music_disc_13: "Found in dungeon chests, or when a skeleton shoots a creeper."
+      music_disc_cat: "Found in dungeon chests, or when a skeleton shoots a creeper."
+      music_disc_pigstep: "Only bastion remnants keep this one."
+      music_disc_otherside: "Strongholds and dungeons, very rarely."
+      music_disc_5: "Pieced together from fragments in ancient cities."
+      music_disc_relic: "Brushed from suspicious gravel in trail ruins."
+      music_disc_creator: "Locked in an ominous vault in the trial chambers."
+      music_disc_creator_music_box: "Brushed from a decorated pot in the trial chambers."
+      music_disc_precipice: "Locked in a vault in the trial chambers."
+      music_disc_tears: "Dropped by a ghast killed by its own fireball."
+      music_disc_lava_chicken: "A chicken jockey's baby zombie drops it."
+      silence_armor_trim_smithing_template: "The rarest template; ancient cities."
+      ward_armor_trim_smithing_template: "In the chests of ancient cities."
+      eye_armor_trim_smithing_template: "In stronghold libraries and altars."
+      spire_armor_trim_smithing_template: "Aboard End ships."
+      snout_armor_trim_smithing_template: "In bastion remnant chests."
+      rib_armor_trim_smithing_template: "In Nether fortress chests."
+      vex_armor_trim_smithing_template: "In woodland mansion chests."
+      tide_armor_trim_smithing_template: "Dropped by elder guardians."
+      flow_armor_trim_smithing_template: "In an ominous vault in the trial chambers."
+      bolt_armor_trim_smithing_template: "In a vault in the trial chambers."
+      netherite_upgrade_smithing_template: "In bastion remnant chests."
+      piglin_banner_pattern: "In bastion remnant chests."
+      flow_banner_pattern: "In an ominous vault in the trial chambers."
+      guster_banner_pattern: "In a vault in the trial chambers."
+
+  curios:
+    title: "Curios"
+    colour: "#C9A54A"
+    blurb: "Every curio you have held: charms, gadgets and oddities."
+    unit: "curio"
+    milestones:
+      "5": [supply:animal_crate*2]
+      "25%": [curio:prospectors_pan]
+      "50%": [curio:strider_sole]
+      "100%": ["enchant:excellentenchants:soulbound_1"]
+    hints:
+      curio: "A curio. Feats, objectives and collections pay them."

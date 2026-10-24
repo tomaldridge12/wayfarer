@@ -6,8 +6,9 @@ import java.util.Set;
 /**
  * Rewards in order along a set of counters, summed when read: a mob family's banner, trophy head and relics
  * along every {@code kill:<type>} in the family. A selector entry ending in {@code *} is a prefix ({@code catch:*}
- * reads every catch). {@code unit} names one step ("kill") for progress text. A {@code distinct} ladder counts how
- * many selected activities are above zero instead (species caught, biomes discovered), for collections.
+ * reads every catch); an entry of alternatives joined by {@code |} is a group (every village variant as one structure).
+ * {@code unit} names one step ("kill") for progress text. A {@code distinct} ladder counts how many selected activities
+ * are above zero instead (species caught, biomes discovered), a group counting once, for collections.
  */
 public record Ladder(String id, String title, String unit, Set<String> selector, List<Rung> rungs, boolean announce,
         boolean distinct) {
@@ -50,6 +51,12 @@ public record Ladder(String id, String title, String unit, Set<String> selector,
         for (String entry : selector) {
             if (isPrefix(entry)) {
                 prefixes.add(entry.substring(0, entry.length() - 1));
+            } else if (isGroup(entry)) {
+                long group = 0;
+                for (String alternative : alternatives(entry)) {
+                    group += data.count(alternative);
+                }
+                sum += value(group);
             } else {
                 sum += value(data.count(entry));
             }
@@ -69,7 +76,7 @@ public record Ladder(String id, String title, String unit, Set<String> selector,
         return distinct ? (count > 0 ? 1 : 0) : count;
     }
 
-    /** Whether this ladder reads the activity, exactly or by a prefix entry. */
+    /** Whether this ladder reads the activity, exactly, by a prefix entry or in a group. */
     public boolean reads(String activity) {
         if (selector.contains(activity)) {
             return true;
@@ -78,11 +85,23 @@ public record Ladder(String id, String title, String unit, Set<String> selector,
             if (isPrefix(entry) && activity.startsWith(entry.substring(0, entry.length() - 1))) {
                 return true;
             }
+            if (isGroup(entry) && alternatives(entry).contains(activity)) {
+                return true;
+            }
         }
         return false;
     }
 
     static boolean isPrefix(String entry) {
         return entry.endsWith("*");
+    }
+
+    static boolean isGroup(String entry) {
+        return entry.indexOf('|') > 0;
+    }
+
+    /** The activities a group entry stands for, or the entry itself. */
+    public static List<String> alternatives(String entry) {
+        return List.of(entry.split("\\|"));
     }
 }
