@@ -55,11 +55,15 @@ final class Journal implements JournalPages {
     private final ItemMakers<ItemStack> makers;
     private final Supplier<State> state;
     private final Map<String, OwnedPage> pages = new LinkedHashMap<>();
+    private final java.util.function.BiFunction<Player, CollectionEntry, String> detail;
 
-    Journal(Progression progression, ItemMakers<ItemStack> makers, Supplier<State> state) {
+    /** @param detail a found entry's line in place of its count ("Heaviest 2.41 kg"), or null for the usual one */
+    Journal(Progression progression, ItemMakers<ItemStack> makers, Supplier<State> state,
+            java.util.function.BiFunction<Player, CollectionEntry, String> detail) {
         this.progression = progression;
         this.makers = makers;
         this.state = state;
+        this.detail = detail;
     }
 
     @Override
@@ -199,12 +203,15 @@ final class Journal implements JournalPages {
     private DialogBody found(Player player, CollectionEntry e, long n, int colour) {
         ItemStack icon = icon(e.icon(), player);
         Component name = name(e.name()).color(TextColor.color(PAPER)).decoration(TextDecoration.ITALIC, false);
-        String detail = switch (e.verb()) {
-            case "found" -> "Found";
-            case "visited" -> "Visited";
-            default -> n + " " + e.verb();
-        };
-        return Menus.item(icon, name.append(Component.newline()).append(text(detail, TextStyle.mix(colour, 0xFFFFFF, 0.4))));
+        String line = detail.apply(player, e);
+        if (line == null) {
+            line = switch (e.verb()) {
+                case "found" -> "Found";
+                case "visited" -> "Visited";
+                default -> n + " " + e.verb();
+            };
+        }
+        return Menus.item(icon, name.append(Component.newline()).append(text(line, TextStyle.mix(colour, 0xFFFFFF, 0.4))));
     }
 
     private DialogBody unfound(CollectionEntry e) {

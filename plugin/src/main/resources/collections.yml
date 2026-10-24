@@ -282,3 +282,272 @@ collections:
       "100%": ["enchant:excellentenchants:soulbound_1"]
     hints:
       curio: "A curio. Feats, objectives and collections pay them."
+
+  # The Almanac: Wayfarer's fish. When you catch a vanilla fish, with this chance it is instead one of the species that
+  # could bite there and then, picked by rarity (bait doubles rare and legendary). Junk and treasure catches never change.
+  # Each species: name, rarity, water (fresh, salt, brackish, any), temp (cold, cool, temperate, warm, hot; none for any),
+  # time (day, night), weather (rain, thunder), place (jungle, swamp, desert, mangrove, deep_ocean, deep_dark, pale_garden,
+  # lush_caves), weight in grams (min-max), flavour; hint overrides the where-and-when line shown before it is caught.
+  # Rivers and beaches take the climate of the land around them, so a river through a jungle is warm.
+  almanac:
+    title: "Almanac"
+    colour: "#4FA3C7"
+    blurb: "Every fish in Wayfarer's waters, where they bite, and your heaviest of each."
+    unit: "species|species"
+    milestones:
+      "10": [supply:wayfarers_bait*2]
+      "25%": [curio:mermaids_comb]
+      "50%": [gear:tidecaller]
+      "100%": ["enchant:excellentenchants:river_master_1"]
+    chance: 0.5
+    rarity-weights: {common: 60, uncommon: 25, rare: 10, legendary: 2}
+    species:
+      # Cold fresh
+      alaska_blackfish: {name: "Alaska Blackfish", rarity: common, water: fresh, temp: [cold], weight: 60-400,
+        flavour: "Freezes solid every winter and swims off in spring as if nothing happened."}
+      humpback_whitefish: {name: "Humpback Whitefish", rarity: common, water: fresh, temp: [cold, cool], weight: 400-2600,
+        flavour: "Stooped like an old man carrying the river on its back."}
+      northern_pike: {name: "Northern Pike", rarity: uncommon, water: fresh, temp: [cold, cool], weight: 900-9000,
+        flavour: "All teeth and bad temper. Mind your fingers."}
+      walleye: {name: "Walleye", rarity: common, water: fresh, temp: [cold, cool], weight: 500-4500,
+        flavour: "Its eyes catch your lantern light like two coins at the bottom of a well."}
+      muskellunge: {name: "Muskellunge", rarity: rare, water: fresh, temp: [cold, cool], weight: 4000-24000,
+        flavour: "The fish of ten thousand casts. This was cast ten thousand and one."}
+      siberian_sturgeon: {name: "Siberian Sturgeon", rarity: rare, water: fresh, temp: [cold], weight: 6000-65000,
+        flavour: "Older than the ice it swims under, and twice as patient."}
+      lamprey: {name: "Lamprey", rarity: uncommon, water: fresh, temp: [cold, cool], time: night, weight: 150-1800,
+        flavour: "Not technically a fish. Not technically pleasant either."}
+      # Temperate fresh
+      bass: {name: "Bass", rarity: common, water: fresh, temp: [temperate, cool], weight: 300-4800,
+        flavour: "Every lake has one big enough to have a name."}
+      bluegill: {name: "Bluegill", rarity: common, water: fresh, temp: [temperate], weight: 50-600,
+        flavour: "The first fish anyone ever caught, more or less."}
+      carp: {name: "Carp", rarity: common, water: fresh, temp: [temperate, warm], weight: 800-14000,
+        flavour: "Lives a hundred years in a pond and remembers every one of them."}
+      catfish: {name: "Catfish", rarity: common, water: fresh, temp: [temperate, warm], weight: 1000-22000,
+        flavour: "Whiskers like a cat, manners like a dog, appetite like a pig."}
+      crappie: {name: "Crappie", rarity: common, water: fresh, temp: [temperate], weight: 150-1600,
+        flavour: "Delicious, despite the name. Possibly because of the name."}
+      striped_perch: {name: "Striped Perch", rarity: common, water: fresh, temp: [temperate, cool], weight: 100-1500,
+        flavour: "Wears its stripes like a uniform and schools like a regiment."}
+      shad: {name: "Shad", rarity: uncommon, water: fresh, temp: [temperate], weight: 600-3500,
+        flavour: "Swims up the river every spring to see if anything has changed."}
+      gar: {name: "Gar", rarity: uncommon, water: fresh, place: swamp, weight: 2000-35000,
+        flavour: "A swamp crocodile that forgot to grow legs."}
+      sturgeon: {name: "Sturgeon", rarity: rare, water: fresh, temp: [temperate, cool], weight: 8000-90000,
+        flavour: "Armoured in bony plates since before the first tree grew."}
+      # Warm fresh
+      arapaima: {name: "Arapaima", rarity: legendary, water: fresh, place: jungle, weight: 40000-180000,
+        flavour: "It breathes air, it weighs as much as a horse, and it is looking at you."}
+      armoured_catfish: {name: "Armoured Catfish", rarity: common, water: fresh, temp: [warm, hot], weight: 80-900,
+        flavour: "Clad head to tail in plates, like a knight that lives in the mud."}
+      piranha: {name: "Piranha", rarity: uncommon, water: fresh, place: jungle, weight: 200-3000,
+        flavour: "Mostly eats fruit, it turns out. Mostly."}
+      guppy: {name: "Guppy", rarity: common, water: fresh, temp: [warm], weight: 1-8,
+        flavour: "Weighs less than the worm it bit. Counts all the same."}
+      freshwater_pufferfish: {name: "Freshwater Pufferfish", rarity: uncommon, water: fresh, temp: [warm, hot], weight: 100-900,
+        flavour: "Puffs up at the slightest insult. You have insulted it."}
+      tunisian_barb: {name: "Tunisian Barb", rarity: uncommon, water: fresh, place: desert, weight: 30-400,
+        flavour: "Lives in desert springs that dry up every summer, and somehow never with it."}
+      bujurqui: {name: "Bujurqui", rarity: uncommon, water: fresh, place: jungle, weight: 60-500,
+        flavour: "Carries its eggs in its mouth and refuses to discuss it."}
+      # Brackish
+      mediterranean_killifish: {name: "Mediterranean Killifish", rarity: common, water: brackish, temp: [temperate, warm, hot],
+        weight: 2-40, flavour: "Lives where fresh water gives up and salt water hasn't decided yet."}
+      european_eel: {name: "European Eel", rarity: uncommon, water: brackish, time: night, weight: 300-4000,
+        flavour: "Swims a whole ocean to be born and a whole ocean back to die. Nobody knows why."}
+      # Cold salt
+      herring: {name: "Herring", rarity: common, water: salt, temp: [cold, cool], weight: 100-700,
+        flavour: "Never alone. Where there's one, there are ten thousand more."}
+      wolffish: {name: "Wolffish", rarity: uncommon, water: salt, temp: [cold], weight: 2000-20000,
+        flavour: "Its teeth crack crabs. Its face could crack a mirror."}
+      skate: {name: "Skate", rarity: uncommon, water: salt, temp: [cold, cool], weight: 1500-35000,
+        flavour: "A flat fish that glides along the seabed like a dropped cloak."}
+      spoonhead_sculpin: {name: "Spoonhead Sculpin", rarity: common, water: salt, temp: [cold], weight: 10-120,
+        flavour: "Named, cruelly but fairly, for the shape of its head."}
+      gurnard: {name: "Gurnard", rarity: common, water: salt, temp: [cold, cool], weight: 300-2500,
+        flavour: "Walks the seabed on its fins and grunts when you lift it out."}
+      # Temperate salt
+      black_seabass: {name: "Black Seabass", rarity: common, water: salt, temp: [temperate, cool], weight: 400-4000,
+        flavour: "Changes from female to male halfway through life and never looks back."}
+      flounder: {name: "Flounder", rarity: common, water: salt, temp: [temperate, cool], weight: 300-5000,
+        flavour: "Both eyes on one side. It has made its peace with this."}
+      anchovy: {name: "Anchovy", rarity: common, water: salt, temp: [temperate, warm], weight: 10-60,
+        flavour: "Small, salty and fiercely divisive on a pizza."}
+      monkfish: {name: "Monkfish", rarity: uncommon, water: salt, temp: [temperate, cool], time: night, weight: 2000-40000,
+        flavour: "Dangles a light in the dark to lure its dinner. Takes a lantern to know one."}
+      opah: {name: "Opah", rarity: rare, water: salt, temp: [temperate, warm], weight: 15000-80000,
+        flavour: "The only warm-blooded fish in the sea, and round as a shield."}
+      # Warm salt
+      mahi_mahi: {name: "Mahi-Mahi", rarity: common, water: salt, temp: [warm, hot], weight: 3000-25000,
+        flavour: "Gold and green in the water, grey the moment it lands. Look quickly."}
+      flying_fish: {name: "Flying Fish", rarity: uncommon, water: salt, temp: [warm, hot], time: day, weight: 100-800,
+        flavour: "Leaps out of the sea and glides further than you'd believe. Then lands on your line."}
+      rainbow_wrasse: {name: "Rainbow Wrasse", rarity: common, water: salt, temp: [warm, hot], weight: 20-200,
+        flavour: "Every colour of the reef, all at once, all the time."}
+      painted_moray: {name: "Painted Moray", rarity: uncommon, water: salt, temp: [warm, hot], weight: 500-6000,
+        flavour: "Lives in a crack in the coral and dislikes visitors."}
+      swordfish: {name: "Swordfish", rarity: rare, water: salt, temp: [warm, hot], weight: 30000-200000,
+        flavour: "Duels its prey nose first. Lost, once. To you."}
+      oarfish: {name: "Oarfish", rarity: legendary, water: salt, place: deep_ocean, time: night, weather: thunder,
+        weight: 50000-270000, flavour: "Sailors called it a sea serpent. It only surfaces when the sky splits open."}
+      # Special places
+      echo_fish: {name: "Echo Fish", rarity: legendary, water: any, place: deep_dark, weight: 300-3000,
+        flavour: "It has no eyes. It heard you coming from three caves away."}
+      pale_fish: {name: "Pale Fish", rarity: rare, water: any, place: pale_garden, weight: 200-2000,
+        flavour: "Colourless as the garden it swims in. Don't turn your back on the water."}
+      pride_fish: {name: "Pride Fish", rarity: rare, water: any, weather: rain, weight: 100-1500,
+        flavour: "Only bites in the rain, and only so it can show you the rainbow first."}
+
+  # Treasures: collectibles from archaeology and structure chests. Brushing a suspicious block that has not been
+  # rolled yet, at one of the sites, has brush-chance of holding a treasure instead of its vanilla find (a carried
+  # Archaeologist's Brush doubles it); a pity ceiling guarantees one by the ceil(1 / brush-chance)-th eligible brush.
+  # Treasures you have not found yet are three times as likely. Each treasure: name, colour, kind (gem, statue, charm,
+  # chart, fossil, coin), flavour, brush (sites), chests (loot table -> chance per chest), chart (the structure a chart
+  # points to, for 10 minutes, when used up), weight (default 1).
+  treasures:
+    title: "Treasures"
+    colour: "#D9A55B"
+    blurb: "Gems, fossils, coins and stranger things, brushed from the earth or found in old chests."
+    unit: "treasure"
+    milestones:
+      "5": [supply:mushy_bundle]
+      "25%": [curio:north_mitten]
+      "50%": [gear:glassblowers_spade]
+      "100%": ["enchant:excellentenchants:silk_spawner_1"]
+    brush-chance: 0.12
+    chart-seconds: 600
+    # Which suspicious blocks count as which site, by the archaeology loot table they were placed with.
+    sites:
+      trail_ruins: [archaeology/trail_ruins_common, archaeology/trail_ruins_rare]
+      desert_well: [archaeology/desert_well]
+      desert_pyramid: [archaeology/desert_pyramid]
+      ocean_ruin_warm: [archaeology/ocean_ruin_warm]
+      ocean_ruin_cold: [archaeology/ocean_ruin_cold]
+    list:
+      amber:
+        name: "Amber"
+        colour: "#E8A33C"
+        kind: gem
+        flavour: "A drop of sunlight that set hard. Something small is still asleep inside."
+        brush: [desert_pyramid, desert_well]
+        chests: {chests/desert_pyramid: 0.06}
+      opal:
+        name: "Opal"
+        colour: "#9FD8E0"
+        kind: gem
+        flavour: "Turn it in your hand and it shows you a different sea each time."
+        brush: [ocean_ruin_warm]
+        chests: {chests/buried_treasure: 0.25}
+      ruby:
+        name: "Ruby"
+        colour: "#D94A5B"
+        kind: gem
+        flavour: "Red as a warning, and worth ignoring the warning for."
+        brush: [trail_ruins]
+        chests: {chests/ancient_city: 0.05}
+      topaz:
+        name: "Topaz"
+        colour: "#F2C14B"
+        kind: gem
+        flavour: "Old miners swore it glowed when danger was near. It is glowing a little now."
+        brush: [desert_well]
+        chests: {chests/ruined_portal: 0.06}
+      cheerful_clay_statue:
+        name: "Cheerful Clay Statue"
+        colour: "#D9926A"
+        kind: statue
+        flavour: "Someone made this to make someone else smile. It still works."
+        brush: [trail_ruins]
+      mournful_clay_statue:
+        name: "Mournful Clay Statue"
+        colour: "#A9826A"
+        kind: statue
+        flavour: "Its maker had lost something. You can tell from the way it holds its hands."
+        brush: [trail_ruins]
+        chests: {chests/ancient_city: 0.04}
+      nazar:
+        name: "Nazar"
+        colour: "#3D7FD9"
+        kind: charm
+        flavour: "A blue glass eye that looks back at whoever wishes you harm."
+        brush: [desert_pyramid]
+        chests: {chests/village/village_desert_house: 0.08}
+      ofuda:
+        name: "Ofuda"
+        colour: "#E9DFC4"
+        kind: charm
+        flavour: "A paper charm, written in a hand nobody reads any more."
+        brush: [trail_ruins]
+        chests: {chests/simple_dungeon: 0.06}
+      shipwreck_chart:
+        name: "Shipwreck Chart"
+        colour: "#C9B07A"
+        kind: chart
+        flavour: "Someone drew this before they sank. Use it once to find the nearest wreck."
+        brush: [ocean_ruin_cold]
+        chests: {chests/shipwreck_map: 0.25}
+        chart: minecraft:shipwreck
+      trail_ruins_chart:
+        name: "Trail Ruins Chart"
+        colour: "#B8956A"
+        kind: chart
+        flavour: "A path drawn to a town the hills swallowed. Use it once to find the nearest ruins."
+        brush: [desert_well]
+        chests: {chests/village/village_cartographer: 0.2}
+        chart: minecraft:trail_ruins
+      ammonite:
+        name: "Ammonite"
+        colour: "#C2A27A"
+        kind: fossil
+        flavour: "A shell curled tight around a hundred million years."
+        brush: [ocean_ruin_cold]
+      trilobite:
+        name: "Trilobite"
+        colour: "#8C7A66"
+        kind: fossil
+        flavour: "It had more eyes than you and saw less. Ruled the sea anyway."
+        brush: [desert_well]
+      fern_fossil:
+        name: "Fern Fossil"
+        colour: "#7A8C5B"
+        kind: fossil
+        flavour: "A leaf pressed in stone like a flower in a book nobody finished."
+        brush: [trail_ruins]
+      fossil_tooth:
+        name: "Fossil Tooth"
+        colour: "#D9CCB0"
+        kind: fossil
+        flavour: "From something that would have eaten a ravager for breakfast."
+        brush: [desert_pyramid]
+      bone_fragment:
+        name: "Bone Fragment"
+        colour: "#E6DCC8"
+        kind: fossil
+        flavour: "Part of something enormous. The rest is still down there."
+        brush: [ocean_ruin_warm]
+      copper_coin:
+        name: "Copper Coin"
+        colour: "#C9744A"
+        kind: coin
+        flavour: "Gone green with age. Still buys exactly nothing."
+        brush: [trail_ruins]
+        chests: {chests/trial_chambers/corridor: 0.08}
+      gold_coin:
+        name: "Gold Coin"
+        colour: "#F2C744"
+        kind: coin
+        flavour: "Stamped with a king nobody remembers. The piglins remember."
+        chests: {chests/bastion_treasure: 0.3}
+      piglin_coin:
+        name: "Piglin Coin"
+        colour: "#D9A034"
+        kind: coin
+        flavour: "Bitten so many times to check it's real that it isn't round any more."
+        chests: {chests/bastion_other: 0.08, chests/bastion_bridge: 0.08}
+      end_coin:
+        name: "End Coin"
+        colour: "#C9A0E0"
+        kind: coin
+        flavour: "Currency of a city that floats in nothing. Spend it carefully."
+        chests: {chests/end_city_treasure: 0.15}

@@ -36,10 +36,17 @@ final class CollectionSources {
     private final ItemIds ids;
     private final ItemMakers<ItemStack> makers;
 
-    CollectionSources(Server server, ItemIds ids, ItemMakers<ItemStack> makers) {
+    private final java.util.function.Supplier<List<FishSpecies>> fish;
+
+    private final java.util.function.Supplier<List<TreasureDefinition>> treasures;
+
+    CollectionSources(Server server, ItemIds ids, ItemMakers<ItemStack> makers, java.util.function.Supplier<List<FishSpecies>> fish,
+            java.util.function.Supplier<List<TreasureDefinition>> treasures) {
         this.server = server;
         this.ids = ids;
         this.makers = makers;
+        this.fish = fish;
+        this.treasures = treasures;
     }
 
     /** Entries for a built-in collection by id; empty for one this class does not know (other tickets add theirs). */
@@ -49,6 +56,8 @@ final class CollectionSources {
             case "atlas" -> atlas(def);
             case "cabinet" -> cabinet(def);
             case "curios" -> curios(def);
+            case "almanac" -> almanac(def);
+            case "treasures" -> treasures(def);
             default -> List.of();
         };
     }
@@ -171,6 +180,45 @@ final class CollectionSources {
     private static CollectionEntry entry(CollectionDefinition def, String key, String name, String kind, String tab) {
         return new CollectionEntry(key, Activity.FIND + ":" + key, "#" + name, key,
                 def.hints().getOrDefault(key, def.hints().getOrDefault(kind, "Somewhere out there.")), tab, "found");
+    }
+
+    private List<CollectionEntry> almanac(CollectionDefinition def) {
+        List<CollectionEntry> out = new ArrayList<>();
+        for (String water : List.of("fresh", "brackish", "salt", "any")) {
+            for (FishSpecies s : fish.get()) {
+                if (!s.water().equals(water)) {
+                    continue;
+                }
+                String hint = (s.hint() != null ? s.hint() : FishRules.where(s)) + " · " + s.rarity();
+                out.add(new CollectionEntry(s.id(), Activity.CATCH + ":" + ItemIds.NAMESPACE + ":fish/" + s.id(), "#" + s.name(),
+                        "fish:" + s.id(), hint, switch (water) {
+                            case "fresh" -> "Fresh water";
+                            case "brackish" -> "Brackish";
+                            case "salt" -> "Seas";
+                            default -> "Strange waters";
+                        }, "caught"));
+            }
+        }
+        return out;
+    }
+
+    private List<CollectionEntry> treasures(CollectionDefinition def) {
+        List<CollectionEntry> out = new ArrayList<>();
+        for (String kind : List.of("gem", "statue", "charm", "chart", "fossil", "coin")) {
+            for (TreasureDefinition t : treasures.get()) {
+                if (t.kind().equals(kind)) {
+                    out.add(new CollectionEntry(t.id(), Activity.FIND + ":" + ItemIds.NAMESPACE + ":treasure/" + t.id(), "#" + t.name(),
+                            "treasure:" + t.id(), TreasureRules.where(t), switch (kind) {
+                                case "gem" -> "Gems";
+                                case "statue", "charm" -> "Statues & charms";
+                                case "chart" -> "Charts";
+                                case "fossil" -> "Fossils";
+                                default -> "Coins";
+                            }, "found"));
+                }
+            }
+        }
+        return out;
     }
 
     private List<CollectionEntry> curios(CollectionDefinition def) {

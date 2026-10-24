@@ -1,6 +1,7 @@
 package dev.wayfarer.collections;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.ItemLook;
@@ -45,6 +46,10 @@ public final class CollectionsModule implements Module {
     private final List<Listener> listeners = new ArrayList<>();
     private Core core;
     private volatile Journal.State state = Journal.State.empty();
+    private volatile Almanac.State fish = Almanac.State.empty();
+    private Almanac almanac;
+    private volatile Treasures.State treasureState = Treasures.State.empty();
+    private Treasures treasures;
     private Journal journal;
     private CollectionSources sources;
     private PlayerStore<CollectionPlayerData> store;
@@ -66,10 +71,25 @@ public final class CollectionsModule implements Module {
                 new CollectionPlayerData.Codec(), core.logger(), uuid -> plugin.getServer().getPlayer(uuid) != null);
         plugin.getServer().getOnlinePlayers().forEach(p -> store.load(p.getUniqueId()));
         saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin, store::flush, 1200, 1200);
-        sources = new CollectionSources(plugin.getServer(), core.itemIds(), core.itemMakers());
-        journal = new Journal(core.progression(), core.itemMakers(), () -> state);
+        sources = new CollectionSources(plugin.getServer(), core.itemIds(), core.itemMakers(), () -> fish.species(),
+                () -> treasureState.treasures());
+        treasures = new Treasures(core.itemTags(), () -> treasureState, store, core.progression(),
+                () -> core.services().get(dev.wayfarer.core.CurioBoosts.class),
+                () -> core.services().get(dev.wayfarer.core.Wayfinding.class), core.logger());
+        almanac = new Almanac(plugin.getServer(), core.itemTags(), () -> fish, store,
+                () -> core.services().get(dev.wayfarer.core.Bait.class), core.logger());
+        journal = new Journal(core.progression(), core.itemMakers(), () -> state, this::detail);
+        // Before load, so the collections can list fish (and later treasures) by their ids.
+        core.itemIds().register(id(), Almanac.KIND, () -> fish.species().stream().map(FishSpecies::id).toList());
+        core.itemMakers().register(id(), Almanac.KIND, name -> almanac.make(name, "a Wayfarer"));
+        core.progression().registerRewardType(id(), Almanac.KIND, new FishReward());
+        core.itemIds().register(id(), Treasures.KIND, () -> treasureState.treasures().stream().map(TreasureDefinition::id).toList());
+        core.itemMakers().register(id(), Treasures.KIND, treasures::make);
+        core.progression().registerRewardType(id(), Treasures.KIND, new TreasureReward());
         load();
-        listen(new RecipeGuard(this::isJournal));
+        listen(almanac);
+        listen(treasures);
+        listen(new RecipeGuard(i -> isJournal(i) || i != null && Treasures.KIND.equals(kindOf(i))));
         listen(new Book());
         core.services().register(id(), JournalPages.class, journal);
         core.commands().register(id(), journalCommand());
@@ -97,6 +117,48 @@ public final class CollectionsModule implements Module {
     private int load() throws IOException {
         CollectionConfigParser.Result r = CollectionConfigParser.parse(core.config().load(id()));
         r.problems().forEach(p -> core.logger().warning("[collections] " + p));
+        CollectionDefinition almanacDef = r.collections().get("almanac");
+        if (almanacDef != null) {
+            FishConfigParser.Result f = FishConfigParser.parse(almanacDef.settings());
+            f.problems().forEach(p -> core.logger().warning("[collections] " + p));
+            fish = new Almanac.State(f.settings(), f.species());
+            int built = 0;
+            for (FishSpecies s : f.species()) {
+                try {
+                    almanac.fish(s, 1000, "a Wayfarer", 0, null);
+                    built++;
+                } catch (RuntimeException e) {
+                    core.logger().warning("[collections] Fish " + s.id() + " could not be built: " + e.getMessage());
+                }
+            }
+            core.logger().info("Almanac loaded: " + f.species().size() + " species (" + String.join(", ", FishRules.RARITIES.stream()
+                    .map(rarity -> f.species().stream().filter(s -> s.rarity().equals(rarity)).count() + " " + rarity).toList())
+                    + "), chance " + f.settings().chance() + ", " + f.problems().size() + " problems; fish built: " + built + " of "
+                    + f.species().size());
+        } else {
+            fish = Almanac.State.empty();
+        }
+        CollectionDefinition treasureDef = r.collections().get("treasures");
+        if (treasureDef != null) {
+            TreasureConfigParser.Result t = TreasureConfigParser.parse(treasureDef.settings());
+            t.problems().forEach(p -> core.logger().warning("[collections] " + p));
+            treasureState = new Treasures.State(t.settings(), t.treasures());
+            int built = 0;
+            for (TreasureDefinition d : t.treasures()) {
+                try {
+                    treasures.item(d);
+                    built++;
+                } catch (RuntimeException e) {
+                    core.logger().warning("[collections] Treasure " + d.id() + " could not be built: " + e.getMessage());
+                }
+            }
+            core.logger().info("Treasures loaded: " + t.treasures().size() + " treasures at " + t.settings().sites().size()
+                    + " brushing sites, brush chance " + t.settings().brushChance() + " (pity at "
+                    + TreasureRules.ceiling(t.settings().brushChance()) + "), " + t.problems().size() + " problems; treasures built: "
+                    + built + " of " + t.treasures().size());
+        } else {
+            treasureState = Treasures.State.empty();
+        }
         List<Ladder> others = core.progression().ladders().stream().filter(l -> !l.id().startsWith("collection_")).toList();
         Map<String, List<CollectionEntry>> entries = new LinkedHashMap<>();
         List<Ladder> ladders = new ArrayList<>();
@@ -120,6 +182,41 @@ public final class CollectionsModule implements Module {
         return r.problems().size();
     }
 
+    /** A found entry's own line: an Almanac species shows the heaviest one caught. */
+    private String detail(Player player, CollectionEntry entry) {
+        if (entry.icon().startsWith(Almanac.KIND + ":")) {
+            long best = almanac.best(player.getUniqueId(), entry.key());
+            return best > 0 ? "Heaviest " + FishRules.weight(best) : null;
+        }
+        return null;
+    }
+
+    /** A treasure as a reward. */
+    private final class TreasureReward implements dev.wayfarer.core.progression.RewardType {
+        @Override
+        public ItemStack create(String id, java.util.UUID earner, String earnerName, long earnedAt) {
+            return treasures.make(id).orElse(null);
+        }
+
+        @Override
+        public net.kyori.adventure.text.Component title(String id) {
+            return treasureState.treasure(id).map(t -> ItemLook.name(t.name(), t.colour())).orElse(null);
+        }
+    }
+
+    /** A fish as a reward: a fresh one of the species, with its earner as the catcher. */
+    private final class FishReward implements dev.wayfarer.core.progression.RewardType {
+        @Override
+        public ItemStack create(String id, java.util.UUID earner, String earnerName, long earnedAt) {
+            return almanac.make(id, earnerName).orElse(null);
+        }
+
+        @Override
+        public net.kyori.adventure.text.Component title(String id) {
+            return fish.species(id).map(s -> ItemLook.name(s.name(), Almanac.colour(s.rarity()))).orElse(null);
+        }
+    }
+
     /** "enchant:excellentenchants:decapitator_1" adds excellentenchants:decapitator at level 1. */
     static void enchantOf(String reward, Map<String, Integer> into) {
         String id = reward.substring("enchant:".length());
@@ -139,6 +236,12 @@ public final class CollectionsModule implements Module {
                 "Its pages fill themselves in. Best not to ask how.", List.of("Right-click to open")));
         core.itemTags().write(item, id(), JOURNAL_TAG);
         return item;
+    }
+
+    /** The Wayfarer id's kind of an item (fish, treasure), or null. */
+    private String kindOf(ItemStack item) {
+        String id = core.itemTags().readId(item);
+        return id == null || !id.contains("/") ? null : id.substring(0, id.indexOf('/'));
     }
 
     private boolean isJournal(ItemStack item) {
@@ -188,6 +291,24 @@ public final class CollectionsModule implements Module {
         }
     }
 
+    /** Gives a fish (fish:carp), a treasure (treasure:amber) or the Journal itself. */
+    private void give(CommandSender sender, String playerName, String item) {
+        Player player = plugin.getServer().getPlayerExact(playerName);
+        if (player == null) {
+            sender.sendMessage("No online player named '" + playerName + "'");
+            return;
+        }
+        ItemStack made = item.equals("journal") ? journalItem()
+                : item.startsWith(Almanac.KIND + ":") ? almanac.make(item.substring(5), player.getName()).orElse(null)
+                : core.itemMakers().make(item).orElse(null);
+        if (made == null) {
+            sender.sendMessage("Nothing is made as '" + item + "' (try fish:carp, treasure:amber or journal)");
+            return;
+        }
+        player.getInventory().addItem(made).values().forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+        sender.sendMessage("Gave " + item + " to " + player.getName());
+    }
+
     private LiteralArgumentBuilder<CommandSourceStack> journalCommand() {
         return Commands.literal("journal")
                 .requires(s -> s.getSender().hasPermission(JOURNAL_PERMISSION))
@@ -215,6 +336,21 @@ public final class CollectionsModule implements Module {
                     }
                     return Command.SINGLE_SUCCESS;
                 }))
+                .then(Commands.literal("give").then(Commands.argument("player", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            plugin.getServer().getOnlinePlayers().forEach(p -> b.suggest(p.getName()));
+                            return b.buildFuture();
+                        }).then(Commands.argument("item", StringArgumentType.greedyString())
+                                .suggests((ctx, b) -> {
+                                    fish.species().forEach(s -> b.suggest("fish:" + s.id()));
+                                    core.itemIds().ids("treasure").forEach(t -> b.suggest("treasure:" + t));
+                                    b.suggest("journal");
+                                    return b.buildFuture();
+                                }).executes(ctx -> {
+                                    give(ctx.getSource().getSender(), StringArgumentType.getString(ctx, "player"),
+                                            StringArgumentType.getString(ctx, "item").trim());
+                                    return Command.SINGLE_SUCCESS;
+                                }))))
                 .then(Commands.literal("reload").executes(ctx -> {
                     CommandSender sender = ctx.getSource().getSender();
                     try {
