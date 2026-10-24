@@ -52,6 +52,12 @@ public final class MarksModule implements Module {
         load();
         listen(new RecipeGuard(items::isOurs));
         listen(recipes);
+        listen(new AreaMarks(() -> rules, items));
+        FlockAndRodMarks flockAndRod = new FlockAndRodMarks(() -> rules, items,
+                (player, activity) -> core.progression().record(player, activity, "a marked tool"), core.logger());
+        listen(flockAndRod);
+        core.logger().info("Angler treasure check: " + flockAndRod.treasure()
+                .map(i -> "rolled " + i.getType().getKey().getKey()).orElse("no roll"));
         core.progression().registerRewardType(id(), MarkRules.MARK, new Templates());
         core.progression().registerRewardType(id(), MarkRules.BOOK, new Books());
         core.commands().register(id(), commands());

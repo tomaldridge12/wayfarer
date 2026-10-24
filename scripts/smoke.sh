@@ -80,6 +80,7 @@ check "$LOG1" "Marks loaded: 4 marks (dune, shepherd, angler, reaper), 2 books (
 check "$LOG1" "Mark ladders: 6 (dune 2, shepherd 1, angler 1, reaper 1, veinminer 18, treefeller "
 check "$LOG1" "Dune Mark: shovels, ranks at [500, 2500, 8000]"
 check "$LOG1" "Mark recipes registered: 4 live"
+check "$LOG1" "Angler treasure check: rolled "
 check "$LOG1" "earned mark dune_1"
 check "$LOG1" "excellentenchants:treefeller: Treasure: true, Tradeable: false, On_Mob_Spawn_Equipment: false, On_Traded_Equipment: false, On_Random_Loot: false, Discoverable: false, MaxLevel: 3 (rewards give level 3, the server allows 1)"
 check "$LOG1" "earned book veinminer_1"
