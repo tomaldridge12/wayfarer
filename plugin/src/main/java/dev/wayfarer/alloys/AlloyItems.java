@@ -168,6 +168,27 @@ final class AlloyItems {
         return out;
     }
 
+    /** A built item's real components, for the start-up check: material, model, durability, tool speed, attributes. */
+    static String describe(ItemStack item) {
+        StringBuilder out = new StringBuilder(item.getType().getKey().getKey());
+        out.append(" model ").append(item.getData(DataComponentTypes.ITEM_MODEL).asString());
+        out.append(", ").append(item.getData(DataComponentTypes.MAX_DAMAGE)).append(" durability");
+        var tool = item.getData(DataComponentTypes.TOOL);
+        if (tool != null) {
+            out.append(", speed ").append(tool.rules().stream().map(r -> r.speed()).filter(java.util.Objects::nonNull)
+                    .findFirst().orElse(tool.defaultMiningSpeed()));
+        }
+        var worn = item.getData(DataComponentTypes.EQUIPPABLE);
+        if (worn != null && worn.assetId() != null) {
+            out.append(", worn ").append(worn.assetId().asString());
+        }
+        out.append(", repairable ").append(item.hasData(DataComponentTypes.REPAIRABLE));
+        out.append(", attributes [");
+        out.append(String.join(", ", item.getData(DataComponentTypes.ATTRIBUTE_MODIFIERS).modifiers().stream()
+                .map(e -> e.attribute().getKey().getKey() + " " + e.modifier().getAmount()).toList()));
+        return out.append("]").toString();
+    }
+
     private static Component plain(String text, TextColor colour) {
         return Component.text(text, colour).decoration(TextDecoration.ITALIC, false);
     }

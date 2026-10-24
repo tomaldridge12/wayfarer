@@ -66,6 +66,24 @@ public final class AlloysModule implements Module {
         core.logger().info("Alloys loaded: " + rules.alloys().size() + " alloys ("
                 + String.join(", ", rules.alloys().stream().map(AlloyDefinition::id).toList()) + "), "
                 + r.problems().size() + " problems");
+        int built = 0;
+        int all = 0;
+        for (AlloyDefinition a : rules.alloys()) {
+            for (GearShape shape : GearShape.values()) {
+                all++;
+                try {
+                    if (items.gear(new AlloyRules.Gear(a.id(), shape)).isPresent()) {
+                        built++;
+                    }
+                } catch (RuntimeException e) {
+                    core.logger().warning("[alloys] " + a.id() + " " + shape.id() + " could not be built: " + e);
+                }
+            }
+        }
+        core.logger().info("Alloy gear built: " + built + " of " + all);
+        for (String sample : List.of("steel_pickaxe", "adamant_chestplate")) {
+            items.byName(sample, 1).ifPresent(i -> core.logger().info("Alloy gear check: " + AlloyItems.describe(i)));
+        }
         return r.problems().size();
     }
 
