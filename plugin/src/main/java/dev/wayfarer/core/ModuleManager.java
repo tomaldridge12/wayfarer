@@ -28,6 +28,7 @@ public final class ModuleManager {
                 core.commands().drop(id);
                 core.progression().drop(id);
                 core.itemMakers().drop(id);
+                core.rewardEnchants().drop(id);
                 core.logger().log(Level.SEVERE, "Module " + id + " failed to start, skipped", e);
             }
         }

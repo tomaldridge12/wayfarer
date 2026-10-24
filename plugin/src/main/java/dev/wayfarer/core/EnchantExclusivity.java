@@ -1,10 +1,9 @@
-package dev.wayfarer.banners;
+package dev.wayfarer.core;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 /**
  * Which reward enchants ExcellentEnchants still hands out elsewhere. The six flags are its per-enchant
@@ -42,12 +41,26 @@ public final class EnchantExclusivity {
     private EnchantExclusivity() {
     }
 
-    /** The excellentenchants: keys used by relic presets, sorted. */
-    public static List<String> rewardEnchants(BannerSet set) {
-        TreeSet<String> keys = new TreeSet<>();
-        set.relics().values().forEach(r -> r.enchants().keySet().stream()
-                .filter(k -> k.startsWith("excellentenchants:")).forEach(keys::add));
-        return List.copyOf(keys);
+    /**
+     * Reward enchants given at a higher level than ExcellentEnchants allows ({@code max}: key -> its max level, missing
+     * when unknown), each with the fix.
+     */
+    public static Map<String, String> levelProblems(Map<String, Integer> given, Map<String, Integer> max) {
+        Map<String, String> out = new LinkedHashMap<>();
+        new java.util.TreeMap<>(given).forEach((key, level) -> {
+            Integer allowed = max.get(key);
+            if (allowed != null && level > allowed) {
+                out.put(key, "MaxLevel: " + level + " (rewards give level " + level + ", the server allows " + allowed + ")");
+            }
+        });
+        return out;
+    }
+
+    /** Several owners' reward enchants as one map: each key at the highest level any owner gives. */
+    public static Map<String, Integer> merge(java.util.Collection<Map<String, Integer>> owners) {
+        Map<String, Integer> out = new java.util.TreeMap<>();
+        owners.forEach(m -> m.forEach((k, v) -> out.merge(k, v, Math::max)));
+        return out;
     }
 
     /** For each reward enchant that is not exclusive, the settings to change. */

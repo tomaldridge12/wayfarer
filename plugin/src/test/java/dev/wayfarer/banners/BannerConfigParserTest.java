@@ -242,4 +242,17 @@ class BannerConfigParserTest {
         assertEquals(null, RelicDefinition.alloyShape("shield"));
         assertEquals(null, RelicDefinition.alloyShape("trident"));
     }
+
+    @Test
+    void rewardEnchantsComeFromRelicPresetsAtTheirHighestLevel() {
+        RelicDefinition cleaver = new RelicDefinition("zombie_weapon", "Cleaver", "zombie", 400, 1,
+                RelicDefinition.Slot.WEAPON, "iron_axe",
+                Map.of("minecraft:sharpness", 2, "excellentenchants:vampire", 1, "excellentenchants:rage", 1),
+                null, null, 30, List.of());
+        RelicDefinition cleaver2 = new RelicDefinition("zombie_weapon_2", "Cleaver II", "zombie", 900, 2,
+                RelicDefinition.Slot.WEAPON, "diamond_axe", Map.of("excellentenchants:rage", 2), null, null, 40, List.of());
+        BannerSet set = new BannerSet(Map.of(), Map.of(), Map.of(), Map.of("zombie_weapon", cleaver, "zombie_weapon_2", cleaver2),
+                CountingSettings.defaults(), Map.of(), List.of());
+        assertEquals(Map.of("excellentenchants:rage", 2, "excellentenchants:vampire", 1), set.rewardEnchants());
+    }
 }

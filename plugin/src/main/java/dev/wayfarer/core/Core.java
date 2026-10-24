@@ -20,6 +20,9 @@ public interface Core {
     /** Items modules make for each other by key ({@code alloy:steel_axe}). Main thread. */
     ItemMakers<org.bukkit.inventory.ItemStack> itemMakers();
 
+    /** ExcellentEnchants enchants modules give as rewards, checked to be exclusive to Wayfarer. Main thread. */
+    RewardEnchants rewardEnchants();
+
     /** The /wayfarer root; modules register their subtrees under their own id while enabling. */
     CommandTree<CommandSourceStack> commands();
 }

@@ -90,6 +90,11 @@ class ModuleManagerTest {
             }
 
             @Override
+            public RewardEnchants rewardEnchants() {
+                return new RewardEnchants(null, logger);
+            }
+
+            @Override
             public ItemTagService itemTags() {
                 return null;
             }

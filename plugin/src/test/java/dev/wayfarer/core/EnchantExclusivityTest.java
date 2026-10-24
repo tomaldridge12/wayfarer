@@ -1,4 +1,4 @@
-package dev.wayfarer.banners;
+package dev.wayfarer.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -26,13 +26,17 @@ class EnchantExclusivityTest {
     }
 
     @Test
-    void rewardEnchantsComeFromRelicPresets() {
-        RelicDefinition cleaver = new RelicDefinition("zombie_weapon", "Cleaver", "zombie", 400, 1,
-                RelicDefinition.Slot.WEAPON, "iron_axe",
-                Map.of("minecraft:sharpness", 2, "excellentenchants:vampire", 1, "excellentenchants:rage", 1),
-                null, null, 30, List.of());
-        BannerSet set = new BannerSet(Map.of(), Map.of(), Map.of(), Map.of("zombie_weapon", cleaver),
-                CountingSettings.defaults(), Map.of(), List.of());
-        assertEquals(List.of("excellentenchants:rage", "excellentenchants:vampire"), EnchantExclusivity.rewardEnchants(set));
+    void aRewardAboveTheServersMaxLevelIsReported() {
+        Map<String, String> problems = EnchantExclusivity.levelProblems(
+                Map.of("excellentenchants:treefeller", 3, "excellentenchants:veinminer", 3, "excellentenchants:vampire", 1),
+                Map.of("excellentenchants:treefeller", 1, "excellentenchants:veinminer", 3));
+        assertEquals(Map.of("excellentenchants:treefeller", "MaxLevel: 3 (rewards give level 3, the server allows 1)"), problems);
+    }
+
+    @Test
+    void ownersMergeAtTheHighestLevelGiven() {
+        assertEquals(Map.of("excellentenchants:rage", 2, "excellentenchants:veinminer", 3),
+                EnchantExclusivity.merge(List.of(Map.of("excellentenchants:rage", 2),
+                        Map.of("excellentenchants:veinminer", 3, "excellentenchants:rage", 1))));
     }
 }

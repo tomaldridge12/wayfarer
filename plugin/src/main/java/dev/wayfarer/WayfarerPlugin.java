@@ -11,6 +11,7 @@ import dev.wayfarer.core.ItemMakers;
 import dev.wayfarer.core.ItemTagService;
 import dev.wayfarer.core.ModuleManager;
 import dev.wayfarer.core.PaperConfigService;
+import dev.wayfarer.core.RewardEnchants;
 import dev.wayfarer.core.pack.PackService;
 import dev.wayfarer.core.progression.ProgressionService;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -28,6 +29,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private PackService pack;
     private final CommandTree<CommandSourceStack> commands = new CommandTree<>("wayfarer");
     private final ItemMakers<ItemStack> itemMakers = new ItemMakers<>();
+    private RewardEnchants rewardEnchants;
 
     @Override
     public void onEnable() {
@@ -36,12 +38,15 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         chunkData = new ChunkDataService(this);
         progression = new ProgressionService(this, this);
         progression.enable();
+        rewardEnchants = new RewardEnchants(getServer(), getLogger());
         pack = new PackService(this, this);
         pack.enable();
         modules.register(new AlloysModule(this)); // first, so banners builds relics on alloy gear from the start
         modules.register(new BannersModule(this));
         modules.register(new BossesModule(this));
         modules.enableAll(this);
+        // After every plugin has enabled, so ExcellentEnchants can answer.
+        getServer().getScheduler().runTask(this, rewardEnchants::check);
         // Fires after every module has enabled (and again on a datapack reload), so the tree is complete.
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             event.registrar().register(commands.build(), "Wayfarer commands");
@@ -85,6 +90,11 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public ProgressionService progression() {
         return progression;
+    }
+
+    @Override
+    public RewardEnchants rewardEnchants() {
+        return rewardEnchants;
     }
 
     @Override

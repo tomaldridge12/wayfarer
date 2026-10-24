@@ -83,9 +83,8 @@ public final class BannersModule implements Module {
         setTask = new WayfarerSetTask(plugin, relics, () -> setSettings);
         setTimer = plugin.getServer().getScheduler().runTaskTimer(plugin, setTask::run,
                 WayfarerSetTask.PERIOD_TICKS, WayfarerSetTask.PERIOD_TICKS);
-        // After every plugin has enabled, so ExcellentEnchants can answer.
-        plugin.getServer().getScheduler().runTask(plugin,
-                () -> ExcellentEnchantsCheck.run(plugin.getServer(), loaded, core.logger()));
+        core.rewardEnchants().register(id(), loaded.rewardEnchants()); // core checks them once everything has started
+        warnWithoutExcellentEnchants();
         plugin.getServer().getPluginManager().registerEvents(placedListener, plugin);
         feedback = new BannerFeedback(plugin, placed, this::banners, () -> feedbackSettings);
         feedbackTask = plugin.getServer().getScheduler().runTaskTimer(plugin, feedback::update,
@@ -348,6 +347,15 @@ public final class BannersModule implements Module {
         sender.sendMessage("Forced a " + describe(reward) + " drop for " + target);
     }
 
+    /** Relics still build without ExcellentEnchants; they only lose its enchants. */
+    private void warnWithoutExcellentEnchants() {
+        if (plugin.getServer().getPluginManager().getPlugin("ExcellentEnchants") == null
+                && !loaded.missingOptionalEnchants().isEmpty()) {
+            core.logger().warning("[banners] ExcellentEnchants is not installed; relics are given without its enchants "
+                    + loaded.missingOptionalEnchants());
+        }
+    }
+
     // --- commands (all run on the main thread) ---
 
     void reload(CommandSender sender) {
@@ -355,7 +363,9 @@ public final class BannersModule implements Module {
             load();
             registerLadders();
             warnInert();
-            ExcellentEnchantsCheck.run(plugin.getServer(), loaded, core.logger());
+            core.rewardEnchants().register(id(), loaded.rewardEnchants());
+            warnWithoutExcellentEnchants();
+            core.rewardEnchants().check();
             core.logger().info("Banner labels refreshed: " + placed.labels().refresh(placed.registry()));
             sender.sendMessage("Banners reloaded: " + loaded.banners().size() + " banners, "
                     + loaded.problems().size() + " problems (see log)");

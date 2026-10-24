@@ -21,6 +21,17 @@ public record BannerSet(Map<String, MobFamily> families, Map<String, BannerDefin
                 BossLoot.Settings.defaults(), Map.of());
     }
 
+    /** The ExcellentEnchants enchants relic presets give, each at the highest level any relic gives. */
+    public Map<String, Integer> rewardEnchants() {
+        Map<String, Integer> out = new java.util.TreeMap<>();
+        relics.values().forEach(r -> r.enchants().forEach((k, level) -> {
+            if (k.startsWith("excellentenchants:")) {
+                out.merge(k, level, Math::max);
+            }
+        }));
+        return out;
+    }
+
     /** Whether this family is a boss's own family. */
     public boolean isBossFamily(String family) {
         return bossBase.containsKey(family);
