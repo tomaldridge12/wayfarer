@@ -101,7 +101,7 @@ public final class BannersModule implements Module {
         saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin,
                 () -> drops.forgetStale(plugin.getServer().getCurrentTick()), SAVE_INTERVAL_TICKS, SAVE_INTERVAL_TICKS);
         BannerCommands.build(this).forEach(sub -> core.commands().register(id(), sub));
-        core.commands().alias(id(), "mobbanners");
+        core.commands().alias(id(), "mobbanners", "progress", "claim"); // the old paths, now core's commands
         for (String type : List.of(RewardKey.BANNER, RewardKey.HEAD, RewardKey.RELIC)) {
             core.progression().registerRewardType(id(), type, new Rewards(type));
         }

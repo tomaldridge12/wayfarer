@@ -9,8 +9,8 @@ counting:
   exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
 
-# Pity drops: a ceiling on bad luck for rare mob drops. After ceil(1 / chance) counted kills without the item
-# (1 / 0.025 = 40), the next counted kill drops it. Only the player who landed the killing blow advances their
+# Pity drops: a ceiling on bad luck for rare mob drops. The ceil(1 / chance)-th counted kill in a row without the
+# item (1 / 0.025 = 40) drops it. Only the player who landed the killing blow advances their
 # counter; a real drop of the item resets it. Looting improves the real chance but never changes the threshold.
 # held-item: only mobs holding this item count (a drowned with a trident).
 pity:

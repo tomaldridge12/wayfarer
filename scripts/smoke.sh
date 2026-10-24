@@ -106,7 +106,7 @@ check "$LOG1" "$PLAYER2 earned relic zombie_weapon_2 by forced drop"
 check "$LOG1" "✔  Skeleton Banner"
 grep -q '^{"version":1,' "$DATA/progression/$PLAYER.json" && echo "PASS: progression record written with version 1" || { echo "FAIL: progression record"; fail=1; }
 
-LOG1B=$LOGS/log1b.log; boot "$LOG1B" "wayfarer stats $PLAYER kill:zombie" "wayfarer progress $PLAYER" "wayfarer progress $PLAYER2" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"
+LOG1B=$LOGS/log1b.log; boot "$LOG1B" "wayfarer stats $PLAYER kill:zombie" "mobbanners progress $PLAYER" "wayfarer progress $PLAYER2" "forceload add 0 0" "mobbanners reload" "forceload remove 0 0"
 check "$LOG1B" "kill:zombie = 400"
 check "$LOG1B" "✔  Zombie Banner"
 check "$LOG1B" "✔  Zombie Trophy"

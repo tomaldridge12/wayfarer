@@ -226,7 +226,7 @@ public final class ProgressionService implements Progression {
 
     @Override
     public CompletableFuture<Void> load(UUID player) {
-        return store.load(player).thenApply(d -> null);
+        return store.load(player).thenApplyAsync(d -> null, mainThread); // completes on the main thread
     }
 
     // --- events (called by the listener, main thread unless noted) ---

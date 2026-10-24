@@ -67,6 +67,21 @@ class CommandTreeTest {
     }
 
     @Test
+    void anAliasCanBorrowNamedSubcommandsOfOtherOwners() throws CommandSyntaxException {
+        CommandTree<Source> tree = new CommandTree<>("wayfarer");
+        tree.register("core", sub("progress", "p"));
+        tree.register("core", sub("stats", "s"));
+        tree.register("banners", sub("reload", "r"));
+        tree.alias("banners", "mobbanners", "progress");
+        Source admin = new Source(Set.of("p", "s", "r"));
+
+        dispatcher(tree).execute("mobbanners progress", admin);
+        dispatcher(tree).execute("mobbanners reload", admin);
+        assertEquals(List.of("progress", "reload"), ran);
+        assertThrows(CommandSyntaxException.class, () -> dispatcher(tree).execute("mobbanners stats", admin));
+    }
+
+    @Test
     void droppedOwnerLosesItsSubcommandsAndAliases() {
         CommandTree<Source> tree = new CommandTree<>("wayfarer");
         tree.register("banners", sub("claim", "banners.claim"));
