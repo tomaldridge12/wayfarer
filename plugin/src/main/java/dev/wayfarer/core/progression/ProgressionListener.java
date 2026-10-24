@@ -50,6 +50,13 @@ final class ProgressionListener implements Listener {
         service.advancement(event.getPlayer(), event.getAdvancement().getKey());
     }
 
+    /** A tick after joining (every module has its ladders by then), past play is credited to new ladders. */
+    @EventHandler
+    void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+        java.util.UUID id = event.getPlayer().getUniqueId();
+        service.later(() -> service.recheck(id));
+    }
+
     @EventHandler
     void onQuit(PlayerQuitEvent event) {
         service.quit(event.getPlayer().getUniqueId());

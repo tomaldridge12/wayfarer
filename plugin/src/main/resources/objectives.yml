@@ -1,0 +1,240 @@
+# Objectives module: feats (odd one-off milestones), dailies and the weekly, the server goal, weekend events, tokens
+# and the shop. Set enabled: false to skip the module. Every number here is a first pass, to be tuned from play.
+version: 1
+enabled: true
+
+# Cosmetics: titles (shown before your name in chat and the tab list) and trails (particles behind you as you move).
+# Feats pay some; the shop sells others. You choose one of each in the Journal.
+#   kind: title or trail; name; colour (titles); particle (trails: a particle name, with colour: for dust).
+cosmetics:
+  mossborn: {kind: title, name: "Mossborn", colour: "#7DB356"}
+  pumpkin_king: {kind: title, name: "Pumpkin King", colour: "#F29B38"}
+  rancher: {kind: title, name: "Rancher", colour: "#C49A5E"}
+  angler_of_legend: {kind: title, name: "Angler of Legend", colour: "#F2B84B"}
+  bouncy: {kind: title, name: "Bouncy", colour: "#7ED957"}
+  unheard: {kind: title, name: "Unheard", colour: "#2E7A8C"}
+  gourmand: {kind: title, name: "Gourmand", colour: "#E58BB5"}
+  crate_digger: {kind: title, name: "Crate Digger", colour: "#9B7FE0"}
+  spores: {kind: trail, name: "Spore Trail", particle: spore_blossom_air}
+  wayfarer: {kind: title, name: "Wayfarer", colour: "#E8D9A8"}
+  trailblazer: {kind: title, name: "Trailblazer", colour: "#5B9BD5"}
+  night_owl: {kind: title, name: "Night Owl", colour: "#7A86C9"}
+  hearth_keeper: {kind: title, name: "Hearth Keeper", colour: "#E07A4F"}
+  embers: {kind: trail, name: "Ember Trail", particle: small_flame}
+  petals: {kind: trail, name: "Petal Trail", particle: cherry_leaves}
+  notes: {kind: trail, name: "Note Trail", particle: note}
+  sparkles: {kind: trail, name: "Sparkle Trail", particle: wax_on}
+  bubbles: {kind: trail, name: "Bubble Trail", particle: bubble_pop}
+  snowfall: {kind: trail, name: "Snowfall Trail", particle: snowflake}
+
+# Feats: one-off milestones on any count, each paying something that fits it.
+#   name, flavour (one line of story shown in the Journal), counts (activities, as ladders take them: verb:target,
+#   verb:#tag, verb:prefix*, find:@music_discs for every record), distinct: true to count different targets rather
+#   than a sum, at (the count, or all for every target counts lists), hidden: true to stay a "???" until earned,
+#   rewards (curio:, gear:, supply:, enchant:<key>_<level>, cosmetic:). A feat credits everything done before it existed.
+feats:
+  moss_tender:
+    name: "Moss Tender"
+    flavour: "Ten thousand blocks of moss, every one picked up gently."
+    counts: [mine:moss_block, mine:pale_moss_block]
+    at: 10000
+    rewards: [curio:moss_heart, cosmetic:mossborn, cosmetic:spores]
+  hundredth_hoe:
+    name: "Hundredth Hoe"
+    flavour: "Nobody needs a hundred hoes. You made them anyway."
+    counts: ["craft:#minecraft:hoes"]
+    at: 100
+    rewards: [gear:hoe_of_a_hundred_hoes]
+  deep_delver:
+    name: "Deep Delver"
+    flavour: "Twenty thousand blocks of deepslate. The surface is a rumour now."
+    counts: ["mine:deepslate*", mine:tuff]
+    at: 20000
+    rewards: [curio:lantern_of_the_deep]
+  gravel_gourmet:
+    name: "Gravel Gourmet"
+    flavour: "Five thousand gravel. You know its every crunch."
+    counts: [mine:gravel]
+    at: 5000
+    rewards: [curio:flint_tooth]
+  will_of_stone:
+    name: "Will of Stone"
+    flavour: "A thousand obsidian, one slow block at a time."
+    counts: [mine:obsidian, mine:crying_obsidian]
+    at: 1000
+    rewards: [gear:will_of_stone]
+  debris_diviner:
+    name: "Debris Diviner"
+    flavour: "Sixty-four ancient debris. You can feel them now, under the netherrack."
+    counts: [mine:ancient_debris]
+    at: 64
+    rewards: [curio:debris_dowser]
+  crystal_ear:
+    name: "Crystal Ear"
+    flavour: "Five hundred amethyst clusters, and the geodes have started humming back."
+    counts: [mine:amethyst_cluster]
+    at: 500
+    rewards: [curio:amethyst_earrings]
+  pumpkin_king:
+    name: "Pumpkin King"
+    flavour: "A thousand pumpkins. Every patch in the land knows your name."
+    counts: [mine:pumpkin, mine:carved_pumpkin]
+    at: 1000
+    rewards: [curio:jacks_ember, cosmetic:pumpkin_king]
+  reed_piper:
+    name: "Reed Piper"
+    flavour: "Five thousand sugar cane. The riverbanks hum when you walk by."
+    counts: [mine:sugar_cane]
+    at: 5000
+    rewards: [curio:reed_pipe]
+  beekeeper:
+    name: "Beekeeper"
+    flavour: "Fifty bees bred, and not one sting between you."
+    counts: [breed:bee]
+    at: 50
+    rewards: [curio:queens_comb]
+  rancher:
+    name: "Rancher"
+    flavour: "Five hundred animals bred. The fields are full of your family."
+    counts: ["breed:*"]
+    at: 500
+    rewards: [supply:animal_crate*3, cosmetic:rancher]
+  waders:
+    name: "Waders"
+    flavour: "A hundred old boots fished out of the water. Someone was very careless."
+    counts: [catch:leather_boots]
+    at: 100
+    rewards: [gear:waders]
+  the_big_one:
+    name: "The Big One"
+    flavour: "A legendary fish, on your line, in your hands. Nobody will believe you."
+    counts: [catch:wayfarer:fish/arapaima, catch:wayfarer:fish/oarfish, catch:wayfarer:fish/echo_fish]
+    at: 1
+    hidden: true
+    rewards: [curio:lucky_bobber, cosmetic:angler_of_legend]
+  puffer_tolerance:
+    name: "Puffer Tolerance"
+    flavour: "Two hundred pufferfish. Your hands have stopped tingling. Mostly."
+    counts: [catch:pufferfish]
+    at: 200
+    rewards: [curio:puffer_charm]
+  treasure_hunter:
+    name: "Treasure Hunter"
+    flavour: "Fifty treasures hauled up from the deep with nothing but a stick and string."
+    counts: [catch:enchanted_book, catch:name_tag, catch:saddle, catch:nautilus_shell, catch:bow]
+    at: 50
+    rewards: ["enchant:excellentenchants:double_catch_3"]
+  insomniac:
+    name: "Insomniac"
+    flavour: "A hundred phantoms. You'll sleep when you're dead. Or when they are."
+    counts: [kill:phantom]
+    at: 100
+    rewards: [curio:insomniacs_charm]
+  slime_time:
+    name: "Slime Time"
+    flavour: "A thousand slimes. Everything you own is slightly sticky."
+    counts: [kill:slime]
+    at: 1000
+    rewards: ["enchant:excellentenchants:rebound_1", cosmetic:bouncy]
+  witch_hunt:
+    name: "Witch Hunt"
+    flavour: "A hundred witches. Their potions have started to bounce off you."
+    counts: [kill:witch]
+    at: 100
+    rewards: [curio:ofuda_charm]
+  hogbane:
+    name: "Hogbane"
+    flavour: "Five hundred hoglins. The crimson forest goes quiet when you arrive."
+    counts: [kill:hoglin]
+    at: 500
+    rewards: [gear:hogbane]
+  glaucus:
+    name: "Glaucus"
+    flavour: "Three hundred guardians. The monuments are learning to fear you."
+    counts: [kill:guardian, kill:elder_guardian]
+    at: 300
+    rewards: [curio:glaucus_blessing]
+  breeze_rider:
+    name: "Breeze Rider"
+    flavour: "Two hundred breezes. You've caught enough wind to fall slowly forever."
+    counts: [kill:breeze]
+    at: 200
+    rewards: [curio:aeolus_blessing]
+  unheard:
+    name: "Unheard"
+    flavour: "You killed a warden. It never heard you coming."
+    counts: [kill:warden]
+    at: 1
+    hidden: true
+    rewards: ["enchant:excellentenchants:darkness_cloak_3", cosmetic:unheard]
+  wyrmscale:
+    name: "Wyrmscale"
+    flavour: "Three dragons. The End is starting to feel like home."
+    counts: [kill:ender_dragon]
+    at: 3
+    rewards: [gear:wyrmscale]
+  cartographer:
+    name: "Cartographer"
+    flavour: "A hundred lands stood in. Your maps have maps."
+    counts: ["discover:biome/*"]
+    distinct: true
+    at: 100
+    rewards: [curio:explorers_compass]
+  grave_robber:
+    name: "Grave Robber"
+    flavour: "Fifteen pyramids entered. The pharaohs would like a word."
+    counts: [discover:structure/desert_pyramid]
+    at: 15
+    rewards: [curio:pharaohs_nazar, "enchant:excellentenchants:thrifty_1"]
+  bread_winner:
+    name: "Bread Winner"
+    flavour: "A thousand loaves. The village bakers send their regards."
+    counts: [craft:bread]
+    at: 1000
+    rewards: [curio:demeters_blessing]
+  torchbearer:
+    name: "Torchbearer"
+    flavour: "Five thousand torches. The dark has run out of places to hide."
+    counts: [craft:torch]
+    at: 5000
+    rewards: [curio:apollos_blessing]
+  smith_of_six:
+    name: "Smith of Six"
+    flavour: "Every alloy, melted with your own hands."
+    counts: ["forge:*"]
+    distinct: true
+    at: 6
+    rewards: [curio:talos_blessing]
+  bookworm:
+    name: "Bookworm"
+    flavour: "Two hundred bookshelves. You have read at least three of the books."
+    counts: [craft:bookshelf]
+    at: 200
+    rewards: ["enchant:excellentenchants:wisdom_3"]
+  gourmand:
+    name: "Gourmand"
+    flavour: "Five hundred cakes and pies. Purely for research."
+    counts: [craft:cake, craft:pumpkin_pie]
+    at: 500
+    hidden: true
+    rewards: [cosmetic:gourmand, supply:floral_bundle*3]
+  spelunker:
+    name: "Spelunker"
+    flavour: "Ten trial chambers braved. The keys know your hand."
+    counts: [discover:structure/trial_chambers]
+    at: 10
+    rewards: ["enchant:excellentenchants:blast_mining_3"]
+  sherd_seeker:
+    name: "Sherd Seeker"
+    flavour: "Every pottery sherd, brushed from the dirt of a thousand years."
+    counts: ["find:#minecraft:decorated_pot_sherds"]
+    distinct: true
+    at: all
+    rewards: [curio:archaeologists_brush]
+  record_keeper:
+    name: "Record Keeper"
+    flavour: "Every record ever pressed. The jukebox has opinions now."
+    counts: ["find:@music_discs"]
+    distinct: true
+    at: all
+    rewards: [curio:hyacinthus_blessing, cosmetic:crate_digger]

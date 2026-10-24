@@ -228,7 +228,8 @@ final class Journal implements JournalPages {
     }
 
     private void ladders(Player player, Progression.Snapshot snap, int page) {
-        List<Ladder> list = progression.ladders().stream().filter(l -> !l.id().startsWith("collection_")).toList();
+        List<Ladder> list = progression.ladders().stream()
+                .filter(l -> !l.id().startsWith("collection_") && !l.id().startsWith("feat_")).toList();
         int pageCount = Math.max(1, (list.size() + LADDERS_PER_PAGE - 1) / LADDERS_PER_PAGE);
         int at = Math.max(0, Math.min(page, pageCount - 1));
         List<DialogBody> body = new ArrayList<>();

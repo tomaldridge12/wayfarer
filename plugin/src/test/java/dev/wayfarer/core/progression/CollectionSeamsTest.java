@@ -93,4 +93,15 @@ class CollectionSeamsTest {
         assertTrue(ladders.find("atlas").orElseThrow().reads("discover:structure/village_desert"));
         assertEquals(1, ladders.reading("discover:structure/village_plains").size());
     }
+
+    @Test
+    void aLadderAddedLaterIsCreditedFromPastPlayOnRecheck() {
+        ProgressionData data = new ProgressionData();
+        data.set("mine:moss_block", 12_000);
+        assertFalse(engine.recheck(data).counted());
+        ladders.set("objectives", List.of(new Ladder("feat_moss", "Moss Tender", "block", Set.of("mine:moss_block"),
+                List.of(new Ladder.Rung(10_000, "curio:moss_heart")), true)));
+        assertEquals(List.of("curio:moss_heart"), rewards(engine.recheck(data)));
+        assertFalse(engine.recheck(data).counted(), "awarded once");
+    }
 }

@@ -51,3 +51,6 @@ permissions:
   wayfarer.collections.admin:
     description: List collections, give fish and treasures and reload collections.yml (testing tools)
     default: op
+  wayfarer.objectives.admin:
+    description: List feats and objectives, set tokens, reroll, reset, run events and roll reward tables (testing tools)
+    default: op

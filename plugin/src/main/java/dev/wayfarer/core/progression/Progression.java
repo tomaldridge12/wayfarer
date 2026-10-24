@@ -39,6 +39,10 @@ public interface Progression {
         return java.util.Optional.empty();
     }
 
+    /** Awards whatever the player's counters already reach on every ladder (core does this on join). */
+    default void recheck(UUID player) {
+    }
+
     /** Every registered ladder, in registration order. */
     default List<Ladder> ladders() {
         return List.of();

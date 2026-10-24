@@ -237,6 +237,16 @@ public final class ProgressionService implements Progression {
     }
 
     @Override
+    public void recheck(UUID player) {
+        withData(player, data -> {
+            ProgressionEngine.Outcome outcome = engine.recheck(data);
+            if (outcome.counted()) {
+                apply(player, outcome, "past play");
+            }
+        });
+    }
+
+    @Override
     public Optional<Snapshot> snapshot(UUID player) {
         ProgressionData data = store.cached(player);
         return data == null ? Optional.empty() : Optional.of(new Snapshot(data.countersView(), data.earnedView()));
@@ -502,9 +512,14 @@ public final class ProgressionService implements Progression {
         String who = targetName != null ? targetName : sender.getName();
         withData(sender, who, (id, data) -> {
             boolean own = sender instanceof Player p && p.getUniqueId().equals(id);
-            ProgressionText.progress(PlayerNames.nameOf(plugin.getServer(), id), ladders.all(), data,
+            ProgressionText.progress(PlayerNames.nameOf(plugin.getServer(), id), listed(), data,
                     this::describe, own).forEach(sender::sendMessage);
         });
+    }
+
+    /** Ladders the progress card lists: feats and collections have their own Journal pages (and some feats are secret). */
+    private List<Ladder> listed() {
+        return ladders.all().stream().filter(l -> !l.id().startsWith("feat_") && !l.id().startsWith("collection_")).toList();
     }
 
     private void claim(CommandSender sender, String rewardText) {

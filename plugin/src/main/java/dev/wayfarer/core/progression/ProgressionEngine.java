@@ -158,6 +158,24 @@ public final class ProgressionEngine {
         return new Outcome(true, List.of(activity), climb(data, List.of(activity)));
     }
 
+    /**
+     * Awards every rung the player's counters already reach on every ladder, for ladders added after the counting
+     * happened (a new feat crediting past play). Raises nothing.
+     */
+    public Outcome recheck(ProgressionData data) {
+        List<Earned> earned = new ArrayList<>();
+        long now = clock.getAsLong();
+        for (Ladder ladder : ladders.all()) {
+            long progress = ladder.progress(data);
+            for (Ladder.Rung rung : ladder.rungs()) {
+                if (rung.threshold() != Ladder.Rung.NEVER && progress >= rung.threshold() && data.markEarned(rung.reward(), now)) {
+                    earned.add(new Earned(ladder, rung.reward()));
+                }
+            }
+        }
+        return earned.isEmpty() ? Outcome.NOT_COUNTED : new Outcome(true, List.of(), earned);
+    }
+
     /** Earns a reward outside a ladder (a drop); false if the player already had it. */
     public boolean award(ProgressionData data, String reward) {
         return data.markEarned(reward, clock.getAsLong());
