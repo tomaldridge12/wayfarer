@@ -66,9 +66,12 @@ final class BossController implements Listener {
     private final Supplier<BossRoster> roster;
     private final BossSpawner spawner;
     private final Logger log;
+    private final dev.wayfarer.core.Announcer announcer;
     private final Map<UUID, Live> live = new HashMap<>();
 
-    BossController(Server server, Supplier<BossRoster> roster, BossSpawner spawner, Logger log) {
+    BossController(Server server, Supplier<BossRoster> roster, BossSpawner spawner, Logger log,
+            dev.wayfarer.core.Announcer announcer) {
+        this.announcer = announcer;
         this.server = server;
         this.roster = roster;
         this.spawner = spawner;
@@ -367,7 +370,24 @@ final class BossController implements Listener {
         spawner.unglow(boss.entity);
         log.info("[bosses] Defeated " + boss.boss.id() + "/" + boss.variant.id() + " ★" + boss.mark.stars()
                 + " by " + boss.damagers.size() + " player(s)");
+        announceDefeat(boss);
         server.getPluginManager().callEvent(new BossDefeatedEvent(boss.mark, boss.entity.getLocation(),
                 new ArrayList<>(boss.damagers)));
+    }
+
+    /** Tells the server who beat the boss and who helped; the killing blow gets the credit, else the first to hit it. */
+    private void announceDefeat(Live boss) {
+        java.util.List<String> fighters = new ArrayList<>();
+        boss.damagers.forEach(id -> fighters.add(dev.wayfarer.core.PlayerNames.nameOf(server, id)));
+        Player killer = boss.entity.getKiller();
+        String credit = killer != null ? killer.getName() : fighters.isEmpty() ? null : fighters.get(0);
+        if (credit == null) {
+            return; // nobody hit it (it was removed or died to the world): nothing to celebrate
+        }
+        java.util.List<String> helpers = new ArrayList<>(fighters);
+        helpers.remove(credit);
+        announcer.announce(dev.wayfarer.core.AnnounceCategory.BOSS_DEFEAT,
+                BossText.defeated(boss.variant, boss.mark.stars(), credit, helpers),
+                BossText.defeatedHover(boss.variant, boss.mark.stars(), fighters));
     }
 }

@@ -277,6 +277,9 @@ final class ObjectivesService implements Listener {
                 online.playSound(online.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.7f, 1.2f);
             }
             core.logger().info("[objectives] " + id + " reached a " + streak.days() + "-day streak, paid " + bonus);
+            core.announcer().announce(dev.wayfarer.core.AnnounceCategory.STREAK,
+                    ItemLook.text("✦ ", GOLD).append(ItemLook.text(dev.wayfarer.core.PlayerNames.nameOf(plugin.getServer(), id), PAPER))
+                            .append(ItemLook.text(" has done every daily " + streak.days() + " days running", INK)), null);
         }
     }
 

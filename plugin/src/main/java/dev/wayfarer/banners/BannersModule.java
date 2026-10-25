@@ -224,6 +224,11 @@ public final class BannersModule implements Module {
         core.progression().award(player, reward.toString(), how, feedbackSettings.announceEarned());
     }
 
+    /** A boss drop: the category's own switch decides, not the banners key. */
+    private void awardDrop(UUID player, RewardKey reward, String how, dev.wayfarer.core.AnnounceCategory category) {
+        core.progression().award(player, reward.toString(), how, true, category);
+    }
+
     /** Hands core this config's ladders; summing counters on read means regrouped families credit past kills. */
     private void registerLadders() {
         BannerSet set = loaded;
@@ -310,14 +315,14 @@ public final class BannersModule implements Module {
             if (rolls.ascended()) {
                 BossLoot.pickAscended(set, base, rnd::nextDouble).flatMap(def ->
                         set.findReward(new RewardKey(RewardKey.RELIC, def.id()))).ifPresent(r -> {
-                    award(id, r.rewardKey(), "drop from " + family);
+                    awardDrop(id, r.rewardKey(), "drop from " + family, dev.wayfarer.core.AnnounceCategory.ASCENDED_DROP);
                     got.add("ascended " + r.rewardKey().id());
                 });
             }
             if (rolls.legendary()) {
                 java.util.Optional.ofNullable(set.legendaries().get(family))
                         .flatMap(rid -> set.findReward(new RewardKey(RewardKey.RELIC, rid))).ifPresent(r -> {
-                            award(id, r.rewardKey(), "drop from " + family);
+                            awardDrop(id, r.rewardKey(), "drop from " + family, dev.wayfarer.core.AnnounceCategory.LEGENDARY_DROP);
                             got.add("legendary " + r.rewardKey().id());
                         });
             }

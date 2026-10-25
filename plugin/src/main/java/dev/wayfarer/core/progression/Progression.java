@@ -22,6 +22,11 @@ public interface Progression {
     /** Earns a reward outside a ladder (a drop) once, delivering it with the earning moment if they are online. */
     void award(UUID player, String reward, String how, boolean announce);
 
+    /** As {@link #award(UUID, String, String, boolean)}, announced under this category's switch instead of the ladder rung's. */
+    default void award(UUID player, String reward, String how, boolean announce, dev.wayfarer.core.AnnounceCategory category) {
+        award(player, reward, how, announce);
+    }
+
     /** The player's position on a ladder if their record is loaded; empty otherwise (see {@link #load}). */
     OptionalLong progressIfLoaded(UUID player, String ladderId);
 

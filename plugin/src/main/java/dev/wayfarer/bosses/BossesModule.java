@@ -45,7 +45,7 @@ public final class BossesModule implements Module {
         this.core = core;
         load();
         spawner = new BossSpawner(plugin.getServer().getScoreboardManager().getMainScoreboard());
-        controller = new BossController(plugin.getServer(), () -> roster, spawner, core.logger());
+        controller = new BossController(plugin.getServer(), () -> roster, spawner, core.logger(), core.announcer());
         plugin.getServer().getPluginManager().registerEvents(controller, plugin);
         controller.attachLoaded();
         tick = plugin.getServer().getScheduler().runTaskTimer(plugin, controller::tick, BossController.PERIOD, BossController.PERIOD);

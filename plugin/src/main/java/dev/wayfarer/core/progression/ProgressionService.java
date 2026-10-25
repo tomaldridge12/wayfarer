@@ -225,13 +225,18 @@ public final class ProgressionService implements Progression {
 
     @Override
     public void award(UUID player, String reward, String how, boolean announce) {
+        award(player, reward, how, announce, null);
+    }
+
+    @Override
+    public void award(UUID player, String reward, String how, boolean announce, AnnounceCategory category) {
         withData(player, data -> {
             if (!engine.award(data, reward)) {
                 return; // awarded once per player; claim recovers lost copies
             }
             store.markDirty(player);
             logEarned(player, reward, how);
-            deliverEarned(player, reward, announce);
+            deliverEarned(player, reward, announce, category);
         });
     }
 
@@ -393,7 +398,7 @@ public final class ProgressionService implements Progression {
         plugin.getServer().getPluginManager().callEvent(new ProgressChangedEvent(id, outcome.raised()));
         for (ProgressionEngine.Earned earned : outcome.earned()) {
             logEarned(id, earned.reward(), how);
-            deliverEarned(id, earned.reward(), earned.ladder().announces(earned.reward()));
+            deliverEarned(id, earned.reward(), earned.ladder().announces(earned.reward()), null);
         }
     }
 
@@ -403,13 +408,13 @@ public final class ProgressionService implements Progression {
     }
 
     /** Delivers a newly earned reward if the earner is online, and makes it a moment (title, pop, announcement). */
-    private void deliverEarned(UUID earner, String reward, boolean announce) {
+    private void deliverEarned(UUID earner, String reward, boolean announce, AnnounceCategory category) {
         Player online = plugin.getServer().getPlayer(earner);
         String name = online != null ? online.getName()
                 : Optional.ofNullable(plugin.getServer().getOfflinePlayer(earner).getName()).orElse("A Wayfarer");
         ItemStack item = online != null ? deliver(online, reward) : build(earner, name, reward);
         RewardType type = typeOf(reward);
-        moment.celebrate(online, name, title(reward), item, announce, categoryOf(reward),
+        moment.celebrate(online, name, title(reward), item, announce, category != null ? category : categoryOf(reward),
                 type == null ? null : type.announceHover(idOf(reward)));
     }
 

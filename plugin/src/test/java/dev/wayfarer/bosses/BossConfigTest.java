@@ -110,4 +110,10 @@ class BossConfigTest {
         assertEquals(1024.0, s.maxHealth(140, 5));
         assertEquals(245.0, s.maxHealth(140, 2));
     }
+
+    @Test
+    void helpersAreListedInPlainEnglish() {
+        assertEquals("Bob and Carol", BossText.joined(java.util.List.of("Bob", "Carol")));
+        assertEquals("Bob, Carol and Dan", BossText.joined(java.util.List.of("Bob", "Carol", "Dan")));
+    }
 }

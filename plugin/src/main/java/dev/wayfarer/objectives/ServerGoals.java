@@ -205,8 +205,17 @@ final class ServerGoals implements Listener {
         state.completed = true;
         dirty = true;
         long total = ServerGoalRules.total(state.contributions);
-        plugin.getServer().broadcast(ItemLook.text("✦ The server goal is complete! ", BLUE).append(ItemLook.text(g.name()
-                + " · " + FeatRules.number(total) + " together. Everyone who helped has a keepsake.", ObjectivesService.PAPER)));
+        Component helpers = ItemLook.text("Helped by:", ItemLook.MUTED);
+        for (Map.Entry<String, Long> e : state.contributions.entrySet()) {
+            if (e.getValue() > 0) {
+                helpers = helpers.appendNewline().append(ItemLook.text("  " + dev.wayfarer.core.PlayerNames.nameOf(plugin.getServer(),
+                        UUID.fromString(e.getKey())) + " · " + FeatRules.number(e.getValue()), 0xE4DAC2));
+            }
+        }
+        core.announcer().announce(dev.wayfarer.core.AnnounceCategory.SERVER_GOAL,
+                ItemLook.text("✦ The server goal is complete! ", BLUE).append(ItemLook.text(g.name()
+                        + " · " + FeatRules.number(total) + " together. Everyone who helped has a keepsake.", ObjectivesService.PAPER)),
+                helpers);
         plugin.getServer().getOnlinePlayers().forEach(p -> p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1f));
         core.logger().info("[objectives] Server goal " + g.id() + " completed at " + total + " by " + state.contributions.size() + " players");
         for (Map.Entry<String, Long> e : new ArrayList<>(state.contributions.entrySet())) {
