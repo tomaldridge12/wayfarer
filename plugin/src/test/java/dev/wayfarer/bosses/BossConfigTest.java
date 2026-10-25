@@ -103,4 +103,11 @@ class BossConfigTest {
         assertEquals(List.of(), roster.problems());
         assertEquals(List.of("Boss b: biome tag #c:is_cave is not on this server; skipped"), roster.notices());
     }
+
+    @Test
+    void maxHealthNeverExceedsMinecraftsCap() {
+        StarScale s = StarScale.defaults();
+        assertEquals(1024.0, s.maxHealth(140, 5));
+        assertEquals(245.0, s.maxHealth(140, 2));
+    }
 }

@@ -41,8 +41,9 @@ final class BossSpawner {
         Class<? extends LivingEntity> cls = type.getEntityClass().asSubclass(LivingEntity.class);
         int s = StarScale.clamp(stars);
         return at.getWorld().spawn(at, cls, CreatureSpawnEvent.SpawnReason.CUSTOM, e -> {
-            set(e, Attribute.MAX_HEALTH, boss.health() * scale.health(s));
-            e.setHealth(boss.health() * scale.health(s));
+            double health = scale.maxHealth(boss.health(), s);
+            set(e, Attribute.MAX_HEALTH, health);
+            e.setHealth(health);
             set(e, Attribute.ATTACK_DAMAGE, boss.damage() * scale.damage(s));
             set(e, Attribute.SCALE, variant.scale());
             set(e, Attribute.KNOCKBACK_RESISTANCE, 0.6);
