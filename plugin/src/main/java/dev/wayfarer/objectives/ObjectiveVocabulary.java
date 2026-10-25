@@ -17,6 +17,11 @@ public interface ObjectiveVocabulary {
         return true;
     }
 
+    /** A hat ability the curios module defines under hat-abilities; tests accept any. */
+    default boolean isHatAbility(String id) {
+        return true;
+    }
+
     /** A peaceful living mob type such as {@code sheep}; tests accept any. */
     default boolean isMob(String key) {
         return true;

@@ -57,4 +57,17 @@ class CurioConfigParserTest {
         assertTrue(Condition.parse("biome minecraft:is_ocean").isEmpty());
         assertTrue(Condition.parse("below sea").isEmpty());
     }
+
+    @Test
+    void theShippedHatAbilitiesLoadAsCharmsAndOnlyWorkWhenTheirConditionsHold() {
+        CurioConfigParser.Result r = CurioConfigParser.parseHatAbilities(CurioFixtures.shippedYaml().get("hat-abilities"), CurioFixtures.SERVER);
+        assertEquals(List.of(), r.problems());
+        assertTrue(r.curios().keySet().containsAll(List.of("lamplight", "featherlight", "green_thumb")));
+        assertTrue(r.curios().values().stream().noneMatch(CurioDefinition::tool));
+
+        CurioRules rules = new CurioRules(java.util.Map.of(), r.curios());
+        assertTrue(rules.hatWorking("lamplight", CurioFixtures.Facts.surface()).isEmpty(), "underground only");
+        assertTrue(rules.hatWorking("featherlight", CurioFixtures.Facts.surface()).isPresent());
+        assertTrue(rules.hatWorking("nonsense", CurioFixtures.Facts.surface()).isEmpty());
+    }
 }

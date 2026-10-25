@@ -57,6 +57,7 @@ final class CurioEffects implements Listener {
     private final Supplier<CurioRules> rules;
     private final CurioItems items;
     private final Predicate<ItemStack> alloyGear;
+    private final Supplier<java.util.Optional<dev.wayfarer.core.HatAbilities.Worn>> hats;
     private final Map<UUID, List<CurioDefinition>> working = new HashMap<>();
     private final Map<UUID, Set<PotionEffectType>> potions = new HashMap<>();
     private final Map<UUID, Set<String>> modifiers = new HashMap<>();
@@ -64,7 +65,9 @@ final class CurioEffects implements Listener {
     private BukkitTask slow;
     private BukkitTask fast;
 
-    CurioEffects(Plugin plugin, Supplier<CurioRules> rules, CurioItems items, Predicate<ItemStack> alloyGear) {
+    CurioEffects(Plugin plugin, Supplier<CurioRules> rules, CurioItems items, Predicate<ItemStack> alloyGear,
+            Supplier<java.util.Optional<dev.wayfarer.core.HatAbilities.Worn>> hats) {
+        this.hats = hats;
         this.plugin = plugin;
         this.rules = rules;
         this.items = items;
@@ -112,8 +115,10 @@ final class CurioEffects implements Listener {
         CurioRules r = rules.get();
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             List<String> carried = carried(player);
-            List<CurioDefinition> now = carried.isEmpty() ? List.of()
-                    : r.working(carried, new PaperCurioFacts(player, alloyGear));
+            PaperCurioFacts facts = new PaperCurioFacts(player, alloyGear);
+            List<CurioDefinition> now = new ArrayList<>(carried.isEmpty() ? List.of() : r.working(carried, facts));
+            // The worn hat's ability works like one more carried charm, and stops with the hat.
+            hats.get().flatMap(worn -> worn.of(player.getUniqueId())).flatMap(ability -> r.hatWorking(ability, facts)).ifPresent(now::add);
             working.put(player.getUniqueId(), now);
             applyPotions(player, now);
             applyModifiers(player, now);

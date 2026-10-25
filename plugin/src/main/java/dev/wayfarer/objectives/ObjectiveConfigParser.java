@@ -65,6 +65,10 @@ public final class ObjectiveConfigParser {
             return java.util.Optional.empty();
         }
         String ability = m.get("ability") == null ? null : String.valueOf(m.get("ability"));
+        if (ability != null && !names.isHatAbility(ability)) {
+            problems.add("Cosmetic " + id + " skipped: ability '" + ability + "' is not under hat-abilities in curios.yml");
+            return java.util.Optional.empty();
+        }
         return java.util.Optional.of(new Cosmetic.Hat(item.replaceFirst("^minecraft:", ""), ability));
     }
 

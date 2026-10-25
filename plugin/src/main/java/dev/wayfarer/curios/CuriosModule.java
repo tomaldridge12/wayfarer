@@ -69,7 +69,9 @@ public final class CuriosModule implements Module {
         saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin, store::flush, 1200, 1200);
         load();
         effects = new CurioEffects(plugin, () -> rules, items,
-                i -> core.itemTags().read(i, "alloys").filter(t -> t.startsWith("gear:")).isPresent());
+                i -> core.itemTags().read(i, "alloys").filter(t -> t.startsWith("gear:")).isPresent(),
+                () -> core.services().get(dev.wayfarer.core.HatAbilities.Worn.class));
+        core.services().register(id(), dev.wayfarer.core.HatAbilities.Catalogue.class, new HatCatalogue());
         tools = new CurioTools(plugin, () -> rules, items, effects::working,
                 () -> core.services().get(Wayfinding.class), core.logger());
         supplies = new Supplies(() -> loot, lootItems, store, core.logger());
@@ -118,6 +120,24 @@ public final class CuriosModule implements Module {
         listeners.clear();
     }
 
+    /** What hats may ask: which abilities exist and how to describe them. */
+    private final class HatCatalogue implements dev.wayfarer.core.HatAbilities.Catalogue {
+        @Override
+        public boolean exists(String ability) {
+            return rules.hatAbility(ability).isPresent();
+        }
+
+        @Override
+        public java.util.List<String> describe(String ability) {
+            return rules.hatAbility(ability).map(c -> {
+                java.util.List<String> lines = new java.util.ArrayList<>();
+                lines.add(c.name());
+                lines.addAll(c.description());
+                return java.util.List.copyOf(lines);
+            }).orElse(java.util.List.of());
+        }
+    }
+
     private void listen(Listener listener) {
         plugin.getServer().getPluginManager().registerEvents(listener, plugin);
         listeners.add(listener);
@@ -128,7 +148,12 @@ public final class CuriosModule implements Module {
         Map<String, Object> root = core.config().load(id());
         CurioConfigParser.Result r = CurioConfigParser.parse(root.get("curios"), vocabulary);
         r.problems().forEach(p -> core.logger().warning("[curios] " + p));
-        rules = new CurioRules(r.curios());
+        CurioConfigParser.Result hatAbilities = CurioConfigParser.parseHatAbilities(root.get("hat-abilities"), vocabulary);
+        hatAbilities.problems().forEach(p -> core.logger().warning("[curios] " + p));
+        Map<String, CurioDefinition> byAbility = new java.util.LinkedHashMap<>();
+        hatAbilities.curios().forEach((abilityId, c) -> byAbility.put(abilityId, c));
+        rules = new CurioRules(r.curios(), byAbility);
+        core.logger().info("Hat abilities loaded: " + byAbility.size() + " (" + String.join(", ", byAbility.keySet()) + ")");
         int built = 0;
         for (CurioDefinition c : rules.curios()) {
             try {

@@ -216,7 +216,7 @@ final class Shop {
                         continue;
                     }
                     boolean worn = c.id().equals(data.worn(kind));
-                    buttons.add(new Menus.Button(label(c), ItemLook.text((worn ? "Take off the " : "Wear the ") + kind, ObjectivesService.INK), 150, p -> {
+                    buttons.add(new Menus.Button(label(c), tooltip(c, worn), 150, p -> {
                         data.toggleWorn(c);
                         service.store().markDirty(p.getUniqueId());
                         display.refresh(p);
@@ -229,6 +229,19 @@ final class Shop {
             }
             Menus.show(player, ItemLook.text("Wardrobe", 0xC9B8E8), body, buttons, 2, journal.back());
         });
+    }
+
+    /** "Wear the hat", and under it what its ability does. */
+    private Component tooltip(Cosmetic c, boolean worn) {
+        Component text = ItemLook.text((worn ? "Take off the " : "Wear the ") + c.kind(), ObjectivesService.INK);
+        if (c.hat() != null && c.hat().ability() != null) {
+            List<String> lines = core.services().get(dev.wayfarer.core.HatAbilities.Catalogue.class)
+                    .map(cat -> cat.describe(c.hat().ability())).orElse(List.of());
+            for (int i = 0; i < lines.size(); i++) {
+                text = text.appendNewline().append(ItemLook.text(i == 0 ? "Ability: " + lines.get(i) : lines.get(i), i == 0 ? 0x8FCB6B : FADED));
+            }
+        }
+        return text;
     }
 
     /** A cosmetic's name as it is worn: a title in its colour in brackets, the rest in the wardrobe purple. */

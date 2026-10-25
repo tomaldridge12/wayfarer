@@ -12,6 +12,18 @@ import org.bukkit.Tag;
 
 /** The server's own tags, records and particles. */
 final class PaperObjectiveVocabulary implements ObjectiveVocabulary {
+    private final java.util.function.Predicate<String> hatAbility;
+
+    /** @param hatAbility whether the curios module defines this hat ability; before it has loaded, nothing is known */
+    PaperObjectiveVocabulary(java.util.function.Predicate<String> hatAbility) {
+        this.hatAbility = hatAbility;
+    }
+
+    @Override
+    public boolean isHatAbility(String id) {
+        return hatAbility.test(id);
+    }
+
     @Override
     public Set<String> tag(String tag) {
         NamespacedKey key = NamespacedKey.fromString(tag);

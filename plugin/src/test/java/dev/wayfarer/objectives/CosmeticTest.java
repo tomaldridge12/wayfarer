@@ -60,4 +60,20 @@ class CosmeticTest {
         assertFalse(back.toggleWorn(pet), "wearing the same one again takes it off");
         assertNull(back.pet);
     }
+
+    @Test
+    void noHatWithAnAbilityIsInTheShopAndListingOneIsRefused() {
+        ObjectiveConfigParser.Result shipped = ObjectiveFixtures.shipped();
+        List<String> abilityHats = shipped.cosmetics().values().stream()
+                .filter(c -> c.hat() != null && !c.hat().plain()).map(Cosmetic::id).toList();
+        assertFalse(abilityHats.isEmpty());
+
+        ShopConfigParser.Result shop = ShopConfigParser.parse(ObjectiveFixtures.shippedYaml().get("shop"), shipped.cosmetics(), java.util.Set.of());
+        assertTrue(abilityHats.stream().noneMatch(shop.prices().cosmetics()::containsKey));
+
+        ShopConfigParser.Result bad = ShopConfigParser.parse(java.util.Map.of("cosmetics", java.util.Map.of(abilityHats.get(0), 100)),
+                shipped.cosmetics(), java.util.Set.of());
+        assertTrue(bad.prices().cosmetics().isEmpty());
+        assertEquals(1, bad.problems().size());
+    }
 }

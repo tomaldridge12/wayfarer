@@ -40,6 +40,26 @@ public final class CurioConfigParser {
         return new Result(out, List.copyOf(p.problems));
     }
 
+    /**
+     * The {@code hat-abilities} section: the same entries as curios, but charms only (a hat has no right-click). Each
+     * keeps the id it is written under for lookup, and carries {@code hat_<id>} inside so its attribute modifiers
+     * never collide with a curio's.
+     */
+    public static Result parseHatAbilities(Object section, CurioVocabulary names) {
+        Result parsed = parse(section, names);
+        List<String> problems = new ArrayList<>(parsed.problems());
+        Map<String, CurioDefinition> out = new LinkedHashMap<>();
+        parsed.curios().forEach((id, c) -> {
+            if (c.tool()) {
+                problems.add("Hat ability " + id + " skipped: a hat has no right-click, so only charm effects work");
+            } else {
+                out.put(id, new CurioDefinition("hat_" + id, c.name(), c.colour(), c.description(), c.flavour(), c.effect(),
+                        c.conditions(), 0));
+            }
+        });
+        return new Result(out, List.copyOf(problems));
+    }
+
     /** A reason a curio cannot load. */
     static final class Bad extends Exception {
         Bad(String message) {

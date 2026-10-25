@@ -407,6 +407,55 @@ curios:
 # Special gear: named pieces with fixed enchants, set when given (vanilla and ExcellentEnchants). No perks: those stay
 # with relics and curios. base: alloy:<alloy>_<shape> (through the alloys module; falls back to the iron piece, or to
 # fallback: when given) or a vanilla item. flavour: one line of story. unbreakable: true for the odd joke.
+# Hat abilities: small charms a worn hat gives while it is on your head. They use the same entries and charm effects as
+# curios (no right-click effects), but a hat is not carried in the inventory, so these are not items and not collectible.
+# objectives.yml hats name one with ability:. They stack with curios and relic perks. The shop never sells such a hat.
+hat-abilities:
+  lamplight:
+    name: "Lamplight"
+    colour: "#F2D66B"
+    description: ["Night Vision while you are", "underground."]
+    effect: potion
+    potion: night_vision
+    when: underground
+
+  featherlight:
+    name: "Featherlight"
+    colour: "#CFE6F2"
+    description: ["Slow Falling once you have", "fallen more than 8 blocks."]
+    effect: fall_guard
+    distance: 8
+
+  green_thumb:
+    name: "Green Thumb"
+    colour: "#8FCB6B"
+    description: ["Crops and saplings within 4 blocks", "grow a little faster."]
+    effect: grow
+    radius: 4
+    every: 8
+
+  lodestone_pull:
+    name: "Lodestone Pull"
+    colour: "#9AA3B8"
+    description: ["Dropped items within 3 blocks", "drift towards you."]
+    effect: magnet
+    radius: 3
+
+  lily_luck:
+    name: "Lily Luck"
+    colour: "#5FA052"
+    description: ["A quarter more experience", "from fishing."]
+    effect: xp_bonus
+    sources: [fishing]
+    multiplier: 1.25
+
+  fireproof_brim:
+    name: "Fireproof Brim"
+    colour: "#E0702E"
+    description: ["Magma blocks do not burn", "your feet."]
+    effect: immunity
+    damage: [hot_floor]
+
 gear:
   hoe_of_a_hundred_hoes:
     name: "Hoe of a Hundred Hoes"

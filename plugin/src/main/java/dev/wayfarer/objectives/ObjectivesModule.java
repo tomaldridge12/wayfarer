@@ -29,7 +29,7 @@ public final class ObjectivesModule implements Module {
     static final String ADMIN_PERMISSION = "wayfarer.objectives.admin";
 
     private final JavaPlugin plugin;
-    private final ObjectiveVocabulary vocabulary = new PaperObjectiveVocabulary();
+    private ObjectiveVocabulary vocabulary;
     private final List<Listener> listeners = new ArrayList<>();
     private Core core;
     private volatile Map<String, Feat> feats = Map.of();
@@ -56,6 +56,9 @@ public final class ObjectivesModule implements Module {
     @Override
     public void enable(Core core) throws Exception {
         this.core = core;
+        vocabulary = new PaperObjectiveVocabulary(ability -> core.services().get(dev.wayfarer.core.HatAbilities.Catalogue.class)
+                .map(c -> c.exists(ability)).orElse(false)); // curios enables first, so its abilities are known by now
+        core.services().register(id(), dev.wayfarer.core.HatAbilities.Worn.class, this::wornAbility);
         core.progression().registerRewardType(id(), FeatRules.FEAT, new FeatMarker());
         core.progression().registerRewardType(id(), "cosmetic", new Cosmetics());
         ObjectivesService[] self = new ObjectivesService[1];
@@ -180,6 +183,17 @@ public final class ObjectivesModule implements Module {
         return problems.size();
     }
 
+
+    /** The ability of the hat this player has on, none when they are away, dead or wear a plain one. */
+    private java.util.Optional<String> wornAbility(UUID player) {
+        org.bukkit.entity.Player online = plugin.getServer().getPlayer(player);
+        ObjectivesPlayerData data = service == null ? null : service.store().cached(player);
+        Cosmetic c = data == null || data.hat == null ? null : cosmetics.get(data.hat);
+        if (online == null || online.isDead() || c == null || c.hat() == null) {
+            return java.util.Optional.empty();
+        }
+        return java.util.Optional.ofNullable(c.hat().ability());
+    }
 
     /** {@code tracker.max}: how many things a player may track at once. */
     static int trackerCap(Object raw, List<String> problems) {

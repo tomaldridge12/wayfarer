@@ -16,9 +16,16 @@ import java.util.UUID;
  */
 public final class CurioRules {
     private final Map<String, CurioDefinition> curios;
+    private final Map<String, CurioDefinition> hatAbilities;
 
     public CurioRules(Map<String, CurioDefinition> curios) {
+        this(curios, Map.of());
+    }
+
+    /** @param hatAbilities charm-like perks worn hats give, by ability id; they are not items and not collectible */
+    public CurioRules(Map<String, CurioDefinition> curios, Map<String, CurioDefinition> hatAbilities) {
         this.curios = Map.copyOf(curios);
+        this.hatAbilities = Map.copyOf(hatAbilities);
     }
 
     public static CurioRules empty() {
@@ -27,6 +34,15 @@ public final class CurioRules {
 
     public Optional<CurioDefinition> curio(String id) {
         return Optional.ofNullable(curios.get(id));
+    }
+
+    public Optional<CurioDefinition> hatAbility(String id) {
+        return Optional.ofNullable(hatAbilities.get(id));
+    }
+
+    /** The hat ability if it exists and its conditions hold right now. */
+    public Optional<CurioDefinition> hatWorking(String id, CurioFacts facts) {
+        return hatAbility(id).filter(c -> Condition.all(c.conditions(), facts));
     }
 
     /** Every curio, in config order is not kept by Map.copyOf, so sorted by id for stable output. */

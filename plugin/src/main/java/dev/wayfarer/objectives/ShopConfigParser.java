@@ -30,6 +30,8 @@ public final class ShopConfigParser {
         ObjectiveConfigParser.asMap(m.get("cosmetics")).forEach((id, price) -> {
             if (!cosmetics.containsKey(id)) {
                 problems.add("Shop: cosmetic " + id + " is not in cosmetics; not sold");
+            } else if (cosmetics.get(id).hat() != null && !cosmetics.get(id).hat().plain()) {
+                problems.add("Shop: cosmetic " + id + " is a hat with an ability, and the shop never sells power; not sold");
             } else if (price(price) < 1) {
                 problems.add("Shop: cosmetic " + id + " needs a price of 1 or more; not sold");
             } else {
