@@ -58,6 +58,59 @@ cosmetics:
   kit: {kind: pet, name: "Fox Kit", entity: fox}
   mini_shulker: {kind: pet, name: "Mini Shulker", model: wayfarer:pet/mini_shulker, scale: 0.6}
   mini_ender_dragon: {kind: pet, name: "Mini Ender Dragon", model: wayfarer:pet/mini_ender_dragon, scale: 0.7}
+  # Cosmetics paid by the feats below (feat-only, never in the shop).
+  coal_baron: {kind: title, name: "Coal Baron", colour: "#7A7A88"}
+  ironmonger: {kind: title, name: "Ironmonger", colour: "#B7B7C2"}
+  gold_fever: {kind: title, name: "Gold Fever", colour: "#F2C230"}
+  gilded: {kind: trail, name: "Gilded Trail", particle: wax_on}
+  diamond_hands: {kind: title, name: "Diamond Hands", colour: "#5FD6E0"}
+  diamond_cap: {kind: hat, name: "Diamond Cap", item: diamond_block}
+  tinkerer: {kind: title, name: "Tinkerer", colour: "#D83A3A"}
+  lucky_hat: {kind: hat, name: "Lucky Hat", item: emerald_block, ability: fortunes_favour}
+  sandman: {kind: title, name: "Sandman", colour: "#E3CE8F"}
+  potter: {kind: title, name: "Potter", colour: "#B0764F"}
+  turf_hat: {kind: hat, name: "Turf Hat", item: grass_block}
+  snowed_in: {kind: title, name: "Snowed In", colour: "#D8EEF7"}
+  green_fingers: {kind: title, name: "Green Fingers", colour: "#7DB356"}
+  grain_baron: {kind: title, name: "Grain Baron", colour: "#E0C24A"}
+  potato_prince: {kind: title, name: "Potato Prince", colour: "#C9A064"}
+  melon_hat: {kind: hat, name: "Melon Hat", item: melon}
+  shepherd: {kind: title, name: "Shepherd", colour: "#EDEDED"}
+  menagerie: {kind: title, name: "Menagerie", colour: "#D9884A"}
+  old_salt: {kind: title, name: "Old Salt", colour: "#4F8FBF"}
+  barrel_hat: {kind: hat, name: "Barrel Hat", item: barrel}
+  salmon_run: {kind: title, name: "Salmon Run", colour: "#F28C6B"}
+  cod_father: {kind: title, name: "Cod Father", colour: "#D8C7A0"}
+  tidal_crown: {kind: hat, name: "Tidal Crown", item: conduit, ability: tidal_grace}
+  undertaker: {kind: title, name: "Undertaker", colour: "#7A9A6A"}
+  bone_collector: {kind: title, name: "Bone Collector", colour: "#E4E0D0"}
+  creeper_whisperer: {kind: title, name: "Creeper Whisperer", colour: "#5AB84A"}
+  spider_stomper: {kind: title, name: "Spider Stomper", colour: "#8A4A7A"}
+  void_hat: {kind: hat, name: "Void Hat", item: ender_chest}
+  blaze_runner: {kind: title, name: "Blaze Runner", colour: "#F28C28"}
+  blazing: {kind: trail, name: "Blazing Trail", particle: small_flame}
+  halo_crown: {kind: hat, name: "Halo Crown", item: beacon, ability: halo}
+  dragonscale_helm: {kind: hat, name: "Dragonscale Helm", item: dragon_egg, ability: dragonscale}
+  boss_bane: {kind: title, name: "Boss Bane", colour: "#E86A5C"}
+  cookie_monster: {kind: title, name: "Cookie Monster", colour: "#A8683C"}
+  toolmaker: {kind: title, name: "Toolmaker", colour: "#A8A8B8"}
+  lamplighter: {kind: title, name: "Lamplighter", colour: "#F2D66B"}
+  engineer: {kind: title, name: "Engineer", colour: "#E0583A"}
+  rail_baron: {kind: title, name: "Rail Baron", colour: "#9A7A5A"}
+  chest_hat: {kind: hat, name: "Chest Hat", item: chest}
+  globetrotter: {kind: title, name: "Globetrotter", colour: "#5B9BD5"}
+  scout_hat: {kind: hat, name: "Scout Hat", item: cartography_table}
+  monument_diver: {kind: title, name: "Monument Diver", colour: "#3AA6A0"}
+  stronghold_stroller: {kind: title, name: "Stronghold Stroller", colour: "#7A8A7A"}
+  mansion_guest: {kind: title, name: "Mansion Guest", colour: "#8A5A4A"}
+  fortress_frequenter: {kind: title, name: "Fortress Frequenter", colour: "#B04A4A"}
+  bastion_basher: {kind: title, name: "Bastion Basher", colour: "#6A6A7A"}
+  soul_wisp: {kind: trail, name: "Soul Wisp Trail", particle: soul}
+  chorus_hat: {kind: hat, name: "Chorus Hat", item: chorus_flower}
+  shulker_slayer: {kind: title, name: "Shulker Slayer", colour: "#B58AC8"}
+  skyborne: {kind: title, name: "Skyborne", colour: "#CFE6F2"}
+  listeners_hood: {kind: hat, name: "Listener's Hood", item: sculk_catalyst, ability: deep_focus}
+  windrunner_cap: {kind: hat, name: "Windrunner Cap", item: copper_bulb, ability: windrunner}
 
 # Feats: one-off milestones on any count, each paying something that fits it.
 #   name, flavour (one line of story shown in the Journal), counts (activities, as ladders take them: verb:target,
@@ -283,6 +336,317 @@ feats:
     distinct: true
     at: all
     rewards: [curio:hyacinthus_blessing, cosmetic:crate_digger]
+
+  # --- More feats: mining, digging, farming, fishing, combat, crafting, exploring, the Nether and the End ---
+  coal_cart:
+    name: "Coal Cart"
+    flavour: "Five thousand coal ore. Your hands will never be clean again."
+    counts: [mine:coal_ore, mine:deepslate_coal_ore]
+    at: 5000
+    rewards: [cosmetic:coal_baron]
+  ironmonger:
+    name: "Ironmonger"
+    flavour: "Three thousand iron ore, each one a small argument won with the rock."
+    counts: [mine:iron_ore, mine:deepslate_iron_ore]
+    at: 3000
+    rewards: [cosmetic:ironmonger]
+  gold_fever:
+    name: "Gold Fever"
+    flavour: "Fifteen hundred gold ore. You see a glint in everything now."
+    counts: [mine:gold_ore, mine:deepslate_gold_ore, mine:nether_gold_ore]
+    at: 1500
+    rewards: [cosmetic:gold_fever, cosmetic:gilded]
+  diamond_hands:
+    name: "Diamond Hands"
+    flavour: "Two hundred and fifty diamond ore. You never once let go."
+    counts: [mine:diamond_ore, mine:deepslate_diamond_ore]
+    at: 250
+    rewards: [cosmetic:diamond_hands, cosmetic:diamond_cap]
+  redstone_rewired:
+    name: "Redstone Rewired"
+    flavour: "Two thousand redstone ore. Everything you own now has a clock in it."
+    counts: [mine:redstone_ore, mine:deepslate_redstone_ore]
+    at: 2000
+    rewards: [cosmetic:tinkerer]
+  emerald_eye:
+    name: "Emerald Eye"
+    flavour: "A hundred emerald ore, the rarest green in the ground. Luck follows you about."
+    counts: [mine:emerald_ore, mine:deepslate_emerald_ore]
+    at: 100
+    rewards: [cosmetic:lucky_hat]
+  sandman:
+    name: "Sandman"
+    flavour: "Ten thousand sand, and not one grain of it stayed put."
+    counts: [mine:sand, mine:red_sand]
+    at: 10000
+    rewards: [cosmetic:sandman]
+  clay_potter:
+    name: "Clay Potter"
+    flavour: "Two thousand clay. The riverbeds are much shallower now."
+    counts: [mine:clay]
+    at: 2000
+    rewards: [cosmetic:potter]
+  dirt_devil:
+    name: "Dirt Devil"
+    flavour: "Twenty-five thousand blocks of dirt. The ground owes you a basement."
+    counts: [mine:dirt, mine:grass_block, mine:coarse_dirt, mine:rooted_dirt, mine:podzol, mine:mycelium]
+    at: 25000
+    rewards: [cosmetic:turf_hat]
+  snowed_in:
+    name: "Snowed In"
+    flavour: "Three thousand snow. You built a fort, then dug out of it, then did it again."
+    counts: [mine:snow, mine:snow_block]
+    at: 3000
+    rewards: [cosmetic:snowed_in]
+  green_fingers:
+    name: "Green Fingers"
+    flavour: "Five thousand crops harvested. Things grow when you look at them."
+    counts: ["harvest:*"]
+    at: 5000
+    rewards: [cosmetic:green_fingers]
+  grain_baron:
+    name: "Grain Baron"
+    flavour: "Five thousand wheat. Whole fields bow when you walk through."
+    counts: [harvest:wheat]
+    at: 5000
+    rewards: [cosmetic:grain_baron]
+  potato_prince:
+    name: "Potato Prince"
+    flavour: "Two thousand potatoes, and every one was a surprise."
+    counts: [harvest:potatoes]
+    at: 2000
+    rewards: [cosmetic:potato_prince]
+  melon_mage:
+    name: "Melon Mage"
+    flavour: "Fifteen hundred melons. You have stopped being able to tell them from boulders."
+    counts: [mine:melon]
+    at: 1500
+    rewards: [cosmetic:melon_hat]
+  shepherd:
+    name: "Shepherd"
+    flavour: "Five hundred sheep sheared. The flock has never looked so neat."
+    counts: [shear:sheep]
+    at: 500
+    rewards: [cosmetic:shepherd, supply:floral_bundle*2]
+  menagerie:
+    name: "Menagerie"
+    flavour: "Ten kinds of animal bred. The barn has become a small zoo."
+    counts: ["breed:*"]
+    distinct: true
+    at: 10
+    rewards: [cosmetic:menagerie, supply:animal_crate*2]
+  old_salt:
+    name: "Old Salt"
+    flavour: "A thousand catches. You talk to the water and it sometimes answers."
+    counts: ["catch:*"]
+    at: 1000
+    rewards: [cosmetic:old_salt, cosmetic:barrel_hat]
+  salmon_run:
+    name: "Salmon Run"
+    flavour: "Two hundred and fifty salmon. You swam against the current and won."
+    counts: [catch:salmon]
+    at: 250
+    rewards: [cosmetic:salmon_run]
+  cod_father:
+    name: "Cod Father"
+    flavour: "Five hundred cod. They kiss your ring. Mostly out of fear."
+    counts: [catch:cod]
+    at: 500
+    hidden: true
+    rewards: [cosmetic:cod_father]
+  fish_collector:
+    name: "Fish Collector"
+    flavour: "Thirty kinds of fish in the Almanac. The sea has run out of surprises."
+    counts: ["catch:wayfarer:fish/*"]
+    distinct: true
+    at: 30
+    rewards: [cosmetic:tidal_crown]
+  undead_undertaker:
+    name: "Undead Undertaker"
+    flavour: "Two thousand zombies, husks and drowned. The graveyards have stopped asking."
+    counts: [kill:zombie, kill:husk, kill:drowned]
+    at: 2000
+    rewards: [cosmetic:undertaker]
+  bone_collector:
+    name: "Bone Collector"
+    flavour: "Two thousand skeletons. Your bone meal is, frankly, excessive."
+    counts: [kill:skeleton, kill:stray, kill:bogged]
+    at: 2000
+    rewards: [cosmetic:bone_collector]
+  creeper_whisperer:
+    name: "Creeper Whisperer"
+    flavour: "Five hundred creepers, and not one of them got a word in."
+    counts: [kill:creeper]
+    at: 500
+    rewards: [cosmetic:creeper_whisperer]
+  spider_stomper:
+    name: "Spider Stomper"
+    flavour: "A thousand spiders. The caves have been rather quiet since."
+    counts: [kill:spider, kill:cave_spider]
+    at: 1000
+    rewards: [cosmetic:spider_stomper]
+  enderman_hunter:
+    name: "Enderman Hunter"
+    flavour: "Five hundred endermen, never once looked in the eye."
+    counts: [kill:enderman]
+    at: 500
+    rewards: [cosmetic:void_hat]
+  blaze_runner:
+    name: "Blaze Runner"
+    flavour: "Three hundred blazes. The fortress is warmer without them, somehow."
+    counts: [kill:blaze]
+    at: 300
+    rewards: [cosmetic:blaze_runner, cosmetic:blazing]
+  wither_bane:
+    name: "Wither Bane"
+    flavour: "Three withers laid low. Even the nether stars look at you differently."
+    counts: [kill:wither]
+    at: 3
+    rewards: [cosmetic:halo_crown]
+  dragon_bane:
+    name: "Dragon Bane"
+    flavour: "Ten dragons. The End keeps a chair for you."
+    counts: [kill:ender_dragon]
+    at: 10
+    rewards: [cosmetic:dragonscale_helm]
+  boss_collector:
+    name: "Boss Collector"
+    flavour: "Every kind of boss defeated at least once. A fine and terrible collection."
+    counts: ["defeat:*"]
+    distinct: true
+    at: 9
+    rewards: [cosmetic:crown]
+  boss_bane:
+    name: "Boss Bane"
+    flavour: "Fifty bosses defeated. They have started sending their apologies."
+    counts: ["defeat:*"]
+    at: 50
+    rewards: [cosmetic:boss_bane]
+  cookie_monster:
+    name: "Cookie Monster"
+    flavour: "A thousand cookies. Nobody saw. Nobody will ever know."
+    counts: [craft:cookie]
+    at: 1000
+    hidden: true
+    rewards: [cosmetic:cookie_monster]
+  toolmaker:
+    name: "Toolmaker"
+    flavour: "A hundred and fifty pickaxes. You break more than you mine."
+    counts: ["craft:#minecraft:pickaxes"]
+    at: 150
+    rewards: [cosmetic:toolmaker]
+  lamplighter:
+    name: "Lamplighter"
+    flavour: "Five hundred lanterns. Every dark corner has been taken care of."
+    counts: [craft:lantern, craft:soul_lantern]
+    at: 500
+    rewards: [cosmetic:lamplighter]
+  engineer:
+    name: "Engineer"
+    flavour: "Five hundred pistons, repeaters and comparators. Something is definitely ticking."
+    counts: [craft:repeater, craft:comparator, craft:piston]
+    at: 500
+    rewards: [cosmetic:engineer]
+  rail_baron:
+    name: "Rail Baron"
+    flavour: "Three thousand rails. The world is a timetable now."
+    counts: [craft:rail, craft:powered_rail]
+    at: 3000
+    rewards: [cosmetic:rail_baron]
+  carpenter:
+    name: "Carpenter"
+    flavour: "Five hundred chests and barrels. Everything in the world has a home."
+    counts: [craft:chest, craft:barrel]
+    at: 500
+    rewards: [cosmetic:chest_hat]
+  globetrotter:
+    name: "Globetrotter"
+    flavour: "Fifty different lands stood in. The map is starting to fill."
+    counts: ["discover:biome/*"]
+    distinct: true
+    at: 50
+    rewards: [cosmetic:globetrotter]
+  structure_scout:
+    name: "Structure Scout"
+    flavour: "Fifteen different kinds of structure found. You always know where the next one is."
+    counts: ["discover:structure/*"]
+    distinct: true
+    at: 15
+    rewards: [cosmetic:scout_hat]
+  monument_diver:
+    name: "Monument Diver"
+    flavour: "Five ocean monuments entered. The guardians know you by name."
+    counts: [discover:structure/monument]
+    at: 5
+    rewards: [cosmetic:monument_diver]
+  stronghold_stroller:
+    name: "Stronghold Stroller"
+    flavour: "Three strongholds visited. You did not need the eyes of ender after the first."
+    counts: [discover:structure/stronghold]
+    at: 3
+    hidden: true
+    rewards: [cosmetic:stronghold_stroller]
+  mansion_guest:
+    name: "Mansion Guest"
+    flavour: "Three woodland mansions entered, and every host was rude."
+    counts: [discover:structure/mansion]
+    at: 3
+    rewards: [cosmetic:mansion_guest]
+  fortress_frequenter:
+    name: "Fortress Frequenter"
+    flavour: "Ten nether fortresses. You know where the good corridors are."
+    counts: [discover:structure/fortress]
+    at: 10
+    rewards: [cosmetic:fortress_frequenter]
+  bastion_basher:
+    name: "Bastion Basher"
+    flavour: "Eight bastions. The piglins pretend not to see you now."
+    counts: [discover:structure/bastion_remnant]
+    at: 8
+    rewards: [cosmetic:bastion_basher]
+  soul_sand_shuffler:
+    name: "Soul Sand Shuffler"
+    flavour: "Five thousand soul sand and soil. Faint voices keep your pace."
+    counts: [mine:soul_sand, mine:soul_soil]
+    at: 5000
+    rewards: [cosmetic:soul_wisp]
+  chorus_picker:
+    name: "Chorus Picker"
+    flavour: "Two thousand chorus plants. You have learned to hum in the key of purple."
+    counts: [mine:chorus_flower, mine:chorus_plant]
+    at: 2000
+    rewards: [cosmetic:chorus_hat]
+  end_city_regular:
+    name: "End City Regular"
+    flavour: "Ten end cities. The shulkers have started to keep a little one back for you."
+    counts: [discover:structure/end_city]
+    at: 10
+    rewards: [cosmetic:mini_shulker]
+  shulker_slayer:
+    name: "Shulker Slayer"
+    flavour: "A hundred shulkers. Their boxes are the only furniture you trust."
+    counts: [kill:shulker]
+    at: 100
+    rewards: [cosmetic:shulker_slayer]
+  skyborne:
+    name: "Skyborne"
+    flavour: "You found a pair of wings, and the ground has been rather dull since."
+    counts: [find:elytra]
+    at: 1
+    hidden: true
+    rewards: [cosmetic:skyborne]
+  sculk_listener:
+    name: "Sculk Listener"
+    flavour: "A thousand sculk. You can hear the deep dark breathing now."
+    counts: [mine:sculk]
+    at: 1000
+    rewards: [cosmetic:listeners_hood]
+  gale_force:
+    name: "Gale Force"
+    flavour: "A thousand breezes, and the wind has started running errands for you."
+    counts: [kill:breeze]
+    at: 1000
+    rewards: [cosmetic:windrunner_cap]
 
 # When things turn over, in this time zone: dailies at daily-reset, the weekly on weekly-reset at that time, weekend
 # events from event-start to event-end ("MONDAY 00:00" is Sunday midnight).

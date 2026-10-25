@@ -456,6 +456,57 @@ hat-abilities:
     effect: immunity
     damage: [hot_floor]
 
+  # Stronger ones, only for very hard feats.
+  fortunes_favour:
+    name: "Fortune's Favour"
+    colour: "#6FD36F"
+    description: ["A little extra Luck, always."]
+    effect: attribute
+    attribute: luck
+    amount: 1
+    operation: add
+
+  tidal_grace:
+    name: "Tidal Grace"
+    colour: "#3AA6A0"
+    description: ["Water Breathing while you are", "underwater."]
+    effect: potion
+    potion: water_breathing
+    when: underwater
+
+  halo:
+    name: "Halo"
+    colour: "#F2F2C0"
+    description: ["One extra heart, always."]
+    effect: attribute
+    attribute: max_health
+    amount: 2
+    operation: add
+
+  dragonscale:
+    name: "Dragonscale"
+    colour: "#8A3FD0"
+    description: ["Fire, campfires and magma do not", "hurt you."]
+    effect: immunity
+    damage: [fire, hot_floor, campfire]
+
+  deep_focus:
+    name: "Deep Focus"
+    colour: "#2E7A8C"
+    description: ["Haste while you are underground."]
+    effect: potion
+    potion: haste
+    when: underground
+
+  windrunner:
+    name: "Windrunner"
+    colour: "#CFE6F2"
+    description: ["A tenth faster on your feet, always."]
+    effect: attribute
+    attribute: movement_speed
+    amount: 0.1
+    operation: multiply_base
+
 gear:
   hoe_of_a_hundred_hoes:
     name: "Hoe of a Hundred Hoes"

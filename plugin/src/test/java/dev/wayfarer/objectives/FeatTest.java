@@ -17,8 +17,8 @@ class FeatTest {
     @Test
     void theShippedFeatsAllLoadEachWithAStoryAndAPrize() {
         assertEquals(List.of(), SHIPPED.problems());
-        assertTrue(SHIPPED.feats().size() >= 35, "feats are added over time, never lost");
-        assertEquals(3, SHIPPED.feats().values().stream().filter(Feat::hidden).count());
+        assertTrue(SHIPPED.feats().size() >= 80, "feats are added over time, never lost");
+        assertTrue(SHIPPED.feats().values().stream().filter(Feat::hidden).count() >= 7, "hidden feats stay in");
         SHIPPED.feats().values().forEach(f -> {
             assertFalse(f.flavour().isBlank(), f.id());
             assertFalse(f.rewards().isEmpty(), f.id());
