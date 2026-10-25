@@ -31,6 +31,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private final ItemMakers<ItemStack> itemMakers = new ItemMakers<>();
     private final dev.wayfarer.core.ItemIds itemIds = new dev.wayfarer.core.ItemIds();
     private final dev.wayfarer.core.Services services = new dev.wayfarer.core.Services();
+    private final dev.wayfarer.core.Xp xp = new dev.wayfarer.core.Xp();
     private RewardEnchants rewardEnchants;
 
     @Override
@@ -117,6 +118,11 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public dev.wayfarer.core.ItemIds itemIds() {
         return itemIds;
+    }
+
+    @Override
+    public dev.wayfarer.core.Xp xp() {
+        return xp;
     }
 
     @Override
