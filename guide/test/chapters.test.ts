@@ -2,28 +2,31 @@ import { describe, expect, it } from 'vitest';
 import { fixture, loadFixture } from './fixture';
 
 describe('chapters', () => {
-  it('come out in timeline order with their status', () => {
+  it('come out in group order, list order within a group, with their status', () => {
     const g = loadFixture(fixture({
-      'data/chapters.yml': `chapters:
-  - { slug: bosses, title: Bosses, stage: nether, status: live }
-  - { slug: alloys, title: Alloys, stage: iron, status: planned }
-  - { slug: welcome, title: Welcome, stage: none, status: live }`,
+      'data/chapters.yml': `groups:
+  - { id: start, name: Start, item: iron_ingot }
+  - { id: gear, name: Gear, item: diamond }
+chapters:
+  - { slug: bosses, title: Bosses, group: gear, stage: nether, status: live }
+  - { slug: alloys, title: Alloys, group: gear, stage: iron, status: planned }
+  - { slug: welcome, title: Welcome, group: start, stage: none, status: live }`,
       'chapters/bosses.mdx': '', 'chapters/alloys.mdx': '', 'chapters/welcome.mdx': '',
     }));
     expect(g.chapters.map((c) => [c.slug, c.status])).toEqual([
-      ['welcome', 'live'], ['alloys', 'planned'], ['bosses', 'live'],
+      ['welcome', 'live'], ['bosses', 'live'], ['alloys', 'planned'],
     ]);
   });
 
   it('fail the build when a listed chapter has no file', () => {
     expect(() => loadFixture(fixture({
-      'data/chapters.yml': 'chapters:\n  - { slug: relics, title: Relics, stage: diamond, status: live }',
+      'data/chapters.yml': 'groups:\n  - { id: g, name: G, item: iron_ingot }\nchapters:\n  - { slug: relics, title: Relics, group: g, stage: diamond, status: live }',
     }))).toThrow(/chapter 'relics' has no file relics.mdx/);
   });
 
   it('reject a status other than live or planned', () => {
     expect(() => loadFixture(fixture({
-      'data/chapters.yml': 'chapters:\n  - { slug: x, title: X, stage: iron, status: soon }',
+      'data/chapters.yml': 'groups:\n  - { id: g, name: G, item: iron_ingot }\nchapters:\n  - { slug: x, title: X, group: g, stage: iron, status: soon }',
       'chapters/x.mdx': '',
     }))).toThrow(/status 'soon'/);
   });

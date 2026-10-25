@@ -1,19 +1,26 @@
-# The Guide's chapters in reading order. stage: where the chapter sits on the timeline (none = before it).
+# The Guide's chapters. groups: the sidebar sections and the reading order (what a chapter is about).
+# stage: where in a playthrough the chapter starts to matter, shown as a "from" chip (none = any time).
 # status: live once the feature is on the server, planned until then.
+groups:
+  - { id: start, name: Start here, item: compass }
+  - { id: doing, name: Doing things, item: writable_book }
+  - { id: hunting, name: Hunting and gear, item: iron_sword }
+  - { id: exploring, name: Exploring, item: spyglass }
+  - { id: enchanting, name: Enchanting, item: enchanted_book }
 chapters:
-  - { slug: welcome, title: 'Welcome, Wayfarer', stage: none, status: live }
-  - { slug: journal, title: The Journal and collections, stage: none, status: live }
-  - { slug: banners-and-trophies, title: Banners and trophies, stage: iron, status: live }
-  - { slug: pity-drops, title: Pity drops, stage: iron, status: live }
-  - { slug: alloys, title: Alloys and the crucible, stage: iron, status: live }
-  - { slug: marks, title: Marks, stage: iron, status: live }
-  - { slug: objectives, title: Objectives, stage: iron, status: live }
-  - { slug: feats, title: Feats, stage: iron, status: live }
-  - { slug: tracking-hats-pets, title: 'Tracking, hats and pets', stage: iron, status: live }
-  - { slug: curios, title: 'Curios, gear and supplies', stage: iron, status: live }
-  - { slug: enchanting, title: The enchanting table, stage: diamond, status: live }
-  - { slug: almanac, title: The Almanac, stage: iron, status: live }
-  - { slug: treasures, title: Treasures, stage: iron, status: live }
-  - { slug: relics, title: Relics, stage: diamond, status: live }
-  - { slug: bosses, title: Bosses, stage: nether, status: live }
-  - { slug: exploration, title: Exploration, stage: post_end, status: live }
+  - { slug: welcome, title: 'Welcome, Wayfarer', group: start, stage: none, status: live }
+  - { slug: journal, title: The Journal and collections, group: start, stage: none, status: live }
+  - { slug: objectives, title: Objectives, group: doing, stage: iron, status: live }
+  - { slug: feats, title: Feats, group: doing, stage: iron, status: live }
+  - { slug: tracking-hats-pets, title: 'Tracking, hats and pets', group: doing, stage: iron, status: live }
+  - { slug: curios, title: 'Curios, gear and supplies', group: doing, stage: iron, status: live }
+  - { slug: banners-and-trophies, title: Banners and trophies, group: hunting, stage: iron, status: live }
+  - { slug: pity-drops, title: Pity drops, group: hunting, stage: iron, status: live }
+  - { slug: alloys, title: Alloys and the crucible, group: hunting, stage: iron, status: live }
+  - { slug: marks, title: Marks, group: hunting, stage: iron, status: live }
+  - { slug: relics, title: Relics, group: hunting, stage: diamond, status: live }
+  - { slug: bosses, title: Bosses, group: hunting, stage: nether, status: live }
+  - { slug: almanac, title: The Almanac, group: exploring, stage: iron, status: live }
+  - { slug: treasures, title: Treasures, group: exploring, stage: iron, status: live }
+  - { slug: exploration, title: Exploration, group: exploring, stage: post_end, status: live }
+  - { slug: enchanting, title: The enchanting table, group: enchanting, stage: diamond, status: live }

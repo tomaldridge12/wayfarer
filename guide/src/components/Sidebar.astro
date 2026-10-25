@@ -1,5 +1,6 @@
 ---
-// The chapter list as a Minecraft inventory panel, grouped under the stages of the timeline.
+// The chapter list as a Minecraft inventory panel, grouped by what each chapter is about. A small stage icon marks
+// where in a playthrough a chapter starts to matter.
 import Icon from './Icon.astro';
 import { guide } from '../data/repo';
 
@@ -7,10 +8,8 @@ interface Props { current: string }
 const { current } = Astro.props;
 const g = guide();
 const href = (s: string) => (s === 'welcome' ? '/' : `/${s}/`);
-const groups = [
-  { id: 'none', name: 'Start here', item: 'compass', chapters: g.chapters.filter((c) => c.stage === 'none') },
-  ...g.stages.map((s) => ({ id: s.id, name: s.name, item: s.item, chapters: g.chapters.filter((c) => c.stage === s.id) })),
-].filter((grp) => grp.chapters.length > 0);
+const groups = g.groups.map((grp) => ({ ...grp, chapters: g.chapters.filter((c) => c.group === grp.id) })).filter((grp) => grp.chapters.length > 0);
+const stageOf = (c: { stage: string }) => g.stages.find((s) => s.id === c.stage);
 ---
 <aside class="side">
   <a class="brand" href="/">
@@ -21,14 +20,17 @@ const groups = [
   <summary class="toc-toggle">Contents <span class="toc-current">{g.chapters.find((c) => c.slug === current)?.title}</span></summary>
   <nav class="gui" aria-label="Chapters">
     {groups.map((grp) => (
-      <section class="group" data-stage={grp.id}>
+      <section class="group" data-group={grp.id}>
         <h2 class="group-title"><span class="slot"><Icon item={grp.item} size={16} /></span>{grp.name}</h2>
         <ul>
           {grp.chapters.map((c) => (
             <li>
               <a href={href(c.slug)} aria-current={c.slug === current ? 'page' : undefined} class:list={[{ planned: c.status === 'planned' }]}>
-                {c.title}
-                {c.status === 'planned' && <span class="tag">planned</span>}
+                <span class="title">{c.title}</span>
+                <span class="marks">
+                  {c.status === 'planned' && <span class="tag">planned</span>}
+                  {stageOf(c) && <span class="from" title={`From ${stageOf(c)!.name}`}><Icon item={stageOf(c)!.item} size={14} /></span>}
+                </span>
               </a>
             </li>
           ))}
@@ -88,7 +90,8 @@ const groups = [
   li a.planned { color: #5a5a5a; }
   li a[aria-current='page'].planned { color: var(--mc-gray); }
   .tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #7a7a7a; }
-  .group[data-stage='iron'] .group-title { color: #4a4a4a; }
+  .marks { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+  .from { display: inline-grid; place-items: center; opacity: 0.75; }
 
   .toc-toggle { display: none; }
   @media (min-width: 901px) {

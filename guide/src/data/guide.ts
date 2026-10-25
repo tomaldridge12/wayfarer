@@ -10,7 +10,10 @@ export type StageId = 'iron' | 'diamond' | 'nether' | 'post_end';
 export type Status = 'live' | 'planned';
 
 export interface Stage { id: StageId; name: string; marker: string; item: string; blurb: string }
-export interface Chapter { slug: string; title: string; stage: StageId | 'none'; status: Status }
+/** A sidebar section: chapters grouped by what they are about, not by when in a playthrough they matter. */
+export interface Group { id: string; name: string; item: string }
+/** {@code stage} is where in a playthrough the chapter starts to matter (shown as a "from" chip), 'none' for any time. */
+export interface Chapter { slug: string; title: string; group: string; stage: StageId | 'none'; status: Status }
 
 export interface GuidePaths {
   /** Folder holding stages.yml, chapters.yml and chapters/. */
@@ -27,6 +30,7 @@ export interface GuidePaths {
 
 export interface Guide {
   stages: Stage[];
+  groups: Group[];
   chapters: Chapter[];
   config: Config;
   /** The stage a reward or boss id (`banner:zombie`, `boss:void_stalker`) sits on. */
@@ -55,21 +59,27 @@ export function loadGuide(paths: GuidePaths, files: GuideFiles): Guide {
     return { id: s.id, name: s.name, marker: s.marker, item: s.item, blurb: s.blurb };
   });
 
-  const chapters: Chapter[] = (readYaml(chaptersFile).chapters ?? []).map((c: any) => {
+  const chaptersDoc = readYaml(chaptersFile);
+  const groups: Group[] = (chaptersDoc.groups ?? []).map((g: any) => ({ id: g.id, name: g.name, item: g.item }));
+  const chapters: Chapter[] = (chaptersDoc.chapters ?? []).map((c: any) => {
+    if (!groups.some((g) => g.id === c.group))
+      throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has unknown group '${c.group}'`);
     if (c.stage !== 'none' && !STAGE_IDS.includes(c.stage))
       throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has unknown stage '${c.stage}'`);
     if (c.status !== 'live' && c.status !== 'planned')
       throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has status '${c.status}' (live or planned)`);
     if (!files.has(join(paths.chapters, `${c.slug}.mdx`)))
       throw new GuideError(`${chaptersFile}: chapter '${c.slug}' has no file ${c.slug}.mdx`);
-    return { slug: c.slug, title: c.title, stage: c.stage, status: c.status };
+    return { slug: c.slug, title: c.title, group: c.group, stage: c.stage, status: c.status };
   });
 
-  // Reading order follows the timeline: unstaged chapters first, then by stage, list order within a stage.
-  const rank = (c: Chapter) => (c.stage === 'none' ? -1 : STAGE_IDS.indexOf(c.stage));
+  // Reading order follows the groups, in the order chapters.yml lists them, and list order within a group.
+  const rank = (c: Chapter) => groups.findIndex((g) => g.id === c.group);
   chapters.sort((a, b) => rank(a) - rank(b));
 
   const icon = (item: string) => iconFor(paths, files, item);
+  for (const group of groups)
+    if (!icon(group.item)) throw new GuideError(`${chaptersFile}: group '${group.id}' item '${group.item}' has no texture`);
   for (const stage of stages)
     if (!icon(stage.item)) throw new GuideError(`${stagesFile}: stage '${stage.id}' item '${stage.item}' has no texture`);
 
@@ -94,7 +104,7 @@ export function loadGuide(paths: GuidePaths, files: GuideFiles): Guide {
   for (const item of liveItems)
     if (!icon(item) && !FACES[item]) throw new GuideError(`item '${item}' has no texture (vanilla or wayfarer:)`);
 
-  return { stages, chapters, config, icon, stageOf: (reward) => placed[reward] };
+  return { stages, groups, chapters, config, icon, stageOf: (reward) => placed[reward] };
 }
 
 // Items drawn from animation frames: one fixed frame stands for the item.

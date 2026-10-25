@@ -10,6 +10,7 @@ const { slug } = Astro.props;
 const g = guide();
 const chapter = g.chapters.find((c) => c.slug === slug)!;
 const stage = g.stages.find((s) => s.id === chapter.stage);
+const group = g.groups.find((x) => x.id === chapter.group)!;
 const index = g.chapters.indexOf(chapter);
 const prev = g.chapters[index - 1];
 const next = g.chapters[index + 1];
@@ -30,7 +31,8 @@ const href = (s: string) => (s === 'welcome' ? '/' : `/${s}/`);
       <main class="page" data-status={chapter.status}>
         <header class="entry-head">
           <p class="eyebrow">
-            {stage ? <><Icon item={stage.item} size={20} /> <span>{stage.name}</span></> : <span>Field notes</span>}
+            <Icon item={group.item} size={20} /> <span>{group.name}</span>
+            {stage && <><span class="dot">·</span><span class="from-chip"><Icon item={stage.item} size={14} /> from {stage.name}</span></>}
             <span class="dot">·</span>
             <span>Entry {String(index + 1).padStart(2, '0')}</span>
           </p>
@@ -50,6 +52,7 @@ const href = (s: string) => (s === 'welcome' ? '/' : `/${s}/`);
 </html>
 
 <style>
+  .from-chip { display: inline-flex; align-items: center; gap: 4px; }
   .shell {
     display: grid;
     grid-template-columns: 290px minmax(0, 1fr);
