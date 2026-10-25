@@ -43,6 +43,9 @@ final class ObjectivesPlayerData {
     final Set<String> cosmetics = new LinkedHashSet<>();
     String title;
     String trail;
+    /** Tracked ids ({@code daily:mine_coal}), in the order they were added; see {@link TrackerRules}. */
+    final List<String> tracked = new ArrayList<>();
+    boolean sidebarHidden;
     final Map<String, Integer> unlockedEnchants = new LinkedHashMap<>();
     final List<String> pending = new ArrayList<>();
     long shopRerollDay = Long.MIN_VALUE;
@@ -83,6 +86,8 @@ final class ObjectivesPlayerData {
             if (raw.get("unlockedEnchants") instanceof Map<?, ?> m) {
                 m.forEach((k, v) -> d.unlockedEnchants.put(String.valueOf(k), (int) num(v)));
             }
+            d.tracked.addAll(strings(raw.get("tracked")));
+            d.sidebarHidden = Boolean.TRUE.equals(raw.get("sidebarHidden"));
             d.pending.addAll(strings(raw.get("pending")));
             d.shopRerollDay = raw.get("shopRerollDay") instanceof Number n ? n.longValue() : Long.MIN_VALUE;
             d.ownedTemplates.addAll(strings(raw.get("ownedTemplates")));
@@ -111,6 +116,8 @@ final class ObjectivesPlayerData {
             if (d.trail != null) {
                 out.put("trail", d.trail);
             }
+            out.put("tracked", List.copyOf(d.tracked));
+            out.put("sidebarHidden", d.sidebarHidden);
             out.put("unlockedEnchants", Map.copyOf(d.unlockedEnchants));
             out.put("pending", List.copyOf(d.pending));
             out.put("shopRerollDay", d.shopRerollDay);

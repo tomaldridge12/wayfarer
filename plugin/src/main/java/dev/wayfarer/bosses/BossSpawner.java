@@ -3,7 +3,6 @@ package dev.wayfarer.bosses;
 import dev.wayfarer.core.BossMark;
 import java.util.Locale;
 import java.util.Map;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -21,8 +20,6 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 
 /** Builds a boss from its definition: stats scaled by stars, look per variant, the core boss mark. */
 final class BossSpawner {
@@ -30,10 +27,10 @@ final class BossSpawner {
             EquipmentSlot.CHEST, "legs", EquipmentSlot.LEGS, "feet", EquipmentSlot.FEET, "hand", EquipmentSlot.HAND,
             "offhand", EquipmentSlot.OFF_HAND);
 
-    private final Scoreboard scoreboard;
+    private final dev.wayfarer.core.PlayerBoards boards;
 
-    BossSpawner(Scoreboard scoreboard) {
-        this.scoreboard = scoreboard;
+    BossSpawner(dev.wayfarer.core.PlayerBoards boards) {
+        this.boards = boards;
     }
 
     LivingEntity spawn(BossDefinition boss, BossVariant variant, int stars, StarScale scale, Location at, boolean guardian) {
@@ -84,22 +81,13 @@ final class BossSpawner {
         });
     }
 
-    /** Glow colour comes from a scoreboard team per colour. */
+    /** Glow colour comes from a scoreboard team per colour, kept on every player's board. */
     private void glow(LivingEntity e, String colour) {
-        String name = "wayfarer_glow_" + colour.toLowerCase(Locale.ROOT);
-        Team team = scoreboard.getTeam(name);
-        if (team == null) {
-            team = scoreboard.registerNewTeam(name);
-            team.color(NamedTextColor.NAMES.value(colour));
-        }
-        team.addEntity(e);
+        boards.glow(e, colour);
     }
 
     void unglow(LivingEntity e) {
-        Team team = scoreboard.getEntityTeam(e);
-        if (team != null && team.getName().startsWith("wayfarer_glow_")) {
-            team.removeEntity(e);
-        }
+        boards.unglow(e);
     }
 
     private static void set(LivingEntity e, Attribute attribute, double value) {

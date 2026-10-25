@@ -34,8 +34,11 @@ final class ObjectivesPage {
     private final Supplier<ObjectivesService.State> state;
     private final JournalPages journal;
     private final ServerGoals goals;
+    private final TrackerSidebar tracker;
 
-    ObjectivesPage(ObjectivesService service, Supplier<ObjectivesService.State> state, JournalPages journal, ServerGoals goals) {
+    ObjectivesPage(ObjectivesService service, Supplier<ObjectivesService.State> state, JournalPages journal, ServerGoals goals,
+            TrackerSidebar tracker) {
+        this.tracker = tracker;
         this.service = service;
         this.state = state;
         this.journal = journal;
@@ -82,6 +85,16 @@ final class ObjectivesPage {
                         })));
             }
         }
+        for (int i = 0; i < data.dailies.size(); i++) {
+            ObjectivesPlayerData.Slot slot = data.dailies.get(i);
+            ObjectiveDefinition d = s.daily().get(slot.id);
+            if (d != null && !slot.done) {
+                buttons.add(trackButton(data, ObjectiveTrackables.idOf("daily", d.id()), "daily " + (i + 1), d.task()));
+            }
+        }
+        if (data.weekly != null && !data.weekly.done && s.weekly().containsKey(data.weekly.id)) {
+            buttons.add(trackButton(data, ObjectiveTrackables.idOf("weekly", data.weekly.id), "weekly", s.weekly().get(data.weekly.id).task()));
+        }
         if (data.weekly != null && s.weekly().containsKey(data.weekly.id)) {
             body.add(Menus.text(ItemLook.text("The weekly · turns over in " + Schedule.until(now, s.settings().schedule().nextWeekly(now)),
                     ObjectivesService.INK)));
@@ -89,7 +102,27 @@ final class ObjectivesPage {
         }
         body.add(Menus.text(ItemLook.text("The server goal · everyone, together", ServerGoals.BLUE)));
         body.add(Menus.item(ItemStack.of(Material.BELL), goals.line(player.getUniqueId())));
-        Menus.show(player, ItemLook.text("Objectives", ObjectivesService.GOLD), body, buttons, Math.max(1, buttons.size()), journal.back());
+        buttons.add(new Menus.Button(ItemLook.text(data.sidebarHidden ? "Show sidebar" : "Hide sidebar", ObjectivesService.PAPER),
+                ItemLook.text("Show or hide the tracker on the right of your screen", ObjectivesService.INK), 100, p ->
+                service.with(p.getUniqueId(), (dd, ss) -> {
+                    tracker.setHidden(p, dd, !dd.sidebarHidden);
+                    show(p, dd, ss);
+                })));
+        Menus.show(player, ItemLook.text("Objectives", ObjectivesService.GOLD), body, buttons, 3, journal.back());
+    }
+
+    /** Track when not tracked, Untrack when it is; the label says what it will do. */
+    private Menus.Button trackButton(ObjectivesPlayerData data, String trackedId, String label, String task) {
+        boolean on = data.tracked.contains(trackedId);
+        return new Menus.Button(ItemLook.text((on ? "Untrack " : "Track ") + label, ObjectivesService.PAPER),
+                ItemLook.text(task, ObjectivesService.INK), 100, p -> service.with(p.getUniqueId(), (dd, ss) -> {
+                    if (dd.tracked.contains(trackedId)) {
+                        tracker.untrack(p, dd, trackedId, task);
+                    } else {
+                        tracker.track(p, dd, trackedId, task);
+                    }
+                    show(p, dd, ss);
+                }));
     }
 
     private DialogBody row(ObjectiveDefinition d, ObjectivesPlayerData.Slot slot, Progression.Snapshot snap, String kind) {

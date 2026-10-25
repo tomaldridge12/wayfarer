@@ -87,6 +87,16 @@ class ModuleManagerTest {
             }
 
             @Override
+            public Trackables trackables() {
+                return new Trackables();
+            }
+
+            @Override
+            public PlayerBoards boards() {
+                return null;
+            }
+
+            @Override
             public Announcer announcer() {
                 return new Announcer(line -> {
                 });

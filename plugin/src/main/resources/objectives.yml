@@ -3,6 +3,10 @@
 version: 2
 enabled: true
 
+# The tracker: players put objectives (and later feats, goals) on a sidebar; max is how many at once (1 to 15).
+tracker:
+  max: 5
+
 # Cosmetics: titles (shown before your name in chat and the tab list) and trails (particles behind you as you move).
 # Feats pay some; the shop sells others. You choose one of each in the Journal.
 #   kind: title or trail; name; colour (titles); particle (trails: a particle name, with colour: for dust).

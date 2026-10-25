@@ -13,6 +13,12 @@ public interface Core {
     /** Tells the whole server about something earned, if its category is switched on. Main thread. */
     Announcer announcer();
 
+    /** What the tracker can watch, registered by the module that owns it. Main thread. */
+    Trackables trackables();
+
+    /** Players' own scoreboards, which keep boss glow colours. Main thread. */
+    PlayerBoards boards();
+
     ItemTagService itemTags();
 
     ChunkDataService chunkData();

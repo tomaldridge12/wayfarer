@@ -35,11 +35,14 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private RewardEnchants rewardEnchants;
     private dev.wayfarer.core.Announcer announcer;
 
+    private final dev.wayfarer.core.Trackables trackables = new dev.wayfarer.core.Trackables();
+    private dev.wayfarer.core.PlayerBoards boards;
     @Override
     public void onEnable() {
         config = new PaperConfigService(this);
         announcer = new dev.wayfarer.core.Announcer(getServer()::broadcast);
         itemTags = new ItemTagService(this);
+        boards = new dev.wayfarer.core.PlayerBoards(getServer());
         chunkData = new ChunkDataService(this);
         progression = new ProgressionService(this, this);
         progression.enable();
@@ -97,6 +100,16 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     public ItemTagService itemTags() {
         return itemTags;
     }
+    @Override
+    public dev.wayfarer.core.Trackables trackables() {
+        return trackables;
+    }
+
+    @Override
+    public dev.wayfarer.core.PlayerBoards boards() {
+        return boards;
+    }
+
 
     @Override
     public ChunkDataService chunkData() {

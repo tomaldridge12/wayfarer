@@ -41,6 +41,8 @@ public final class ObjectivesModule implements Module {
     private volatile Events.Config eventConfig = Events.Config.empty();
     private volatile ShopRules.Prices prices;
     private CosmeticsDisplay display;
+    private TrackerSidebar tracker;
+    private volatile int trackerCap = TrackerRules.DEFAULT_CAP;
 
     public ObjectivesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -70,21 +72,30 @@ public final class ObjectivesModule implements Module {
         events = new Events(plugin, core, () -> pools, () -> eventConfig, goals, service, loot);
         events.start();
         listen(events);
+        new ObjectiveTrackables(core, service, () -> pools).register(id());
+        tracker = new TrackerSidebar(plugin, core, service, () -> trackerCap);
+        tracker.start();
+        listen(tracker);
         display = new CosmeticsDisplay(plugin, service.store(), () -> cosmetics);
         display.start();
         listen(display);
         core.services().get(JournalPages.class).ifPresent(journal -> {
             journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page());
-            journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals).page());
+            journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals, tracker).page());
             Shop shop = new Shop(core, service, loot, () -> pools, () -> prices, () -> cosmetics, journal, display);
             journal.add(id(), shop.shopPage());
             journal.add(id(), shop.wardrobePage());
         });
         core.commands().register(id(), commands());
+        core.commands().register(id(), trackCommand());
     }
 
     @Override
     public void disable() {
+        if (tracker != null) {
+            tracker.stop();
+        }
+        core.trackables().drop(id());
         if (display != null) {
             display.stop();
         }
@@ -133,6 +144,7 @@ public final class ObjectivesModule implements Module {
         problems.addAll(pool.problems());
         pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.goal(), pool.tables());
         Map<String, Object> root = core.config().load(id());
+        trackerCap = trackerCap(root.get("tracker"), problems);
         EventConfigParser.Result ev = EventConfigParser.parse(root.get("events"), vocabulary, pool.tables());
         ev.problems().forEach(p -> core.logger().warning("[objectives] " + p));
         problems.addAll(ev.problems());
@@ -160,6 +172,33 @@ public final class ObjectivesModule implements Module {
         return problems.size();
     }
 
+
+    /** {@code tracker.max}: how many things a player may track at once. */
+    static int trackerCap(Object raw, List<String> problems) {
+        if (raw instanceof Map<?, ?> m && m.get("max") != null) {
+            if (m.get("max") instanceof Number n && n.intValue() >= 1 && n.intValue() <= 15 && n.doubleValue() == n.intValue()) {
+                return n.intValue();
+            }
+            problems.add("tracker.max must be a whole number from 1 to 15; using " + TrackerRules.DEFAULT_CAP);
+        }
+        return TrackerRules.DEFAULT_CAP;
+    }
+
+    /** /wayfarer track [on|off]: show or hide your own sidebar. */
+    private LiteralArgumentBuilder<CommandSourceStack> trackCommand() {
+        return Commands.literal("track")
+                .requires(s -> s.getSender() instanceof org.bukkit.entity.Player && s.getSender().hasPermission("wayfarer.objectives.track"))
+                .executes(ctx -> sidebar(ctx.getSource().getSender(), null))
+                .then(Commands.literal("on").executes(ctx -> sidebar(ctx.getSource().getSender(), false)))
+                .then(Commands.literal("off").executes(ctx -> sidebar(ctx.getSource().getSender(), true)));
+    }
+
+    private int sidebar(CommandSender sender, Boolean hide) {
+        if (sender instanceof org.bukkit.entity.Player player) {
+            service.with(player.getUniqueId(), (data, snap) -> tracker.setHidden(player, data, hide == null ? !data.sidebarHidden : hide));
+        }
+        return Command.SINGLE_SUCCESS;
+    }
 
     /** The feat itself: no item, just its name on the title card and in the announcement. */
     private final class FeatMarker implements RewardType {

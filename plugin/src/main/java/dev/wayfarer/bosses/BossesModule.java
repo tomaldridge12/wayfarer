@@ -44,7 +44,7 @@ public final class BossesModule implements Module {
     public void enable(Core core) throws Exception {
         this.core = core;
         load();
-        spawner = new BossSpawner(plugin.getServer().getScoreboardManager().getMainScoreboard());
+        spawner = new BossSpawner(core.boards());
         controller = new BossController(plugin.getServer(), () -> roster, spawner, core.logger(), core.announcer());
         plugin.getServer().getPluginManager().registerEvents(controller, plugin);
         controller.attachLoaded();
