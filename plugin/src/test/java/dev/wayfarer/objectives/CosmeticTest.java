@@ -76,4 +76,23 @@ class CosmeticTest {
         assertTrue(bad.prices().cosmetics().isEmpty());
         assertEquals(1, bad.problems().size());
     }
+
+    @Test
+    void theShopSellsPlainHatsAndPetsInTheirOwnSectionsAndADuplicateRollBecomesTokens() {
+        ObjectiveConfigParser.Result shipped = ObjectiveFixtures.shipped();
+        ShopConfigParser.Result shop = ShopConfigParser.parse(ObjectiveFixtures.shippedYaml().get("shop"), shipped.cosmetics(), java.util.Set.of());
+        List<ShopRules.Offer> offers = ShopRules.offers(shop.prices(), new ShopRules.Buyer(1000, java.util.Set.of("piglet"), false,
+                java.util.Set.of(), java.util.Map.of(), false), shipped.cosmetics(), java.util.Map.of());
+
+        assertEquals("Hats", offers.stream().filter(o -> o.id().equals("cosmetic:cake_hat")).findFirst().orElseThrow().section());
+        ShopRules.Offer piglet = offers.stream().filter(o -> o.id().equals("cosmetic:piglet")).findFirst().orElseThrow();
+        assertEquals("Pets", piglet.section());
+        assertEquals("You have it", piglet.blocked());
+        assertTrue(offers.stream().noneMatch(o -> o.id().equals("cosmetic:rainbow_sheep")), "earned by a feat, never sold");
+
+        RewardTables tables = new RewardTables(java.util.Map.of("t", java.util.Map.of("daily",
+                List.of(new RewardTables.Entry("cosmetic:pumpkin_hat", 1, 1, 1)))), 25);
+        assertEquals(List.of("cosmetic:pumpkin_hat"), tables.roll("t", "daily", reward -> false, new java.util.Random(1)));
+        assertEquals(List.of("tokens:25"), tables.roll("t", "daily", reward -> true, new java.util.Random(1)));
+    }
 }

@@ -41,7 +41,8 @@ public final class ShopRules {
         p.cosmetics().forEach((id, price) -> {
             Cosmetic c = cosmetics.get(id);
             if (c != null) {
-                out.add(offer("cosmetic:" + id, c.title() ? "Titles" : "Trails", (c.title() ? "Title: " : "") + c.name(), price, b,
+                String kind = c.kind().substring(0, 1).toUpperCase(java.util.Locale.ROOT) + c.kind().substring(1);
+                out.add(offer("cosmetic:" + id, kind + "s", c.title() || c.isHat() || c.isPet() ? kind + ": " + c.name() : c.name(), price, b,
                         b.ownedCosmetics().contains(id) ? "You have it" : null));
             }
         });
