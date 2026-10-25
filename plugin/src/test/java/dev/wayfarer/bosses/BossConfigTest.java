@@ -50,8 +50,8 @@ class BossConfigTest {
     void starsScaleHealthAndDamage() {
         StarScale s = StarScale.defaults();
         assertEquals(1.0, s.health(1));
-        assertEquals(4.0, s.health(5));
-        assertEquals(2.1, s.damage(9)); // clamped to five stars
+        assertEquals(8.0, s.health(5));
+        assertEquals(3.0, s.damage(9)); // clamped to five stars
         assertEquals(1.0, s.damage(0));
     }
 

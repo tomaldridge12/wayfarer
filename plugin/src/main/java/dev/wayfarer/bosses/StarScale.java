@@ -7,7 +7,7 @@ public record StarScale(List<Double> health, List<Double> damage) {
     public static final int MAX = 5;
 
     public static StarScale defaults() {
-        return new StarScale(List.of(1.0, 1.5, 2.2, 3.0, 4.0), List.of(1.0, 1.2, 1.45, 1.75, 2.1));
+        return new StarScale(List.of(1.0, 1.75, 3.0, 5.0, 8.0), List.of(1.0, 1.3, 1.7, 2.2, 3.0));
     }
 
     public double health(int stars) {

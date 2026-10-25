@@ -4,8 +4,8 @@ enabled: true
 
 # Stars (1-5) multiply a boss's base health and damage. Index 0 is one star.
 stars:
-  health: [1.0, 1.5, 2.2, 3.0, 4.0]
-  damage: [1.0, 1.2, 1.45, 1.75, 2.1]
+  health: [1.0, 1.75, 3.0, 5.0, 8.0]
+  damage: [1.0, 1.3, 1.7, 2.2, 3.0]
 
 # Bosses appear on their own (see each boss's spawn section). Stars come from distance to world spawn: one more
 # star beyond each distance below, sometimes one extra; structure guardians are never below guardian-min-stars.
