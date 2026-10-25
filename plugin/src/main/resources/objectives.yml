@@ -7,6 +7,12 @@ enabled: true
 tracker:
   max: 5
 
+# How worn hats look. scale: a hat's width in blocks (a head is 0.5 wide); raise: the gap in blocks between the top of the
+# head and the hat's base. Keep the hat small and raised a little or it fills your view in first person. Reload applies it.
+hats:
+  scale: 0.45
+  raise: 0.1
+
 # Cosmetics: titles (shown before your name in chat and the tab list), trails (particles behind you as you move), hats and
 # pets. Feats pay some; the shop sells others. You wear one of each kind, chosen in the Wardrobe.
 #   kind: title, trail, hat or pet; name; colour (titles); particle (trails: a particle name, with colour: for dust);

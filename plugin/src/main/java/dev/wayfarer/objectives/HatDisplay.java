@@ -30,25 +30,53 @@ import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
 /**
- * A worn hat: an item display riding on the player's head, seen by everyone but the wearer (in first person it would
- * fill their view) and leaving the real helmet slot free.
+ * A worn hat: an item display riding on the player's head, seen by everyone and leaving the real helmet slot free.
+ * It is kept small and a little above the head so the wearer's camera, which sits inside the head's width, never has
+ * it in view in first person.
  * A rider is shaken off by teleports, so it is taken down before one and put back after, and a slow check puts back
  * any that went missing. Main thread.
  */
 final class HatDisplay implements Listener {
     private static final long CHECK_TICKS = 40;
-    /** A hat model fills a 16-unit cube; at this scale it is about as wide as a head. */
-    private static final float SCALE = 0.55f;
-    /** Half the hat's height, so its base rests on the rider's anchor (the top of the head), a touch sunk in. */
-    private static final float LIFT = SCALE / 2 - 0.05f;
+    /**
+     * How big hats are and how far their base floats above the rider's anchor (the top of the head). A hat model fills a
+     * 16-unit cube, so {@code scale} is its width in blocks; the camera is 0.18 below the anchor, so a gap of about 0.1
+     * keeps the hat's underside out of the wearer's view.
+     */
+    record Settings(float scale, float raise) {
+        static final Settings DEFAULT = new Settings(0.45f, 0.1f);
+
+        /** The {@code hats} section of objectives.yml: scale 0.2 to 1, raise 0 to 0.6; bad values are reported and ignored. */
+        static Settings parse(Object raw, java.util.List<String> problems) {
+            if (!(raw instanceof java.util.Map<?, ?> m)) {
+                return DEFAULT;
+            }
+            return new Settings(number(m.get("scale"), 0.2, 1.0, DEFAULT.scale(), "hats.scale", problems),
+                    number(m.get("raise"), 0, 0.6, DEFAULT.raise(), "hats.raise", problems));
+        }
+
+        private static float number(Object o, double min, double max, float fallback, String name, java.util.List<String> problems) {
+            if (o == null) {
+                return fallback;
+            }
+            if (o instanceof Number n && n.doubleValue() >= min && n.doubleValue() <= max) {
+                return n.floatValue();
+            }
+            problems.add(name + " must be a number from " + min + " to " + max + "; using " + fallback);
+            return fallback;
+        }
+    }
 
     private final JavaPlugin plugin;
     private final PlayerStore<ObjectivesPlayerData> store;
     private final Supplier<Map<String, Cosmetic>> cosmetics;
+    private final Supplier<Settings> settings;
     private final Map<UUID, ItemDisplay> worn = new HashMap<>();
     private BukkitTask check;
 
-    HatDisplay(JavaPlugin plugin, PlayerStore<ObjectivesPlayerData> store, Supplier<Map<String, Cosmetic>> cosmetics) {
+    HatDisplay(JavaPlugin plugin, PlayerStore<ObjectivesPlayerData> store, Supplier<Map<String, Cosmetic>> cosmetics,
+            Supplier<Settings> settings) {
+        this.settings = settings;
         this.plugin = plugin;
         this.store = store;
         this.cosmetics = cosmetics;
@@ -73,6 +101,11 @@ final class HatDisplay implements Listener {
         new ArrayList<>(worn.keySet()).forEach(this::remove);
     }
 
+    /** Puts every online player's hat on again, after the settings changed. */
+    void refreshAll() {
+        plugin.getServer().getOnlinePlayers().forEach(this::refresh);
+    }
+
     /** The hat the player has chosen and still has config for. */
     private Optional<Cosmetic.Hat> wanted(Player player) {
         ObjectivesPlayerData data = store.cached(player.getUniqueId());
@@ -91,12 +124,12 @@ final class HatDisplay implements Listener {
             d.setItemStack(stack(hat.get()));
             d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.HEAD);
             d.setBillboard(Display.Billboard.FIXED);
-            d.setTransformation(new Transformation(new Vector3f(0, LIFT, 0), new AxisAngle4f(), new Vector3f(SCALE, SCALE, SCALE), new AxisAngle4f()));
+            Settings look = settings.get();
+            d.setTransformation(new Transformation(new Vector3f(0, look.raise() + look.scale() / 2, 0), new AxisAngle4f(),
+                    new Vector3f(look.scale(), look.scale(), look.scale()), new AxisAngle4f()));
             d.setPersistent(false); // never saved with the chunk, so a crash leaves no stray hats
             d.setInterpolationDuration(0);
         });
-        // The wearer sits inside it in first person, where it would block half the screen, so only others see it.
-        player.hideEntity(plugin, display);
         if (player.addPassenger(display)) {
             worn.put(player.getUniqueId(), display);
         } else {

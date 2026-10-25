@@ -95,4 +95,16 @@ class CosmeticTest {
         assertEquals(List.of("cosmetic:pumpkin_hat"), tables.roll("t", "daily", reward -> false, new java.util.Random(1)));
         assertEquals(List.of("tokens:25"), tables.roll("t", "daily", reward -> true, new java.util.Random(1)));
     }
+
+    @Test
+    void hatLookComesFromConfigAndBadValuesFallBackWithAProblem() {
+        List<String> problems = new java.util.ArrayList<>();
+        assertEquals(new HatDisplay.Settings(0.4f, 0.2f), HatDisplay.Settings.parse(java.util.Map.of("scale", 0.4, "raise", 0.2), problems));
+        assertEquals(HatDisplay.Settings.DEFAULT, HatDisplay.Settings.parse(null, problems));
+        assertEquals(List.of(), problems);
+
+        HatDisplay.Settings bad = HatDisplay.Settings.parse(java.util.Map.of("scale", 5, "raise", "high"), problems);
+        assertEquals(HatDisplay.Settings.DEFAULT, bad);
+        assertEquals(2, problems.size());
+    }
 }

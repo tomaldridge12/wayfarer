@@ -43,6 +43,7 @@ public final class ObjectivesModule implements Module {
     private CosmeticsDisplay display;
     private TrackerSidebar tracker;
     private volatile int trackerCap = TrackerRules.DEFAULT_CAP;
+    private volatile HatDisplay.Settings hatSettings = HatDisplay.Settings.DEFAULT;
 
     public ObjectivesModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -80,7 +81,7 @@ public final class ObjectivesModule implements Module {
         core.services().register(id(), dev.wayfarer.core.TrackerControl.class, tracker);
         tracker.start();
         listen(tracker);
-        display = new CosmeticsDisplay(plugin, service.store(), () -> cosmetics);
+        display = new CosmeticsDisplay(plugin, service.store(), () -> cosmetics, () -> hatSettings);
         display.start();
         listen(display);
         listen(display.hats());
@@ -156,6 +157,7 @@ public final class ObjectivesModule implements Module {
         pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.goal(), pool.tables());
         Map<String, Object> root = core.config().load(id());
         trackerCap = trackerCap(root.get("tracker"), problems);
+        hatSettings = HatDisplay.Settings.parse(root.get("hats"), problems);
         EventConfigParser.Result ev = EventConfigParser.parse(root.get("events"), vocabulary, pool.tables());
         ev.problems().forEach(p -> core.logger().warning("[objectives] " + p));
         problems.addAll(ev.problems());
@@ -491,6 +493,7 @@ public final class ObjectivesModule implements Module {
                     try {
                         int problems = load();
                         core.rewardEnchants().check();
+                        display.hats().refreshAll();
                         sender.sendMessage("Objectives reloaded: " + feats.size() + " feats, " + problems + " problems");
                     } catch (IOException e) {
                         sender.sendMessage("Objectives reload failed, keeping the old config: " + e.getMessage());

@@ -35,11 +35,12 @@ final class CosmeticsDisplay implements Listener {
     private final PetDisplay pets;
     private BukkitTask trails;
 
-    CosmeticsDisplay(JavaPlugin plugin, PlayerStore<ObjectivesPlayerData> store, Supplier<Map<String, Cosmetic>> cosmetics) {
+    CosmeticsDisplay(JavaPlugin plugin, PlayerStore<ObjectivesPlayerData> store, Supplier<Map<String, Cosmetic>> cosmetics,
+            Supplier<HatDisplay.Settings> hatSettings) {
         this.plugin = plugin;
         this.store = store;
         this.cosmetics = cosmetics;
-        this.hats = new HatDisplay(plugin, store, cosmetics);
+        this.hats = new HatDisplay(plugin, store, cosmetics, hatSettings);
         this.pets = new PetDisplay(plugin, store, cosmetics);
     }
 
