@@ -31,8 +31,8 @@ import org.bukkit.inventory.ItemStack;
  */
 final class Journal implements JournalPages {
     static final int PAPER = 0xE8D9A8;
-    static final int INK = 0xB8AC94;
-    static final int FADED = 0x8C8475;
+    static final int INK = 0xE4DAC2;
+    static final int FADED = 0xB5AD9C;
     static final int DONE = 0x8FCB6B;
     private static final int LADDERS_PER_PAGE = 10;
 
@@ -112,18 +112,17 @@ final class Journal implements JournalPages {
                 continue;
             }
             long found = CollectionRules.found(entries, snap.counters());
-            if (!summary.children().isEmpty()) {
-                summary.append(Component.newline());
-            }
-            summary.append(text(CollectionRules.bar(found, entries.size(), 12), found == entries.size() ? DONE : def.colour()))
-                    .append(text("  " + def.title(), def.colour()))
-                    .append(text(" · " + found + " of " + entries.size(), INK));
-            buttons.add(new Menus.Button(text(def.title(), def.colour()),
+            // Bar on its own line under the title: every bar is the same width, so centred bars line up whatever the title is.
+            summary.append(text(def.title() + " · " + found + " of " + entries.size(), INK))
+                    .append(Component.newline())
+                    .append(text(CollectionRules.bar(found, entries.size(), 12), found == entries.size() ? DONE : def.colour()))
+                    .append(Component.newline());
+            buttons.add(new Menus.Button(text(def.title(), lift(def.colour())).decorate(TextDecoration.BOLD),
                     text(def.blurb() + "\n" + found + " of " + entries.size() + " " + def.unit(entries.size()), INK), 140,
                     p -> openCollection(p, def.id(), null, 0)));
         }
         body.add(Menus.text(summary.build()));
-        buttons.add(new Menus.Button(text("Ladders", 0xD9B44A), text("Every ladder you are climbing, and what is next.", INK), 140,
+        buttons.add(new Menus.Button(text("Ladders", 0xE8C666).decorate(TextDecoration.BOLD), text("Every ladder you are climbing, and what is next.", INK), 140,
                 p -> openLadders(p, 0)));
         pages.values().stream().map(OwnedPage::page).sorted(Comparator.comparingInt(Page::order))
                 .forEach(page -> buttons.add(new Menus.Button(page.label(), page.tooltip(), 140, page.open())));
@@ -155,7 +154,8 @@ final class Journal implements JournalPages {
             body.add(Menus.text(Component.text(def.blurb(), TextColor.color(FADED)).decoration(TextDecoration.ITALIC, true)));
         }
         body.add(Menus.text(text(CollectionRules.bar(found, all.size(), 20), found == all.size() ? DONE : def.colour())
-                .append(text("  " + found + " of " + all.size() + " " + def.unit(all.size()), PAPER))));
+                .append(Component.newline())
+                .append(text(found + " of " + all.size() + " " + def.unit(all.size()), PAPER))));
         body.add(Menus.text(milestones(def, all.size(), found)));
         if (!shown.isEmpty()) {
             long tabFound = CollectionRules.found(inTab, snap.counters());
@@ -169,7 +169,7 @@ final class Journal implements JournalPages {
 
         List<Menus.Button> buttons = new ArrayList<>();
         for (String t : tabs) {
-            buttons.add(new Menus.Button(text(t, t.equals(shown) ? def.colour() : FADED), Component.empty(), 90,
+            buttons.add(new Menus.Button(text(t, t.equals(shown) ? lift(def.colour()) : INK), Component.empty(), 90,
                     p -> openCollection(p, id, t, 0)));
         }
         if (at > 0) {
@@ -292,6 +292,12 @@ final class Journal implements JournalPages {
             return Component.translatable(parts[0], parts.length > 1 ? parts[1] : parts[0]);
         }
         return Component.translatable(name);
+    }
+
+    /** A colour mixed toward white so it stays readable on the dialog's grey buttons. */
+    static int lift(int rgb) {
+        int r = (rgb >> 16 & 0xFF), g = (rgb >> 8 & 0xFF), b = (rgb & 0xFF);
+        return ((r + (255 - r) * 45 / 100) << 16) | ((g + (255 - g) * 45 / 100) << 8) | (b + (255 - b) * 45 / 100);
     }
 
     static Component text(String s, int rgb) {

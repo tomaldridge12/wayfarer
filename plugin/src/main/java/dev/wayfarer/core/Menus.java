@@ -46,11 +46,14 @@ public final class Menus {
     /** Shows the screen; {@code exit} is the button at the bottom (Close, Back). */
     public static void show(Player player, Component title, List<? extends DialogBody> body, List<Button> buttons,
             int columns, Button exit) {
+        // A multi-action dialog needs at least one button; with none, the exit button alone is a notice.
+        DialogType type = buttons.isEmpty() ? DialogType.notice(button(exit))
+                : DialogType.multiAction(buttons.stream().map(Menus::button).toList())
+                        .columns(Math.max(1, columns)).exitAction(button(exit)).build();
         Dialog dialog = Dialog.create(b -> b.empty()
                 .base(DialogBase.builder(title).canCloseWithEscape(true).pause(false)
                         .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE).body(body).build())
-                .type(DialogType.multiAction(buttons.stream().map(Menus::button).toList())
-                        .columns(Math.max(1, columns)).exitAction(button(exit)).build()));
+                .type(type));
         player.showDialog(dialog);
     }
 

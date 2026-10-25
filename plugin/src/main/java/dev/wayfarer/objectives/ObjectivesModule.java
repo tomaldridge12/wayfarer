@@ -174,7 +174,7 @@ public final class ObjectivesModule implements Module {
         @Override
         public Component describe(String id) {
             Feat f = feats.get(id);
-            return f == null ? null : title(id).hoverEvent(ItemLook.text(f.flavour(), 0xB8AC94));
+            return f == null ? null : title(id).hoverEvent(ItemLook.text(f.flavour(), 0xE4DAC2));
         }
     }
 
@@ -191,7 +191,7 @@ public final class ObjectivesModule implements Module {
             if (c == null) {
                 return null;
             }
-            return c.title() ? ItemLook.text("Title: ", 0xB8AC94).append(ItemLook.name(c.name(), c.colour()))
+            return c.title() ? ItemLook.text("Title: ", 0xE4DAC2).append(ItemLook.name(c.name(), c.colour()))
                     : ItemLook.name(c.name(), 0xC9B8E8);
         }
     }

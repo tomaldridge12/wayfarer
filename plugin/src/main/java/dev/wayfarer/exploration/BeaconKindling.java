@@ -81,11 +81,11 @@ final class BeaconKindling implements Listener {
         Block block = event.getClickedBlock();
         Player player = event.getPlayer();
         if (block == null || !(block.getBlockData() instanceof Campfire fire) || !fire.isLit()) {
-            player.sendActionBar(ItemLook.text("It needs a lit campfire to catch.", 0xB8AC94));
+            player.sendActionBar(ItemLook.text("It needs a lit campfire to catch.", 0xE4DAC2));
             return;
         }
         if (lit.contains(block)) {
-            player.sendActionBar(ItemLook.text("That fire is already calling.", 0xB8AC94));
+            player.sendActionBar(ItemLook.text("That fire is already calling.", 0xE4DAC2));
             return;
         }
         event.getItem().setAmount(event.getItem().getAmount() - 1);

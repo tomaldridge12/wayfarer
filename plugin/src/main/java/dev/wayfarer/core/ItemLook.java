@@ -12,7 +12,7 @@ import net.kyori.adventure.text.format.TextDecoration;
  */
 public final class ItemLook {
     /** The kind line and footers: a warm grey. */
-    public static final int MUTED = 0x8C8475;
+    public static final int MUTED = 0xB5AD9C;
     /** Flavour text: a darker warm grey, in italics. */
     public static final int STORY = 0x7A7266;
     private static final int WRAP = 34;

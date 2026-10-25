@@ -31,7 +31,7 @@ import org.bukkit.inventory.ItemStack;
  * Main thread.
  */
 final class Shop {
-    private static final int FADED = 0x8C8475;
+    private static final int FADED = 0xB5AD9C;
     private static final int TEAL = 0x5FC9B5;
 
     private final Core core;

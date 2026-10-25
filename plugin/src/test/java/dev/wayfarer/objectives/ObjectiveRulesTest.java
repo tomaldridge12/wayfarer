@@ -97,6 +97,12 @@ class ObjectiveRulesTest {
     }
 
     @Test
+    void shippedTablesNeverRollTokensBecauseObjectivesPayTheirOwn() {
+        SHIPPED.tables().all().forEach((table, tiers) -> tiers.forEach((tier, entries) -> entries.forEach(e ->
+                assertFalse(e.reward().startsWith("tokens"), table + "/" + tier + " has a tokens line"))));
+    }
+
+    @Test
     void tablesRollByWeightTurnOwnedUniquesIntoTokensAndPickLevels() {
         RewardTables tables = new RewardTables(Map.of("t", Map.of("daily", List.of(
                 new RewardTables.Entry("curio:bone_dice", 1, 1, 1),

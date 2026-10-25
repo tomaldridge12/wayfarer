@@ -38,7 +38,7 @@ import org.bukkit.scheduler.BukkitTask;
 final class ObjectivesService implements Listener {
     static final int GOLD = 0xE8B04A;
     static final int PAPER = 0xE8D9A8;
-    static final int INK = 0xB8AC94;
+    static final int INK = 0xE4DAC2;
     static final int DONE = 0x8FCB6B;
 
     /** What the service works from, as last loaded. */

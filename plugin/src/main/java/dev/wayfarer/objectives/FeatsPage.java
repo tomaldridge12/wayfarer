@@ -32,8 +32,8 @@ final class FeatsPage {
     private static final int PER_PAGE = 8;
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.UK).withZone(ZoneId.of("Europe/London"));
     private static final int PAPER = 0xE8D9A8;
-    private static final int INK = 0xB8AC94;
-    private static final int FADED = 0x8C8475;
+    private static final int INK = 0xE4DAC2;
+    private static final int FADED = 0xB5AD9C;
     private static final int DONE = 0x8FCB6B;
 
     private final Progression progression;

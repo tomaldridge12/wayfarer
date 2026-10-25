@@ -53,8 +53,8 @@ import org.bukkit.util.StructureSearchResult;
 final class Wayfinder implements Listener, Wayfinding {
     static final int GOLD = 0xD9A55B;
     static final int PAPER = 0xE8D9A8;
-    static final int INK = 0xB8AC94;
-    static final int FADED = 0x8C8475;
+    static final int INK = 0xE4DAC2;
+    static final int FADED = 0xB5AD9C;
     private static final String TAG = "exploration";
 
     /** One target to search for, resolved later on its tick. */

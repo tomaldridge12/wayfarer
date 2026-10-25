@@ -28,7 +28,7 @@ final class ObjectivesPage {
             Map.entry("hunting", Material.IRON_SWORD), Map.entry("exploring", Material.COMPASS), Map.entry("crafting", Material.CRAFTING_TABLE),
             Map.entry("archaeology", Material.BRUSH), Map.entry("nether", Material.NETHERRACK), Map.entry("end", Material.END_STONE),
             Map.entry("event", Material.FIREWORK_ROCKET));
-    private static final int FADED = 0x8C8475;
+    private static final int FADED = 0xB5AD9C;
 
     private final ObjectivesService service;
     private final Supplier<ObjectivesService.State> state;

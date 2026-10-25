@@ -430,14 +430,13 @@ shop:
   supplies: {seed_bundle: 30, floral_bundle: 30, mushy_bundle: 30, animal_crate: 80, wayfarers_bait: 40, tome_of_experience: 50}
   enchant-per-level: 60
 
-# Reward tables: per theme, per tier (daily, weekly, goal for the server goal, event), weighted lines. reward: tokens
-# (amount a-b), supply:<id>, curio:<id>, gear:<id>, cosmetic:<id>, item:<vanilla item> (amount), or
-# enchant:<key> (level a-b, an enchanted book that also unlocks it in the shop). Between them, the tables reach every
+# Reward tables: per theme, per tier (daily, weekly, goal for the server goal, event), weighted lines. Tokens are never a line: an objective already
+# pays its own tokens, so the roll is loot only (a duplicate unique still turns into duplicate-tokens). reward:
+# supply:<id>, curio:<id>, gear:<id>, cosmetic:<id>, item:<vanilla item> (amount), or enchant:<key> (level a-b, an enchanted book that also unlocks it in the shop). Between them, the tables reach every
 # ExcellentEnchants enchant but the mark books' veinminer and treefeller and the curses.
 tables:
   mining:
     daily:
-      - {reward: tokens, amount: 6-12, weight: 8}
       - {reward: "item:coal", amount: 12-24, weight: 3}
       - {reward: "item:iron_ingot", amount: 3-6, weight: 3}
       - {reward: "item:lapis_lazuli", amount: 6-12, weight: 2}
@@ -446,7 +445,6 @@ tables:
       - {reward: "enchant:excellentenchants:lucky_miner", level: 1, weight: 1}
       - {reward: curio:prospectors_pan, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-40, weight: 6}
       - {reward: "item:diamond", amount: 2-4, weight: 3}
       - {reward: "item:emerald", amount: 4-8, weight: 2}
       - {reward: "enchant:excellentenchants:smelter", level: 1-3, weight: 2}
@@ -457,7 +455,6 @@ tables:
       - {reward: curio:midas_blessing, weight: 2}
       - {reward: gear:old_strike, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "enchant:excellentenchants:blast_mining", level: 2-4, weight: 3}
       - {reward: "enchant:excellentenchants:haste", level: 2-3, weight: 3}
       - {reward: "enchant:excellentenchants:tunnel", level: 1-3, weight: 2}
@@ -465,14 +462,12 @@ tables:
       - {reward: curio:glow_jar, weight: 2}
   digging:
     daily:
-      - {reward: tokens, amount: 5-10, weight: 8}
       - {reward: "item:glass", amount: 16-32, weight: 3}
       - {reward: "item:flint", amount: 4-8, weight: 2}
       - {reward: supply:seed_bundle, weight: 3}
       - {reward: "enchant:excellentenchants:smelter", level: 1, weight: 1}
       - {reward: curio:north_mitten, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-35, weight: 6}
       - {reward: "item:brush", weight: 2}
       - {reward: "enchant:excellentenchants:tunnel", level: 1-2, weight: 2}
       - {reward: "enchant:excellentenchants:glassbreaker", level: 1, weight: 1}
@@ -481,14 +476,12 @@ tables:
       - {reward: curio:lodestone_pendant, weight: 2}
       - {reward: gear:glassblowers_spade, weight: 1}
     goal:
-      - {reward: tokens, amount: 50-90, weight: 4}
       - {reward: "enchant:excellentenchants:tunnel", level: 2-3, weight: 3}
       - {reward: "enchant:excellentenchants:restore", level: 2-3, weight: 2}
       - {reward: gear:glassblowers_spade, weight: 2}
       - {reward: curio:lodestone_pendant, weight: 2}
   farming:
     daily:
-      - {reward: tokens, amount: 5-10, weight: 8}
       - {reward: supply:seed_bundle, weight: 4}
       - {reward: supply:floral_bundle, weight: 3}
       - {reward: "item:bone_meal", amount: 16-32, weight: 3}
@@ -496,7 +489,6 @@ tables:
       - {reward: "enchant:excellentenchants:replanter", level: 1, weight: 1}
       - {reward: curio:lu_ban_blessing, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-35, weight: 6}
       - {reward: supply:animal_crate, weight: 3}
       - {reward: supply:mushy_bundle, amount: 2, weight: 2}
       - {reward: "enchant:excellentenchants:regrowth", level: 1-2, weight: 2}
@@ -505,7 +497,6 @@ tables:
       - {reward: curio:stormglass, weight: 2}
       - {reward: cosmetic:petals, weight: 1}
     goal:
-      - {reward: tokens, amount: 50-90, weight: 4}
       - {reward: supply:animal_crate, amount: 2, weight: 3}
       - {reward: "enchant:excellentenchants:regrowth", level: 2-4, weight: 3}
       - {reward: "enchant:excellentenchants:saturation", level: 1-2, weight: 2}
@@ -513,14 +504,12 @@ tables:
       - {reward: curio:lu_ban_blessing, weight: 2}
   fishing:
     daily:
-      - {reward: tokens, amount: 6-12, weight: 8}
       - {reward: supply:wayfarers_bait, weight: 4}
       - {reward: "item:cooked_salmon", amount: 4-8, weight: 2}
       - {reward: "item:nautilus_shell", weight: 1}
       - {reward: "enchant:excellentenchants:seasoned_angler", level: 1, weight: 1}
       - {reward: curio:mermaids_comb, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-40, weight: 6}
       - {reward: supply:wayfarers_bait, amount: 2-3, weight: 3}
       - {reward: "enchant:excellentenchants:double_catch", level: 1-2, weight: 2}
       - {reward: "enchant:excellentenchants:auto_reel", level: 1, weight: 2}
@@ -530,7 +519,6 @@ tables:
       - {reward: cosmetic:bubbles, weight: 1}
       - {reward: gear:tidecaller, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "enchant:excellentenchants:river_master", level: 3-5, weight: 3}
       - {reward: "enchant:excellentenchants:seasoned_angler", level: 2-3, weight: 2}
       - {reward: "enchant:excellentenchants:double_catch", level: 2-3, weight: 2}
@@ -538,7 +526,6 @@ tables:
       - {reward: cosmetic:bubbles, weight: 2}
   hunting:
     daily:
-      - {reward: tokens, amount: 6-12, weight: 8}
       - {reward: "item:arrow", amount: 16-32, weight: 3}
       - {reward: "item:cooked_beef", amount: 6-10, weight: 2}
       - {reward: supply:tome_of_experience, weight: 2}
@@ -547,7 +534,6 @@ tables:
       - {reward: "enchant:excellentenchants:sniper", level: 1, weight: 1}
       - {reward: curio:bone_dice, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-40, weight: 6}
       - {reward: "enchant:excellentenchants:rage", level: 1-2, weight: 1}
       - {reward: "enchant:excellentenchants:double_strike", level: 1, weight: 1}
       - {reward: "enchant:excellentenchants:exhaust", level: 1-2, weight: 1}
@@ -569,7 +555,6 @@ tables:
       - {reward: curio:artemis_blessing, weight: 2}
       - {reward: cosmetic:embers, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "enchant:excellentenchants:temper", level: 2-4, weight: 1}
       - {reward: "enchant:excellentenchants:thunder", level: 2-4, weight: 1}
       - {reward: "enchant:excellentenchants:village_defender", level: 2-4, weight: 1}
@@ -587,7 +572,6 @@ tables:
       - {reward: cosmetic:embers, weight: 2}
   exploring:
     daily:
-      - {reward: tokens, amount: 6-12, weight: 8}
       - {reward: "item:map", amount: 2-4, weight: 2}
       - {reward: "item:golden_apple", weight: 1}
       - {reward: supply:tome_of_experience, weight: 2}
@@ -595,7 +579,6 @@ tables:
       - {reward: "enchant:excellentenchants:night_vision", level: 1, weight: 1}
       - {reward: curio:owl_feather, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-40, weight: 6}
       - {reward: "item:ender_pearl", amount: 4-8, weight: 2}
       - {reward: "enchant:excellentenchants:jumping", level: 1-2, weight: 1}
       - {reward: "enchant:excellentenchants:lightweight", level: 1, weight: 1}
@@ -607,7 +590,6 @@ tables:
       - {reward: cosmetic:trailblazer, weight: 1}
       - {reward: gear:featherstep_boots, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "enchant:excellentenchants:darkness_cloak", level: 1-3, weight: 1}
       - {reward: "enchant:excellentenchants:kamikadze", level: 1-2, weight: 1}
       - {reward: "enchant:excellentenchants:elemental_protection", level: 2-4, weight: 2}
@@ -617,14 +599,12 @@ tables:
       - {reward: cosmetic:snowfall, weight: 2}
   crafting:
     daily:
-      - {reward: tokens, amount: 5-10, weight: 8}
       - {reward: "item:iron_ingot", amount: 4-8, weight: 3}
       - {reward: "item:paper", amount: 12-24, weight: 2}
       - {reward: supply:tome_of_experience, weight: 2}
       - {reward: "enchant:excellentenchants:restore", level: 1, weight: 1}
       - {reward: curio:glow_jar, weight: 1}
     weekly:
-      - {reward: tokens, amount: 20-35, weight: 6}
       - {reward: "item:experience_bottle", amount: 8-16, weight: 3}
       - {reward: "enchant:excellentenchants:wisdom", level: 1-2, weight: 2}
       - {reward: "enchant:excellentenchants:thrifty", level: 1-2, weight: 2}
@@ -634,7 +614,6 @@ tables:
       - {reward: gear:woodsmans_bearded_axe, weight: 1}
       - {reward: cosmetic:hearth_keeper, weight: 1}
     goal:
-      - {reward: tokens, amount: 50-90, weight: 4}
       - {reward: "enchant:excellentenchants:wisdom", level: 2-4, weight: 2}
       - {reward: "enchant:excellentenchants:soulbound", level: 1, weight: 2}
       - {reward: gear:woodsmans_bearded_axe, weight: 2}
@@ -642,34 +621,29 @@ tables:
       - {reward: cosmetic:hearth_keeper, weight: 2}
   archaeology:
     daily:
-      - {reward: tokens, amount: 8-14, weight: 8}
       - {reward: "item:brush", weight: 2}
       - {reward: supply:mushy_bundle, weight: 2}
       - {reward: supply:tome_of_experience, weight: 2}
       - {reward: curio:lodestone_pendant, weight: 1}
     weekly:
-      - {reward: tokens, amount: 25-45, weight: 6}
       - {reward: "item:decorated_pot", weight: 2}
       - {reward: "enchant:excellentenchants:silk_chest", level: 1, weight: 1}
       - {reward: "enchant:excellentenchants:restore", level: 1-2, weight: 2}
       - {reward: curio:ruby_circlet, weight: 2}
       - {reward: cosmetic:sparkles, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "enchant:excellentenchants:silk_chest", level: 1, weight: 2}
       - {reward: "enchant:excellentenchants:silk_spawner", level: 1, weight: 1}
       - {reward: curio:ruby_circlet, weight: 2}
       - {reward: cosmetic:sparkles, weight: 2}
   nether:
     daily:
-      - {reward: tokens, amount: 8-14, weight: 8}
       - {reward: "item:blaze_rod", amount: 2-4, weight: 2}
       - {reward: "item:gold_ingot", amount: 4-8, weight: 3}
       - {reward: supply:mushy_bundle, weight: 2}
       - {reward: "enchant:excellentenchants:fire_shield", level: 1, weight: 1}
       - {reward: curio:strider_sole, weight: 1}
     weekly:
-      - {reward: tokens, amount: 25-45, weight: 6}
       - {reward: "item:netherite_scrap", weight: 1}
       - {reward: "enchant:excellentenchants:flame_walker", level: 1-2, weight: 2}
       - {reward: "enchant:excellentenchants:infernus", level: 1-2, weight: 2}
@@ -679,7 +653,6 @@ tables:
       - {reward: curio:strider_sole, weight: 2}
       - {reward: cosmetic:embers, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "item:netherite_scrap", amount: 1-2, weight: 2}
       - {reward: "enchant:excellentenchants:fire_shield", level: 2-4, weight: 2}
       - {reward: "enchant:excellentenchants:bane_of_netherspawn", level: 3-5, weight: 2}
@@ -687,14 +660,12 @@ tables:
       - {reward: curio:hepatizon_laurel, weight: 2}
   end:
     daily:
-      - {reward: tokens, amount: 8-14, weight: 8}
       - {reward: "item:ender_pearl", amount: 2-4, weight: 3}
       - {reward: "item:chorus_fruit", amount: 8-16, weight: 2}
       - {reward: supply:tome_of_experience, weight: 2}
       - {reward: "enchant:excellentenchants:hover", level: 1, weight: 1}
       - {reward: curio:icarus_blessing, weight: 1}
     weekly:
-      - {reward: tokens, amount: 25-45, weight: 6}
       - {reward: "item:shulker_shell", amount: 2, weight: 2}
       - {reward: "enchant:excellentenchants:ender_bow", level: 1, weight: 1}
       - {reward: "enchant:excellentenchants:dragonfire_arrows", level: 1-2, weight: 1}
@@ -703,7 +674,6 @@ tables:
       - {reward: curio:ruby_circlet, weight: 2}
       - {reward: cosmetic:night_owl, weight: 1}
     goal:
-      - {reward: tokens, amount: 60-100, weight: 4}
       - {reward: "enchant:excellentenchants:dragon_heart", level: 2-4, weight: 2}
       - {reward: "enchant:excellentenchants:rocket", level: 2-3, weight: 2}
       - {reward: "enchant:excellentenchants:hover", level: 2-3, weight: 1}
@@ -711,14 +681,12 @@ tables:
       - {reward: cosmetic:night_owl, weight: 2}
   event:
     event:
-      - {reward: tokens, amount: 30-60, weight: 6}
       - {reward: supply:animal_crate, weight: 2}
       - {reward: supply:wayfarers_bait, amount: 2, weight: 2}
       - {reward: cosmetic:notes, weight: 2}
       - {reward: cosmetic:wayfarer, weight: 1}
       - {reward: curio:artemis_blessing, weight: 1}
     goal:
-      - {reward: tokens, amount: 80-120, weight: 4}
       - {reward: cosmetic:notes, weight: 2}
       - {reward: cosmetic:wayfarer, weight: 2}
       - {reward: gear:miners_lamp_helm, weight: 1}
