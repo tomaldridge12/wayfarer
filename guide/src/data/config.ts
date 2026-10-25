@@ -98,6 +98,8 @@ export interface Config {
   bossRules: BossRules | null;
   pity: PityRow[];
   excludedSpawns: string[];
+  /** Which earnings the whole server hears about (progression.yml); a missing switch is on. */
+  announce: Record<string, boolean>;
   alloys: AlloyRow[];
   alloyRules: AlloyRules | null;
   marks: MarkRow[];
@@ -133,6 +135,9 @@ const VANILLA_HEADS: Record<string, string> = {
   wither_skeleton: 'wither_skeleton_skull', piglin: 'piglin_head', ender_dragon: 'dragon_head',
 };
 const mhf = (family: string) => 'MHF_' + family.split('_').map((w) => w[0].toUpperCase() + w.slice(1)).join('');
+
+/** The announcement categories in progression.yml, in the order the Guide lists them. */
+export const ANNOUNCE_CATEGORIES = ['feat', 'boss-defeat', 'ascended-drop', 'legendary-drop', 'server-goal', 'streak', 'ladder-rung'];
 
 export const TIER_NAMES = ['Regalia', 'Tier I', 'Tier II', 'Ascended', 'Legendary'];
 
@@ -411,5 +416,6 @@ export function readConfig(dir: string, files: GuideFiles): Config {
     wayfarerSet: set ? { families: set.families, reduction: set['damage-reduction'], hearts: set.hearts } : null,
     bosses: bossRows, bossRules, pity,
     excludedSpawns: progression.counting?.['exclude-spawn-reasons'] ?? [],
+    announce: Object.fromEntries(ANNOUNCE_CATEGORIES.map((c) => [c, progression.announce?.[c] !== false])),
   };
 }

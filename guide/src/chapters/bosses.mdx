@@ -14,10 +14,12 @@ Every boss rolls **stars** when it appears, from one to five. Stars scale everyt
 
 <StarTable />
 
+Minecraft won't let any creature have more than 1,024 health, so the biggest bosses top out there however many stars they roll.
+
 There are two ways to meet one.
 
 - **Roaming bosses** rise from an ordinary mob's natural spawn in the right biome. They're capped at {rules?.roamingMaxStars} stars, and the same boss won't roam again in that world for {rules?.roamingCooldown} minutes.
-- **Structure guardians** wait inside particular structures and appear when you walk in. They're always {rules?.guardianMinStars} stars or more, and each structure's guardian takes a while to come back.
+- **Structure guardians** wait inside particular structures and appear when you walk in. They're always {rules?.guardianMinStars} stars or more, and each structure's guardian takes a while to come back. The wait starts when the guardian is *defeated*, not when it appeared, so one that stood waiting for hours isn't replaced the moment it falls.
 
 Everyone who lands a hit gets their own loot roll, so bring friends. Bosses tied to a mob family are **mini bosses**: they drop that family's Ascended relics.
 

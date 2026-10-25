@@ -1,0 +1,24 @@
+---
+// Which earnings the whole server hears about. From progression.yml's announce section.
+import { guide } from '../data/repo';
+
+const announce = guide().config.announce;
+const LINES: [string, string][] = [
+  ['feat', 'Earning a feat.'],
+  ['boss-defeat', 'Defeating a boss.'],
+  ['ascended-drop', 'An Ascended relic dropping.'],
+  ['legendary-drop', 'A Legendary relic dropping.'],
+  ['server-goal', 'The server goal being met.'],
+  ['streak', 'A streak reward.'],
+  ['ladder-rung', 'A ladder reward: a banner, head, relic or other rung (a mark announces only its top rank).'],
+];
+const heard = LINES.filter(([key]) => announce[key]);
+---
+{heard.length > 0 && (
+  <ul class="facts">
+    {heard.map(([, text]) => <li>{text}</li>)}
+  </ul>
+)}
+<style>
+  .facts { display: grid; gap: 6px; }
+</style>
