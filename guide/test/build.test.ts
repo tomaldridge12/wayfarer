@@ -65,4 +65,11 @@ describe('built guide', () => {
     expect(html).toContain(`${g.config.objectives!.dailies} dailies`);
     for (const e of g.config.events) expect(html).toContain(e.name);
   });
+
+  it('lists every hat and pet with its ability, and the tracker cap', () => {
+    const html = page('tracking-hats-pets').replaceAll('&#39;', "'");
+    for (const c of g.config.cosmetics.filter((c) => c.kind === 'hat' || c.kind === 'pet')) expect(html).toContain(c.name);
+    for (const a of g.config.hatAbilities.filter((a) => g.config.cosmetics.some((c) => c.ability === a.id))) expect(html).toContain(a.name);
+    expect(html).toContain(`${g.config.trackerMax} things`);
+  });
 });

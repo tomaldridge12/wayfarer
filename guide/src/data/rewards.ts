@@ -34,8 +34,9 @@ export function rewardLook(config: Config, reward: string): RewardLook {
     }
     case 'cosmetic': {
       const c = config.cosmetics.find((x) => x.id === id);
-      return { name: c ? (c.kind === 'title' ? `Title: ${c.name}` : c.name) : title(id), colour: c?.kind === 'title' ? c.colour : '#c9b8e8',
-        icon: c?.kind === 'title' ? 'name_tag' : 'blaze_powder' };
+      const label = c?.kind === 'title' ? 'Title' : c?.kind === 'hat' ? 'Hat' : c?.kind === 'pet' ? 'Pet' : null;
+      return { name: c ? (label ? `${label}: ${c.name}` : c.name) : title(id), colour: c?.kind === 'title' ? c.colour : '#c9b8e8',
+        icon: c?.kind === 'title' ? 'name_tag' : c?.kind === 'hat' ? 'leather_helmet' : c?.kind === 'pet' ? 'egg' : 'blaze_powder' };
     }
     case 'fish':
       return { name: config.fish.find((x) => x.id === id)?.name ?? title(id), colour: '#d8d2c4', icon: `wayfarer:fish/${id}` };

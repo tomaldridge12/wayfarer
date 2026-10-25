@@ -9,8 +9,9 @@ chapters:
   - { slug: marks, title: Marks, stage: iron, status: live }
   - { slug: objectives, title: Objectives, stage: iron, status: live }
   - { slug: feats, title: Feats, stage: iron, status: live }
+  - { slug: tracking-hats-pets, title: 'Tracking, hats and pets', stage: iron, status: live }
   - { slug: curios, title: 'Curios, gear and supplies', stage: iron, status: live }
-  - { slug: enchanting, title: The enchanting table, stage: iron, status: live }
+  - { slug: enchanting, title: The enchanting table, stage: diamond, status: live }
   - { slug: almanac, title: The Almanac, stage: iron, status: live }
   - { slug: treasures, title: Treasures, stage: iron, status: live }
   - { slug: relics, title: Relics, stage: diamond, status: live }

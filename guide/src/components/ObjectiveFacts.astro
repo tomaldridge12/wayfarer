@@ -32,7 +32,7 @@ const day = (s: string) => title(s.split(' ')[0].toLowerCase()) + ' ' + (s.split
 )}
 {part === 'shop' && shop && (
   <ul class="facts">
-    <li><b>Titles and trails</b>: {Object.entries(shop.cosmetics).map(([id, p]) => `${rewardLook(config, `cosmetic:${id}`).name.replace('Title: ', '')} (${p})`).join(', ')}.</li>
+    <li><b>Titles, trails, hats and pets</b>: {Object.entries(shop.cosmetics).map(([id, p]) => `${rewardLook(config, `cosmetic:${id}`).name.replace(/^(Title|Hat|Pet): /, '')} (${p})`).join(', ')}. Hats with an ability are never sold.</li>
     <li><b>An extra free reroll</b>, once a day: {shop.extraReroll} tokens.</li>
     <li><b>A copy of a template</b> you have owned, alloy or mark: {shop.templateCopy} tokens.</li>
     <li><b>A Wayfinder pointing</b>: {shop.wayfinder} tokens. <b>Beacon kindling</b>: {shop.kindling} tokens.</li>

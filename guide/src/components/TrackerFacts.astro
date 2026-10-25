@@ -1,0 +1,14 @@
+---
+// How many things the sidebar tracks. From objectives.yml's tracker.max.
+import { guide } from '../data/repo';
+
+const max = guide().config.trackerMax;
+---
+<ul class="facts">
+  <li>You can track up to <b>{max} things</b> at once; a sixth waits until you untrack one.</li>
+  <li>A finished item leaves the sidebar by itself, and so does a daily that turned over.</li>
+  <li>Your list is kept when you log out. <b>/wayfarer track off</b> hides the sidebar, <b>/wayfarer track on</b> brings it back.</li>
+</ul>
+<style>
+  .facts { display: grid; gap: 6px; }
+</style>

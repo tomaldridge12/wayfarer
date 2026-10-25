@@ -1,0 +1,41 @@
+---
+// Hats or pets as tooltips: what they look like, what a hat's ability does, and how to get one. From objectives.yml
+// and curios.yml's hat-abilities.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { sources } from '../data/rewards';
+import { num } from '../data/text';
+
+interface Props { kind: 'hat' | 'pet' }
+const { kind } = Astro.props;
+const g = guide();
+const config = g.config;
+const PET_ICONS: Record<string, string> = { mini_ender_dragon: 'dragon_egg', mini_shulker: 'shulker_shell' };
+const icon = (c: (typeof config.cosmetics)[number]) => {
+  if (kind === 'hat') return c.item && !c.item.includes(':') && g.icon(c.item) ? c.item : 'leather_helmet'; // a pack model's art is a colour sheet, not an icon
+  const egg = c.entity ? `${c.entity}_spawn_egg` : PET_ICONS[c.id];
+  return egg && g.icon(egg) ? egg : 'egg';
+};
+const shelf = config.cosmetics.filter((c) => c.kind === kind);
+---
+<div class="grid">
+  {shelf.map((c) => {
+    const ability = config.hatAbilities.find((a) => a.id === c.ability);
+    const from = sources(config, `cosmetic:${c.id}`);
+    const price = config.shop?.cosmetics[c.id];
+    const how = [
+      ...(price ? [`the shop for ${num(price)} tokens`] : []),
+      ...from,
+      ...(config.tableCosmetics.includes(c.id) ? ['some reward tables'] : []),
+    ];
+    const lines = [
+      ...(ability ? [{ text: `Ability: ${ability.name}`, colour: ability.colour }, ...ability.description.map((d) => ({ text: d, colour: 'var(--mc-white)' }))] : []),
+      ...(kind === 'hat' && !ability ? [{ text: 'Just for show', colour: 'var(--mc-gray)' }] : []),
+      { text: how.length ? `From ${how.join(', ')}` : 'A secret', colour: 'var(--mc-gold)' },
+    ];
+    return <ItemCard item={icon(c)} name={c.name} colour="#c9b8e8" lines={lines} />;
+  })}
+</div>
+<style>
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1.4rem 0 1.8rem; }
+</style>

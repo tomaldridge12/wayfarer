@@ -76,7 +76,15 @@ export interface FishRow {
 export interface TreasureRow { id: string; name: string; colour: string; kind: string; flavour: string; brush: string[]; chests: Record<string, number>; chart: string | null; icon: string }
 export interface TreasureRules { brushChance: number; ceiling: number; sites: Record<string, string[]> }
 export interface FeatRow { id: string; name: string; flavour: string; counts: string[]; distinct: boolean; at: number | 'all'; hidden: boolean; rewards: string[] }
-export interface CosmeticRow { id: string; kind: 'title' | 'trail'; name: string; colour: string }
+export interface CosmeticRow {
+  id: string; kind: 'title' | 'trail' | 'hat' | 'pet'; name: string; colour: string;
+  /** Hats: the vanilla item or pack model shown on the head, and the hat-ability id if it has one. */
+  item?: string; ability?: string;
+  /** Pets: the baby mob it is, or the pack model it floats as. */
+  entity?: string; model?: string;
+}
+/** A small perk a worn hat gives (curios.yml, hat-abilities). */
+export interface HatAbilityRow { id: string; name: string; colour: string; description: string[] }
 export interface ObjectiveRules {
   dailies: number; dailyReset: string; zone: string; weeklyDay: string; eventStart: string; eventEnd: string;
   freeRerolls: number; rerollPoints: number; rerollStepPoints: number; streakEvery: number; streakTokens: number; streakReward: string | null;
@@ -114,6 +122,11 @@ export interface Config {
   treasureRules: TreasureRules | null;
   feats: FeatRow[];
   cosmetics: CosmeticRow[];
+  hatAbilities: HatAbilityRow[];
+  /** Cosmetic ids that some reward table can roll. */
+  tableCosmetics: string[];
+  /** How many things a player can track at once (objectives.yml tracker.max). */
+  trackerMax: number;
   objectives: ObjectiveRules | null;
   events: EventRow[];
   eventRotation: string[];
@@ -372,7 +385,12 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   }));
   const cosmetics: CosmeticRow[] = entries(objectivesYml.cosmetics).map(([id, c]) => ({
     id, kind: c.kind, name: c.name ?? title(id), colour: c.colour ?? '#e8d9a8',
+    item: c.item, ability: c.ability, entity: c.entity, model: c.model,
   }));
+  const hatAbilities: HatAbilityRow[] = entries(curiosYml['hat-abilities']).map(([id, a]) => ({
+    id, name: a.name ?? title(id), colour: a.colour ?? '#e8d9a8', description: asList(a.description),
+  }));
+  const tableCosmetics = [...new Set(JSON.stringify(objectivesYml.tables ?? {}).match(/cosmetic:[a-z0-9_]+/g) ?? [])].map((x) => x.slice(9));
   const sched = objectivesYml.schedule ?? {};
   const dl = objectivesYml.dailies ?? {};
   const objectives: ObjectiveRules | null = objectivesYml['daily-pool'] ? {
@@ -409,6 +427,7 @@ export function readConfig(dir: string, files: GuideFiles): Config {
 
   return {
     curios, gear, supplies, collections, fish, fishChance: almanac.chance ?? 0.5, treasures, treasureRules, feats, cosmetics,
+    hatAbilities, tableCosmetics, trackerMax: objectivesYml.tracker?.max ?? 5,
     objectives, events, eventRotation: asList(objectivesYml.events?.rotation), shop, exploration, enchanting,
     alloys, alloyRules, marks, books,
     families, allMobs: banners.counting?.['all-mobs'] ?? null,
