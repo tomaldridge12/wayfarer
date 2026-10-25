@@ -19,7 +19,7 @@ counting:
 feedback:
   action-bar: true            # styled message on entering and leaving a boost zone
   show-blocked: true          # action bar flash when a banner softens a hit on you
-  announce-earned: true       # tell everyone when someone earns a banners reward (hover shows the item); never for claims
+  announce-earned: true       # banners rewards only; the server-wide switch is announce.ladder-rung in progression.yml, and both must be on
   damage-numbers:             # a floating number over every mob a player hits; boosted hits add ▲ and the extra in red
     enabled: true
     max-active: 40            # new ones are skipped while this many exist

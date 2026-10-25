@@ -9,6 +9,17 @@ counting:
   exclude-spawn-reasons: [spawner, trial_spawner, ominous_item_spawner, spawner_egg, slime_split, breeding, egg, dispense_egg]
   min-mob-lifetime-ticks: 0   # 0 = off; mobs younger than this many ticks do not count
 
+# Who hears about an earning. Each category tells the whole server in chat (hover shows what was earned); false silences
+# it. Ordinary dailies and weeklies are never announced. Missing switches stay on.
+announce:
+  feat: true
+  boss-defeat: true
+  ascended-drop: true
+  legendary-drop: true
+  server-goal: true
+  streak: true
+  ladder-rung: true           # banner, head, relic, mark and other ladder rewards (a mark announces only its top rank)
+
 # Pity drops: a ceiling on bad luck for rare mob drops. The ceil(1 / chance)-th counted kill in a row without the
 # item (1 / 0.025 = 40) drops it. Only the player who landed the killing blow advances their
 # counter; a real drop of the item resets it. Looting improves the real chance but never changes the threshold.

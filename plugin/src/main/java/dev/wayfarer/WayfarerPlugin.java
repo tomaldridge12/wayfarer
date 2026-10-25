@@ -32,10 +32,12 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private final dev.wayfarer.core.ItemIds itemIds = new dev.wayfarer.core.ItemIds();
     private final dev.wayfarer.core.Services services = new dev.wayfarer.core.Services();
     private RewardEnchants rewardEnchants;
+    private dev.wayfarer.core.Announcer announcer;
 
     @Override
     public void onEnable() {
         config = new PaperConfigService(this);
+        announcer = new dev.wayfarer.core.Announcer(getServer()::broadcast);
         itemTags = new ItemTagService(this);
         chunkData = new ChunkDataService(this);
         progression = new ProgressionService(this, this);
@@ -82,6 +84,11 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public ConfigService config() {
         return config;
+    }
+
+    @Override
+    public dev.wayfarer.core.Announcer announcer() {
+        return announcer;
     }
 
     @Override

@@ -4,6 +4,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import dev.wayfarer.core.AnnounceCategory;
+import dev.wayfarer.core.AnnounceSettings;
 import dev.wayfarer.core.BossDefeatedEvent;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.PlayerNames;
@@ -75,7 +77,7 @@ public final class ProgressionService implements Progression {
         this.plugin = plugin;
         this.core = core;
         this.mainThread = task -> plugin.getServer().getScheduler().runTask(plugin, task);
-        this.moment = new EarnMoment(plugin.getServer());
+        this.moment = new EarnMoment(core.announcer());
         this.snapshots = new SnapshotWriter(plugin.getDataFolder().toPath().resolve("stage-snapshots.csv"), core.logger());
         this.engine = new ProgressionEngine(ProgressionSettings.defaults(), ladders, System::currentTimeMillis);
         this.store = new PlayerStore<>(plugin.getDataFolder().toPath().resolve("data").resolve(CONFIG_ID),
@@ -120,13 +122,22 @@ public final class ProgressionService implements Progression {
     /** Reads progression.yml; an unreadable file keeps the defaults so counting never stops. */
     private void load() {
         ProgressionSettings settings;
+        Object announceRaw = null;
         try {
-            settings = ProgressionSettings.parse(core.config().load(CONFIG_ID), new PaperNames());
+            Map<String, Object> root = core.config().load(CONFIG_ID);
+            settings = ProgressionSettings.parse(root, new PaperNames());
+            announceRaw = root.get("announce");
         } catch (Exception e) {
             core.logger().log(Level.SEVERE, "progression.yml could not be read; using the defaults", e);
             settings = ProgressionSettings.defaults();
         }
         settings.problems().forEach(p -> core.logger().warning("[progression] " + p));
+        java.util.List<String> announceProblems = new java.util.ArrayList<>();
+        AnnounceSettings announce = AnnounceSettings.parse(announceRaw, announceProblems);
+        announceProblems.forEach(p -> core.logger().warning("[progression] " + p));
+        core.announcer().configure(announce);
+        core.logger().info("Announcements loaded: " + announce.enabled().size() + " of " + AnnounceCategory.values().length
+                + " categories on, " + announceProblems.size() + " problems");
         engine = new ProgressionEngine(settings, ladders, System::currentTimeMillis);
         CreditRules credit = settings.credit();
         core.logger().info("Progression loaded: " + credit.excludedSpawnReasons().size()
@@ -397,7 +408,14 @@ public final class ProgressionService implements Progression {
         String name = online != null ? online.getName()
                 : Optional.ofNullable(plugin.getServer().getOfflinePlayer(earner).getName()).orElse("A Wayfarer");
         ItemStack item = online != null ? deliver(online, reward) : build(earner, name, reward);
-        moment.celebrate(online, name, title(reward), item, announce);
+        RewardType type = typeOf(reward);
+        moment.celebrate(online, name, title(reward), item, announce, categoryOf(reward),
+                type == null ? null : type.announceHover(idOf(reward)));
+    }
+
+    /** The announcement category of a reward: feats have their own switch, everything else is a ladder rung or drop. */
+    private static AnnounceCategory categoryOf(String reward) {
+        return reward.startsWith("feat:") ? AnnounceCategory.FEAT : AnnounceCategory.LADDER_RUNG;
     }
 
     /** Hands a player a copy of a reward and returns it, or null if no type can make it. */

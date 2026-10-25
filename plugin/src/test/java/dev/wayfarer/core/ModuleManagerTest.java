@@ -87,6 +87,12 @@ class ModuleManagerTest {
             }
 
             @Override
+            public Announcer announcer() {
+                return new Announcer(line -> {
+                });
+            }
+
+            @Override
             public ItemIds itemIds() {
                 return ids;
             }

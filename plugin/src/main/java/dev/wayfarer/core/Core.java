@@ -10,6 +10,9 @@ public interface Core {
 
     ConfigService config();
 
+    /** Tells the whole server about something earned, if its category is switched on. Main thread. */
+    Announcer announcer();
+
     ItemTagService itemTags();
 
     ChunkDataService chunkData();

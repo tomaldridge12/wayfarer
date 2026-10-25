@@ -22,5 +22,9 @@ class ShippedProgressionConfigTest {
         assertEquals(java.util.List.of("wither_skeleton_skull 40", "trident 12"),
                 settings.pity().stream().map(p -> p.id() + " " + p.threshold()).toList());
         assertEquals(StageSnapshots.defaults(), settings.snapshots());
+        List<String> announceProblems = new java.util.ArrayList<>();
+        assertEquals(dev.wayfarer.core.AnnounceSettings.defaults(),
+                dev.wayfarer.core.AnnounceSettings.parse(root.get("announce"), announceProblems));
+        assertEquals(List.of(), announceProblems);
     }
 }

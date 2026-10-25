@@ -1,12 +1,14 @@
 package dev.wayfarer.core.progression;
 
+import dev.wayfarer.core.AnnounceCategory;
+import dev.wayfarer.core.Announcer;
 import java.time.Duration;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.title.Title;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -16,17 +18,20 @@ import org.bukkit.inventory.ItemStack;
  * earner, and a server-wide announcement whose hover shows the item. Never used for claimed copies.
  */
 final class EarnMoment {
-    private final Server server;
+    private final Announcer announcer;
 
-    EarnMoment(Server server) {
-        this.server = server;
+    EarnMoment(Announcer announcer) {
+        this.announcer = announcer;
     }
 
     /**
      * @param earner online earner, or null if they are offline (then only the announcement happens)
-     * @param announce whether the whole server hears of it (the ladder's setting)
+     * @param announce whether the ladder wants the server told; the category's config switch must be on too
+     * @param category what kind of earning it is, for that switch
+     * @param hover what hovering the announcement shows: the item if there is one, else this; may be null
      */
-    void celebrate(Player earner, String earnerName, Component rewardName, ItemStack item, boolean announce) {
+    void celebrate(Player earner, String earnerName, Component rewardName, ItemStack item, boolean announce,
+            AnnounceCategory category, HoverEventSource<?> hover) {
         if (earner != null) {
             earner.showTitle(Title.title(rewardName, ProgressionText.earnedSubtitle(),
                     Title.Times.times(Duration.ofMillis(250), Duration.ofMillis(2500), Duration.ofMillis(750))));
@@ -37,8 +42,7 @@ final class EarnMoment {
             earner.playSound(earner.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1f);
         }
         if (announce) {
-            Component shown = item == null ? rewardName : rewardName.hoverEvent(item.asHoverEvent());
-            server.broadcast(ProgressionText.announcement(earnerName, shown));
+            announcer.announce(category, ProgressionText.announcement(earnerName, rewardName), item != null ? item : hover);
         }
     }
 }

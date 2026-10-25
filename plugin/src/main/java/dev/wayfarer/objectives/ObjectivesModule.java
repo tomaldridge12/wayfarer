@@ -176,6 +176,24 @@ public final class ObjectivesModule implements Module {
             Feat f = feats.get(id);
             return f == null ? null : title(id).hoverEvent(ItemLook.text(f.flavour(), 0xE4DAC2));
         }
+
+        /** The feat's story, then what it paid. */
+        @Override
+        public net.kyori.adventure.text.event.HoverEventSource<?> announceHover(String id) {
+            Feat f = feats.get(id);
+            if (f == null) {
+                return null;
+            }
+            Component hover = ItemLook.text(f.flavour(), 0xE4DAC2);
+            if (!f.rewards().isEmpty()) {
+                hover = hover.appendNewline().append(ItemLook.text("Reward:", ItemLook.MUTED));
+                for (String reward : f.rewards()) {
+                    hover = hover.appendNewline().append(ItemLook.text("  ", ItemLook.MUTED))
+                            .append(core.progression().rewardTitle(reward));
+                }
+            }
+            return hover;
+        }
     }
 
     /** A title or a trail: no item; owning it lets you wear it (chosen in the Journal). */

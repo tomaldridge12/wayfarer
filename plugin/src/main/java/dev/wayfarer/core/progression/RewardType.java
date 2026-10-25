@@ -12,6 +12,11 @@ public interface RewardType {
     /** The reward's themed name for titles and announcements, or null if config no longer has it. */
     Component title(String id);
 
+    /** What hovering this reward's announcement shows when it has no item (a feat's story and prizes); null for none. */
+    default net.kyori.adventure.text.event.HoverEventSource<?> announceHover(String id) {
+        return null;
+    }
+
     /** The name shown on the progress card; hovering it may show the item's tooltip. */
     default Component describe(String id) {
         return title(id);
