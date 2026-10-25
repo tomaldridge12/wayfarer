@@ -81,6 +81,7 @@ public final class ObjectivesModule implements Module {
         display.start();
         listen(display);
         listen(display.hats());
+        listen(display.pets());
         core.services().get(JournalPages.class).ifPresent(journal -> {
             journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal, tracker).page());
             journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals, tracker).page());

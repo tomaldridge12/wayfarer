@@ -32,6 +32,7 @@ final class CosmeticsDisplay implements Listener {
     private final Map<UUID, Component> titles = new ConcurrentHashMap<>();
     private final Map<UUID, Location> last = new ConcurrentHashMap<>();
     private final HatDisplay hats;
+    private final PetDisplay pets;
     private BukkitTask trails;
 
     CosmeticsDisplay(JavaPlugin plugin, PlayerStore<ObjectivesPlayerData> store, Supplier<Map<String, Cosmetic>> cosmetics) {
@@ -39,6 +40,11 @@ final class CosmeticsDisplay implements Listener {
         this.store = store;
         this.cosmetics = cosmetics;
         this.hats = new HatDisplay(plugin, store, cosmetics);
+        this.pets = new PetDisplay(plugin, store, cosmetics);
+    }
+
+    PetDisplay pets() {
+        return pets;
     }
 
     HatDisplay hats() {
@@ -49,6 +55,7 @@ final class CosmeticsDisplay implements Listener {
         plugin.getServer().getOnlinePlayers().forEach(this::refresh);
         trails = plugin.getServer().getScheduler().runTaskTimer(plugin, this::trails, 4, 4);
         hats.start();
+        pets.start();
     }
 
     void stop() {
@@ -56,6 +63,7 @@ final class CosmeticsDisplay implements Listener {
             trails.cancel();
         }
         hats.stop();
+        pets.stop();
         plugin.getServer().getOnlinePlayers().forEach(p -> p.playerListName(null));
         titles.clear();
     }
@@ -69,6 +77,7 @@ final class CosmeticsDisplay implements Listener {
     /** Re-reads what the player wears: the chat title cache and their player-list name. */
     void refresh(Player player) {
         hats.refresh(player);
+        pets.refresh(player);
         ObjectivesPlayerData data = store.cached(player.getUniqueId());
         String title = data == null ? null : data.title;
         if (title == null || !cosmetics.get().containsKey(title)) {

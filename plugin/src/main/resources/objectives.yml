@@ -36,6 +36,13 @@ cosmetics:
   cake_hat: {kind: hat, name: "Cake Hat", item: cake}
   lantern_hat: {kind: hat, name: "Lantern Hat", item: lantern}
   mushroom_cap: {kind: hat, name: "Mushroom Cap", item: red_mushroom_block}
+  # Pets follow you and vanish when you log out, ride or die. entity: a peaceful baby mob; pet-name "jeb_" makes a sheep
+  # shift through every colour; model: a pack model shown as a small floating display (scale up to 4).
+  rainbow_sheep: {kind: pet, name: "Rainbow Sheep", entity: sheep, pet-name: "jeb_"}
+  piglet: {kind: pet, name: "Piglet", entity: pig}
+  chick: {kind: pet, name: "Chick", entity: chicken}
+  bunny: {kind: pet, name: "Bunny", entity: rabbit}
+  kit: {kind: pet, name: "Fox Kit", entity: fox}
 
 # Feats: one-off milestones on any count, each paying something that fits it.
 #   name, flavour (one line of story shown in the Journal), counts (activities, as ladders take them: verb:target,

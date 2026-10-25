@@ -17,7 +17,7 @@ public interface ObjectiveVocabulary {
         return true;
     }
 
-    /** A living mob type such as {@code sheep}; tests accept any. */
+    /** A peaceful living mob type such as {@code sheep}; tests accept any. */
     default boolean isMob(String key) {
         return true;
     }

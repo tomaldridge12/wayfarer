@@ -54,7 +54,10 @@ final class PaperObjectiveVocabulary implements ObjectiveVocabulary {
     public boolean isMob(String key) {
         NamespacedKey k = NamespacedKey.fromString(key);
         org.bukkit.entity.EntityType type = k == null ? null : org.bukkit.Registry.ENTITY_TYPE.get(k);
-        return type != null && type.getEntityClass() != null && org.bukkit.entity.LivingEntity.class.isAssignableFrom(type.getEntityClass());
+        Class<?> cls = type == null ? null : type.getEntityClass();
+        // Peaceful living mobs only: a hostile pet would attack its owner's friends.
+        return cls != null && org.bukkit.entity.LivingEntity.class.isAssignableFrom(cls) && !org.bukkit.entity.Enemy.class.isAssignableFrom(cls)
+                && !org.bukkit.entity.Player.class.isAssignableFrom(cls);
     }
 
     @Override
