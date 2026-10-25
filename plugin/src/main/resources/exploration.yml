@@ -1,20 +1,27 @@
 # Exploration module: the Wayfinder compass and Guardian's Chart, safe surface after the first dragon, and beacon
 # kindling. Set enabled: false to skip the module.
-version: 1
+version: 2
 enabled: true
 
-# Sneak and right-click a cartography table with a compass to choose a structure or a land you have found; pay XP
-# levels and the compass points to the nearest within range. A search is one per player per cooldown (seconds).
+# Sneak and right-click a cartography table with a compass to choose a structure or any biome this world can grow;
+# pay XP and the compass points to the nearest within range. Prices are XP points, the same at any level (a level
+# 5 and a level 40 player pay alike); players see them as "27 XP · about 2 of your levels". A search is one per player per
+# cooldown (seconds). A search that finds nothing costs nothing but still starts the cooldown.
+# Older files priced in levels (version 1: structure-levels, biome-levels, chart-levels, rare in levels) are still read, each
+# level number converted to the points it takes to reach that level from 0; the file is never rewritten.
 wayfinder:
   range: 3200
   cooldown: 300
-  structure-levels: 5
-  biome-levels: 3
-  chart-levels: 8
-  # Rarer targets cost more (structure or biome path -> levels).
-  rare: {mansion: 15, ancient_city: 12, stronghold: 10, monument: 8, trial_chambers: 8, end_city: 10, bastion_remnant: 8,
-    fortress: 6, jungle_pyramid: 6, mushroom_fields: 10, ice_spikes: 8, pale_garden: 8, deep_dark: 10, cherry_grove: 6,
-    bamboo_jungle: 6, badlands: 6}
+  structure-points: 55
+  biome-points: 27
+  chart-points: 112
+  # A biome you have not found yet costs this many times as much (it also shows the Atlas hint).
+  unfound-multiplier: 2
+  # Rarer targets cost more (structure or biome path -> XP points).
+  rare: {mansion: 315, ancient_city: 216, stronghold: 160, monument: 112, trial_chambers: 112, end_city: 160, bastion_remnant: 112,
+    fortress: 72, jungle_pyramid: 72, mushroom_fields: 160, ice_spikes: 112, pale_garden: 112, deep_dark: 160, cherry_grove: 72,
+    bamboo_jungle: 72, badlands: 72}
+
   # The structures it offers, in this order (key -> name shown).
   structures:
     village_plains: "Plains Village"

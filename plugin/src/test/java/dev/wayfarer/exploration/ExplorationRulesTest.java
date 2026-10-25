@@ -33,10 +33,79 @@ class ExplorationRulesTest {
     @Test
     void rareTargetsCostMore() {
         ExplorationRules.Prices p = shipped().settings().prices();
-        assertEquals(15, p.of("minecraft:mansion", true));
-        assertEquals(5, p.of("minecraft:igloo", true));
-        assertEquals(10, p.of("mushroom_fields", false));
-        assertEquals(3, p.of("terralith:alpine_grove", false));
+        assertEquals(315, p.of("minecraft:mansion", true));
+        assertEquals(55, p.of("minecraft:igloo", true));
+        assertEquals(160, p.of("mushroom_fields", false));
+        assertEquals(27, p.of("terralith:alpine_grove", false));
+    }
+
+    @Test
+    void anUnfoundBiomeCostsTheMultiplierTimesAsMuch() {
+        ExplorationRules.Prices p = shipped().settings().prices();
+        assertEquals(27, p.biome("terralith:alpine_grove", true));
+        assertEquals(54, p.biome("terralith:alpine_grove", false));
+        assertEquals(160, p.biome("mushroom_fields", true), "a rare biome keeps its own price");
+        assertEquals(320, p.biome("mushroom_fields", false));
+        assertEquals(41, new ExplorationRules.Prices(55, 27, Map.of(), 1.5).biome("plains", false), "rounded");
+    }
+
+    @Test
+    void theBiomeListShowsFoundFirstThenByName() {
+        List<ExplorationRules.BiomeOption> out = ExplorationRules.order(List.of(
+                new ExplorationRules.BiomeOption("terralith:alpine_grove", "Alpine Grove", false),
+                new ExplorationRules.BiomeOption("plains", "Plains", true),
+                new ExplorationRules.BiomeOption("badlands", "Badlands", false),
+                new ExplorationRules.BiomeOption("desert", "Desert", true)));
+        assertEquals(List.of("desert", "plains", "terralith:alpine_grove", "badlands"), out.stream().map(ExplorationRules.BiomeOption::key).toList());
+    }
+
+    @Test
+    void aFailedSearchChargesNothingButStartsTheCooldown() {
+        assertEquals(new ExplorationRules.Settlement(false, true), ExplorationRules.settle(false, false));
+        assertEquals(new ExplorationRules.Settlement(true, true), ExplorationRules.settle(true, false));
+        assertEquals(new ExplorationRules.Settlement(false, false), ExplorationRules.settle(false, true), "a free pointing is kept");
+        assertEquals(new ExplorationRules.Settlement(false, false), ExplorationRules.settle(true, true), "free is never charged");
+    }
+
+    @Test
+    void aLevelsFileIsReadAsPointsAndNoted() {
+        Map<String, Object> v1 = new Yaml().load("""
+                version: 1
+                wayfinder:
+                  structure-levels: 5
+                  biome-levels: 3
+                  chart-levels: 8
+                  rare: {mansion: 15, ancient_city: 12, stronghold: 10}
+                """);
+        ExplorationConfigParser.Result r = ExplorationConfigParser.parse(v1);
+        assertEquals(List.of(), r.problems());
+        assertEquals(55, r.settings().prices().structure());
+        assertEquals(27, r.settings().prices().biome());
+        assertEquals(112, r.settings().chartPoints());
+        assertEquals(Map.of("mansion", 315, "ancient_city", 216, "stronghold", 160), r.settings().prices().rare());
+        assertEquals(1, r.notes().size());
+        assertTrue(r.notes().getFirst().contains("levels"));
+    }
+
+    @Test
+    void aPointsFileIsReadAsPointsAndBadValuesGiveAProblem() {
+        Map<String, Object> v2 = new Yaml().load("""
+                version: 2
+                wayfinder:
+                  structure-points: 70
+                  biome-points: oops
+                  chart-points: 100
+                  unfound-multiplier: 0
+                  rare: {mansion: 400, igloo: -1}
+                """);
+        ExplorationConfigParser.Result r = ExplorationConfigParser.parse(v2);
+        assertEquals(70, r.settings().prices().structure());
+        assertEquals(27, r.settings().prices().biome(), "a bad value falls back to the default");
+        assertEquals(100, r.settings().chartPoints());
+        assertEquals(2.0, r.settings().prices().unfoundMultiplier());
+        assertEquals(Map.of("mansion", 400), r.settings().prices().rare());
+        assertEquals(3, r.problems().size());
+        assertEquals(List.of(), r.notes(), "nothing was converted");
     }
 
     @Test
