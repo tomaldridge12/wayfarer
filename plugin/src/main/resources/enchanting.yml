@@ -1,0 +1,12 @@
+# Enchanting module: the reshuffle at an enchanting table. Set enabled: false to skip the module.
+version: 1
+enabled: true
+
+# Sneak and right-click an enchanting table holding the trigger item to shuffle its offers: it takes `levels` whole
+# levels (the progress bar keeps its fill; creative is free) and the lapis is not used. Cheaper than vanilla's trick of
+# enchanting a book at the cheapest slot, which costs a level and a lapis. This is the one price in levels, not points.
+# Offers are only reseeded, never edited, so reward-only enchants stay out of the table.
+reshuffle:
+  enabled: true
+  levels: 1
+  trigger: lapis_lazuli

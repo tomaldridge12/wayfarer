@@ -124,6 +124,8 @@ check "$LOG1" "Event harvest_moon ended (stopped by command): world random tick 
 check "$LOG1" "Stopped Harvest Moon"
 check "$LOG1" "Shop loaded: 10 cosmetics, 6 supplies, books at 60 tokens a level, 0 problems"
 check "$LOG1" "Module exploration enabled"
+check "$LOG1" "Module enchanting enabled"
+check "$LOG1" "Enchanting loaded: reshuffle on, 1 level, trigger lapis_lazuli; 0 problems"
 check "$LOG1" "Exploration loaded: Wayfinder offers 23 structures within 3200 blocks, 300s between searches; 0 problems"
 check "$LOG1" "Safe surface: off"
 check "$LOG1" "Safe surface turned on by CONSOLE"
