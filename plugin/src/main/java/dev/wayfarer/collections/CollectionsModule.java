@@ -1,5 +1,7 @@
 package dev.wayfarer.collections;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -95,6 +97,12 @@ public final class CollectionsModule implements Module {
         listen(new Book());
         core.services().register(id(), JournalPages.class, journal);
         core.commands().register(id(), journalCommand());
+        core.catalogue().add(id(), "journal", Component.text("Journal", NamedTextColor.WHITE), Material.BRICK,
+                viewer -> List.of(journalItem()));
+        core.catalogue().add(id(), "fish", Component.text("Fish", NamedTextColor.WHITE), Material.COD,
+                dev.wayfarer.core.ItemCatalogue.madeFrom(core.itemIds(), core.itemMakers(), Almanac.KIND));
+        core.catalogue().add(id(), "treasures", Component.text("Treasures", NamedTextColor.WHITE), Material.BRUSH,
+                dev.wayfarer.core.ItemCatalogue.madeFrom(core.itemIds(), core.itemMakers(), Treasures.KIND));
         core.commands().register(id(), adminCommand());
     }
 

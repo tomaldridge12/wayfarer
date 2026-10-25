@@ -89,6 +89,11 @@ public final class ObjectivesModule implements Module {
         });
         core.commands().register(id(), commands());
         core.commands().register(id(), trackCommand());
+        core.catalogue().add(id(), "keepsakes", net.kyori.adventure.text.Component.text("Server goal keepsakes",
+                net.kyori.adventure.text.format.NamedTextColor.WHITE), org.bukkit.Material.PLAYER_HEAD,
+                viewer -> pools.goal().values().stream().map(g -> keepsakes.make(Keepsakes.key(g.id(), System.currentTimeMillis(),
+                        g.target(), g.target()), viewer == null ? new java.util.UUID(0, 0) : viewer.getUniqueId(),
+                        viewer == null ? "Wayfarer" : viewer.getName())).flatMap(java.util.Optional::stream).toList());
     }
 
     @Override
