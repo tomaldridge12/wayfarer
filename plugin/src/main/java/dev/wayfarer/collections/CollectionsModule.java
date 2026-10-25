@@ -108,6 +108,7 @@ public final class CollectionsModule implements Module {
 
     @Override
     public void disable() {
+        core.trackables().drop(id());
         if (saveTask != null) {
             saveTask.cancel();
         }
@@ -116,7 +117,6 @@ public final class CollectionsModule implements Module {
         }
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
-        core.trackables().drop(id());
     }
 
     private void listen(Listener listener) {
