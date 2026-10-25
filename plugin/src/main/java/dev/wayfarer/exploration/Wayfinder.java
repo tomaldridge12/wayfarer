@@ -1,10 +1,12 @@
 package dev.wayfarer.exploration;
 
+import dev.wayfarer.core.AtlasHints;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.GuardianSites;
 import dev.wayfarer.core.ItemLook;
 import dev.wayfarer.core.Menus;
 import dev.wayfarer.core.Wayfinding;
+import dev.wayfarer.core.progression.Activity;
 import dev.wayfarer.core.progression.Progression;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.LodestoneTracker;
@@ -16,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -55,6 +58,7 @@ final class Wayfinder implements Listener, Wayfinding {
     static final int PAPER = 0xE8D9A8;
     static final int INK = 0xE4DAC2;
     static final int FADED = 0xB5AD9C;
+    static final int NEW = 0xB58CE6;
     private static final String TAG = "exploration";
 
     /** One target to search for, resolved later on its tick. */
@@ -142,16 +146,16 @@ final class Wayfinder implements Listener, Wayfinding {
         List<Menus.Button> buttons = new ArrayList<>();
         buttons.add(new Menus.Button(ItemLook.text("A structure", PAPER), ItemLook.text("Villages, temples, ruins and stranger places", INK), 140,
                 p -> structures(p, free)));
-        buttons.add(new Menus.Button(ItemLook.text("A land you have found", PAPER), ItemLook.text("Any biome you have stood in", INK), 140,
+        buttons.add(new Menus.Button(ItemLook.text("A land", PAPER), ItemLook.text("Any biome this world can grow", INK), 140,
                 p -> biomes(p, free, 0)));
         if (core.services().get(GuardianSites.class).isPresent()) {
             buttons.add(new Menus.Button(ItemLook.text("Guardian's Chart", 0x5FA8D9),
-                    ItemLook.text("The nearest guardian you have not beaten" + (free ? "" : " · " + settings.get().chartLevels() + " levels"), INK),
+                    ItemLook.text("The nearest guardian you have not beaten" + (free ? "" : " · " + core.xp().price(player, settings.get().chartPoints())), INK),
                     140, p -> chart(p, free)));
         }
         String note = free ? "This one is free (" + charges(player.getUniqueId()) + " free pointing"
                 + (charges(player.getUniqueId()) == 1 ? "" : "s") + " left)." : left > 0 ? "The needle is still settling: " + (left / 1000 + 59) / 60 + " min until you can search again."
-                : "Pay in experience levels; the compass in your hand becomes the Wayfinder.";
+                : "Pay in XP, whatever your level; the compass in your hand becomes the Wayfinder.";
         Menus.show(player, ItemLook.text("✦ Wayfinder", GOLD), List.of(Menus.text(Component.text(
                 "Tell the needle what you seek, and it will find the nearest within " + settings.get().rangeBlocks() + " blocks.",
                 TextColor.color(FADED)).decoration(TextDecoration.ITALIC, true)), Menus.text(ItemLook.text(note, INK))),
@@ -169,31 +173,54 @@ final class Wayfinder implements Listener, Wayfinding {
         }));
         offered.forEach((key, name) -> {
             int cost = free ? 0 : settings.get().prices().of(key, true);
-            buttons.add(new Menus.Button(ItemLook.text(name, PAPER), ItemLook.text(free ? "Free" : cost + " levels", INK), 110,
+            buttons.add(new Menus.Button(ItemLook.text(name, PAPER), ItemLook.text(free ? "Free" : core.xp().price(player, cost), INK), 110,
                     p -> buy(p, free, cost, List.of(key), null, name, "wayfinder_compass")));
         });
         Menus.show(player, ItemLook.text("A structure", GOLD), List.of(Menus.text(ItemLook.text("Which shall the needle seek?", INK))),
                 buttons, 3, new Menus.Button(ItemLook.text("◂ Back", INK), Component.empty(), 120, p -> menu(p, free)));
     }
 
+    /**
+     * Every biome this world can generate (datapack biomes too), found ones first. Unfound ones are dimmer, marked new,
+     * show the Atlas hint when collections is on, and cost the unfound multiplier times as much.
+     */
     private void biomes(Player player, boolean free, int page) {
-        Optional<Progression.Snapshot> snap = core.progression().snapshot(player.getUniqueId());
-        List<String> found = new ArrayList<>();
-        snap.ifPresent(s -> s.counters().forEach((k, v) -> {
+        World world = player.getWorld();
+        Set<String> found = new java.util.HashSet<>();
+        core.progression().snapshot(player.getUniqueId()).ifPresent(s -> s.counters().forEach((k, v) -> {
             if (v > 0 && k.startsWith("discover:biome/")) {
                 found.add(k.substring("discover:biome/".length()));
             }
         }));
-        found.sort(String::compareTo);
+        List<ExplorationRules.BiomeOption> options = new ArrayList<>();
+        for (Biome biome : world.vanillaBiomeProvider().getBiomes(world)) {
+            NamespacedKey id = biome.getKey();
+            if (id.getKey().equals("the_void") || id.getKey().equals("custom")) {
+                continue;
+            }
+            String target = Activity.target(id.getNamespace(), id.getKey());
+            options.add(new ExplorationRules.BiomeOption(target, title(target), found.contains(target)));
+        }
+        List<ExplorationRules.BiomeOption> ordered = ExplorationRules.order(options);
+        Optional<AtlasHints> hints = core.services().get(AtlasHints.class);
         int per = 24;
-        int pages = Math.max(1, (found.size() + per - 1) / per);
+        int pages = Math.max(1, (ordered.size() + per - 1) / per);
         int at = Math.max(0, Math.min(page, pages - 1));
         List<Menus.Button> buttons = new ArrayList<>();
-        for (String biome : found.subList(at * per, Math.min(found.size(), (at + 1) * per))) {
-            String name = title(biome);
-            int cost = free ? 0 : settings.get().prices().of(biome, false);
-            buttons.add(new Menus.Button(ItemLook.text(name, PAPER), ItemLook.text(free ? "Free" : cost + " levels", INK), 110,
-                    p -> buy(p, free, cost, List.of(), biome, name, "wayfinder_compass")));
+        for (ExplorationRules.BiomeOption pick : ordered.subList(at * per, Math.min(ordered.size(), (at + 1) * per))) {
+            int cost = free ? 0 : settings.get().prices().biome(pick.key(), pick.found());
+            Component price = ItemLook.text(free ? "Free" : core.xp().price(player, cost), INK);
+            Component label = pick.found() ? ItemLook.text(pick.name(), PAPER)
+                    : ItemLook.text("✧ ", NEW).append(ItemLook.text(pick.name(), FADED));
+            Component tip = price;
+            if (!pick.found()) {
+                tip = ItemLook.text("✧ New: you have not stood here yet", NEW).appendNewline().append(price);
+                String hint = hints.map(h -> h.hint(pick.key())).orElse("");
+                if (!hint.isEmpty()) {
+                    tip = tip.appendNewline().append(Component.text(hint, TextColor.color(FADED)).decoration(TextDecoration.ITALIC, true));
+                }
+            }
+            buttons.add(new Menus.Button(label, tip, 110, p -> buy(p, free, cost, List.of(), pick.key(), pick.name(), "wayfinder_compass")));
         }
         if (at > 0) {
             buttons.add(new Menus.Button(ItemLook.text("◂ Turn back", INK), Component.empty(), 110, p -> biomes(p, free, at - 1)));
@@ -201,8 +228,10 @@ final class Wayfinder implements Listener, Wayfinding {
         if (at < pages - 1) {
             buttons.add(new Menus.Button(ItemLook.text("Turn over ▸", INK), Component.empty(), 110, p -> biomes(p, free, at + 1)));
         }
-        Menus.show(player, ItemLook.text("A land you have found", GOLD), List.of(Menus.text(ItemLook.text(found.isEmpty()
-                ? "You haven't stood anywhere worth remembering yet." : "Which land shall the needle seek?", INK))), buttons, 3,
+        boolean anyNew = ordered.stream().anyMatch(o -> !o.found());
+        Menus.show(player, ItemLook.text("A land", GOLD), List.of(Menus.text(ItemLook.text("Which land shall the needle seek? "
+                + (anyNew ? "✧ marks a land you have not found yet; it costs "
+                + settings.get().prices().multiplierText() + "× as much." : "You have found every land this world can grow."), INK))), buttons, 3,
                 new Menus.Button(ItemLook.text("◂ Back", INK), Component.empty(), 120, p -> menu(p, free)));
     }
 
@@ -215,7 +244,7 @@ final class Wayfinder implements Listener, Wayfinding {
             player.sendMessage(ItemLook.text("Every guardian you know of has fallen to you. The chart stays blank.", INK));
             return;
         }
-        buy(player, free, free ? 0 : settings.get().chartLevels(), targets, null, null, "guardians_chart");
+        buy(player, free, free ? 0 : settings.get().chartPoints(), targets, null, null, "guardians_chart");
     }
 
     /** Checks the cooldown and XP, then queues the search; pays and gives the compass only if something was found. */
@@ -227,8 +256,8 @@ final class Wayfinder implements Listener, Wayfinding {
             player.sendMessage(ItemLook.text("The needle is still settling. Try again in " + (left / 1000 + 59) / 60 + " min.", INK));
             return;
         }
-        if (!free && player.getLevel() < cost) {
-            player.sendMessage(ItemLook.text("That costs " + cost + " levels; you have " + player.getLevel() + ".", INK));
+        if (!free && !core.xp().canAfford(player, cost)) {
+            player.sendMessage(ItemLook.text(core.xp().cannotAfford(player, cost), INK));
             return;
         }
         if (!free && player.getInventory().getItemInMainHand().getType() != Material.COMPASS) {
@@ -242,7 +271,11 @@ final class Wayfinder implements Listener, Wayfinding {
                 return;
             }
             if (found.isEmpty()) {
-                player.sendMessage(ItemLook.text("Nothing like that within " + settings.get().rangeBlocks() + " blocks. Nothing was spent.", INK));
+                if (ExplorationRules.settle(false, free).cooldown()) {
+                    lastSearch.put(id, System.currentTimeMillis()); // a failed search still lets the needle settle
+                }
+                player.sendMessage(ItemLook.text(String.format("None within %,d blocks. The needle found nothing, and nothing was spent.",
+                        settings.get().rangeBlocks()), INK));
                 return;
             }
             if (free) {
@@ -255,11 +288,10 @@ final class Wayfinder implements Listener, Wayfinding {
                 save.run();
             } else {
                 ItemStack held = player.getInventory().getItemInMainHand();
-                if (held.getType() != Material.COMPASS || player.getLevel() < cost) {
+                if (held.getType() != Material.COMPASS || !core.xp().take(player, cost)) {
                     player.sendMessage(ItemLook.text("You let go of the compass; the needle went still. Nothing was spent.", INK));
                     return;
                 }
-                player.setLevel(player.getLevel() - cost);
                 held.setAmount(held.getAmount() - 1);
                 lastSearch.put(id, System.currentTimeMillis());
             }
@@ -271,7 +303,7 @@ final class Wayfinder implements Listener, Wayfinding {
             int distance = (int) f.at().distance(player.getLocation());
             player.sendMessage(ItemLook.text("✦ The needle settles: " + shown + ", " + distance + " blocks away.", GOLD));
             core.logger().info("[exploration] " + player.getName() + " found " + f.key() + " at " + f.at().getBlockX() + ","
-                    + f.at().getBlockZ() + (free ? " (free)" : " for " + cost + " levels"));
+                    + f.at().getBlockZ() + (free ? " (free)" : " for " + cost + " XP"));
         }));
     }
 

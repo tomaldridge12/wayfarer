@@ -83,9 +83,14 @@ public final class ExplorationModule implements Module {
     private void load() throws IOException {
         ExplorationConfigParser.Result r = ExplorationConfigParser.parse(core.config().load(id()));
         r.problems().forEach(p -> core.logger().warning("[exploration] " + p));
+        r.notes().forEach(n -> core.logger().info("[exploration] " + n));
         settings = r.settings();
+        ExplorationRules.Prices prices = settings.prices();
         core.logger().info("Exploration loaded: Wayfinder offers " + settings.structures().size() + " structures within "
-                + settings.rangeBlocks() + " blocks, " + settings.cooldownSeconds() + "s between searches; " + r.problems().size() + " problems");
+                + settings.rangeBlocks() + " blocks, " + settings.cooldownSeconds() + "s between searches; " + r.problems().size()
+                + " problems; XP prices: structure " + prices.structure() + ", biome " + prices.biome() + " (x"
+                + prices.multiplierText() + " if unfound), chart " + settings.chartPoints() + ", "
+                + prices.rare().size() + " rare");
     }
 
     /** Taken as JSON here on the main thread, written in order off it. */

@@ -32,6 +32,9 @@ public interface Core {
     /** ExcellentEnchants enchants modules give as rewards, checked to be exclusive to Wayfarer. Main thread. */
     RewardEnchants rewardEnchants();
 
+    /** XP prices in points (ADR 0007): what a player holds, taking a price, and how it reads. Main thread. */
+    Xp xp();
+
     /** The /wayfarer root; modules register their subtrees under their own id while enabling. */
     CommandTree<CommandSourceStack> commands();
 }

@@ -1,5 +1,9 @@
 package dev.wayfarer.exploration;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -11,15 +15,51 @@ import java.util.Set;
 public final class ExplorationRules {
     private static final String[] ARROWS = {"↑", "↗", "→", "↘", "↓", "↙", "←", "↖"};
 
-    /** XP levels per pointing: rare targets by name, else the default for structures or biomes. */
-    public record Prices(int structure, int biome, Map<String, Integer> rare) {
+    /**
+     * XP points per pointing: rare targets by name, else the default for structures or biomes; a biome the player has
+     * not found costs {@code unfoundMultiplier} times as much.
+     */
+    public record Prices(int structure, int biome, Map<String, Integer> rare, double unfoundMultiplier) {
         public int of(String target, boolean structure) {
             String path = target.substring(target.indexOf(':') + 1);
             return rare.getOrDefault(path, rare.getOrDefault(target, structure ? this.structure : biome));
         }
+
+        /** A biome's price: its own price, times the multiplier if the player has not found it. */
+        public int biome(String target, boolean found) {
+            int base = of(target, false);
+            return found ? base : (int) Math.round(base * unfoundMultiplier);
+        }
+
+        /** The multiplier as written: "2" or "1.5". */
+        public String multiplierText() {
+            return unfoundMultiplier == Math.rint(unfoundMultiplier) ? String.valueOf((long) unfoundMultiplier) : String.valueOf(unfoundMultiplier);
+        }
+    }
+
+    /** One biome on the Wayfinder's list. */
+    public record BiomeOption(String key, String name, boolean found) {
+    }
+
+    /** What a finished search settles: whether to charge the player, and whether the search cooldown starts. */
+    public record Settlement(boolean charge, boolean cooldown) {
     }
 
     private ExplorationRules() {
+    }
+
+    /** The biome list: found biomes first, then by name; each group in name order. */
+    public static List<BiomeOption> order(Collection<BiomeOption> options) {
+        return options.stream().sorted(Comparator.comparing((BiomeOption o) -> !o.found()).thenComparing(o -> o.name().toLowerCase(Locale.ROOT))
+                .thenComparing(BiomeOption::key)).toList();
+    }
+
+    /**
+     * What a finished search costs. A failed search charges nothing but still starts the cooldown, so slow searches
+     * cannot be spammed; a free pointing (a curio's charge) never uses the cooldown and is only spent on success.
+     */
+    public static Settlement settle(boolean found, boolean free) {
+        return new Settlement(found && !free, !free);
     }
 
     /** Milliseconds left on the player's search cooldown; 0 when they may search. */

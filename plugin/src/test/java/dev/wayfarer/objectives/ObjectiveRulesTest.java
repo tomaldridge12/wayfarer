@@ -88,8 +88,12 @@ class ObjectiveRulesTest {
 
     @Test
     void rerollsCostMoreEachTimeAndStreaksPauseRatherThanReset() {
-        assertEquals(3, ObjectiveRules.rerollCost(3, 2, 0));
-        assertEquals(7, ObjectiveRules.rerollCost(3, 2, 2));
+        PoolConfigParser.Settings shipped = SHIPPED.settings();
+        assertEquals(27, shipped.rerollPoints());
+        assertEquals(16, shipped.rerollStepPoints());
+        assertEquals(List.of(27, 43, 59), List.of(0, 1, 2).stream()
+                .map(paid -> ObjectiveRules.rerollCost(shipped.rerollPoints(), shipped.rerollStepPoints(), paid)).toList());
+        assertEquals(List.of(), SHIPPED.notes(), "the shipped file is already in points");
         assertEquals(new ObjectiveRules.Streak(1, false), ObjectiveRules.completeDay(0, Long.MIN_VALUE, 100, 7));
         assertEquals(new ObjectiveRules.Streak(6, false), ObjectiveRules.completeDay(5, 90, 100, 7), "a gap only pauses");
         assertEquals(new ObjectiveRules.Streak(7, true), ObjectiveRules.completeDay(6, 99, 100, 7));
@@ -128,6 +132,22 @@ class ObjectiveRulesTest {
         assertEquals(new Tokens.Change(10, 0), Tokens.add(10, -20));
         assertEquals("2026-10-24T17:00:00Z +20 daily coal_run (balance 30)",
                 Tokens.ledger(Instant.parse("2026-10-24T17:00:00Z"), 20, "daily coal_run", 30));
+    }
+
+    @Test
+    void rerollPricesInLevelsAreConvertedToPointsAndPointsReadAsTheyAre() {
+        PoolConfigParser.Result v1 = PoolConfigParser.parse(new Yaml().load("dailies: {rerolls: {free: 2, xp-levels: 3, xp-step: 2}}"),
+                ObjectiveFixtures.SERVER, key -> true);
+        assertEquals(27, v1.settings().rerollPoints());
+        assertEquals(16, v1.settings().rerollStepPoints());
+        assertEquals(2, v1.settings().freeRerolls());
+        assertEquals(1, v1.notes().size(), "one log line for the whole conversion");
+        PoolConfigParser.Result v2 = PoolConfigParser.parse(new Yaml().load("dailies: {rerolls: {xp-points: 40, xp-step-points: -5}}"),
+                ObjectiveFixtures.SERVER, key -> true);
+        assertEquals(40, v2.settings().rerollPoints());
+        assertEquals(16, v2.settings().rerollStepPoints(), "a bad value keeps its default");
+        assertEquals(1, v2.problems().size());
+        assertEquals(List.of(), v2.notes());
     }
 
     @Test

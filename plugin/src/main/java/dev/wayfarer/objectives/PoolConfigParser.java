@@ -1,5 +1,6 @@
 package dev.wayfarer.objectives;
 
+import dev.wayfarer.core.XpPoints;
 import dev.wayfarer.core.progression.Selectors;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -21,17 +22,19 @@ public final class PoolConfigParser {
 
     /** Daily, weekly and streak settings. */
     public record Settings(Schedule schedule, List<String> stages, Map<String, String> stageAdvancements, int dailies,
-            int freeRerolls, int rerollBase, int rerollStep, int streakEvery, int streakTokens, String streakReward,
+            int freeRerolls, int rerollPoints, int rerollStepPoints, int streakEvery, int streakTokens, String streakReward,
             int duplicateTokens) {
     }
 
+    /** {@code notes} are info lines for the log (an older file read by converting it), {@code problems} are warnings. */
     public record Result(Settings settings, Map<String, ObjectiveDefinition> daily, Map<String, ObjectiveDefinition> weekly,
-            Map<String, ObjectiveDefinition> goal, RewardTables tables, List<String> problems) {
+            Map<String, ObjectiveDefinition> goal, RewardTables tables, List<String> problems, List<String> notes) {
     }
 
     private final ObjectiveVocabulary names;
     private final Predicate<String> isItem;
     private final List<String> problems = new ArrayList<>();
+    private final List<String> fromLevels = new ArrayList<>();
 
     private PoolConfigParser(ObjectiveVocabulary names, Predicate<String> isItem) {
         this.names = names;
@@ -45,7 +48,10 @@ public final class PoolConfigParser {
         Map<String, ObjectiveDefinition> daily = p.pool("Daily", root.get("daily-pool"), settings, tables, "daily");
         Map<String, ObjectiveDefinition> weekly = p.pool("Weekly", root.get("weekly-pool"), settings, tables, "weekly");
         Map<String, ObjectiveDefinition> goal = p.pool("Server goal", root.get("goal-pool"), settings, tables, "goal");
-        return new Result(settings, daily, weekly, goal, tables, List.copyOf(p.problems));
+        List<String> notes = p.fromLevels.isEmpty() ? List.of() : List.of("objectives.yml reroll prices are in levels (version 1); read as XP points ("
+                + String.join(", ", p.fromLevels) + "). Wayfarer does not rewrite your file; to price in points use dailies.rerolls"
+                + " xp-points and xp-step-points, with version: 2");
+        return new Result(settings, daily, weekly, goal, tables, List.copyOf(p.problems), notes);
     }
 
     private Settings settings(Map<String, Object> root) {
@@ -76,7 +82,7 @@ public final class PoolConfigParser {
         Map<String, Object> st = ObjectiveConfigParser.asMap(dl.get("streak"));
         return new Settings(new Schedule(zone, daily, weekly, startDay, startTime, endDay, endTime), List.copyOf(advancements.keySet()),
                 advancements, number(dl.get("count"), 3, 1, 6, "dailies.count"), number(rr.get("free"), 1, 0, 10, "dailies.rerolls.free"),
-                number(rr.get("xp-levels"), 3, 0, 100, "dailies.rerolls.xp-levels"), number(rr.get("xp-step"), 2, 0, 100, "dailies.rerolls.xp-step"),
+                points(rr, "xp-points", "xp-levels", 27, "dailies.rerolls"), points(rr, "xp-step-points", "xp-step", 16, "dailies.rerolls"),
                 number(st.get("every"), 7, 0, 365, "dailies.streak.every"), number(st.get("tokens"), 50, 0, 100000, "dailies.streak.tokens"),
                 st.get("reward") == null ? null : String.valueOf(st.get("reward")),
                 number(root.get("duplicate-tokens"), 30, 0, 100000, "duplicate-tokens"));
@@ -185,6 +191,25 @@ public final class PoolConfigParser {
             problems.add(where + " day '" + value + "' is not a day of the week; using " + fallback);
             return fallback;
         }
+    }
+
+    /**
+     * A price in XP points: {@code pointsKey} if set, else the older {@code levelsKey} converted to the points it takes
+     * to reach that many levels from 0 (noted once in the log), else the default (ADR 0007).
+     */
+    private int points(Map<String, Object> section, String pointsKey, String levelsKey, int fallback, String where) {
+        if (section.get(pointsKey) != null) {
+            return number(section.get(pointsKey), fallback, 0, 100000, where + "." + pointsKey);
+        }
+        if (section.get(levelsKey) != null) {
+            int levels = number(section.get(levelsKey), -1, 0, 100, where + "." + levelsKey);
+            if (levels >= 0) {
+                int inPoints = XpPoints.toReach(levels);
+                fromLevels.add(levelsKey + " " + levels + " = " + inPoints + " XP");
+                return inPoints;
+            }
+        }
+        return fallback;
     }
 
     private int number(Object value, int fallback, int min, int max, String where) {

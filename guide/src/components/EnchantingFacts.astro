@@ -1,0 +1,17 @@
+---
+// The enchanting table reshuffle in numbers. From enchanting.yml.
+import { guide } from '../data/repo';
+import { plural, title } from '../data/text';
+
+const e = guide().config.enchanting;
+---
+{e && e.reshuffle && (
+  <ul class="facts">
+    <li>Sneak and right-click an enchanting table holding <b>{title(e.trigger)}</b>.</li>
+    <li>It costs <b>{plural(e.levels, 'level')}</b> (a whole level, not points; your progress bar keeps its fill). The {title(e.trigger).toLowerCase()} in your hand is not used up.</li>
+    <li>Creative players reshuffle for free.</li>
+  </ul>
+)}
+<style>
+  .facts { display: grid; gap: 6px; }
+</style>

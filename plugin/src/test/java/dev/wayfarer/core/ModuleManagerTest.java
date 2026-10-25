@@ -118,6 +118,11 @@ class ModuleManagerTest {
             }
 
             @Override
+            public Xp xp() {
+                return null;
+            }
+
+            @Override
             public ChunkDataService chunkData() {
                 return null;
             }

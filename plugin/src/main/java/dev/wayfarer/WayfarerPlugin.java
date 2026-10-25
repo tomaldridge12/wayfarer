@@ -31,6 +31,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private final ItemMakers<ItemStack> itemMakers = new ItemMakers<>();
     private final dev.wayfarer.core.ItemIds itemIds = new dev.wayfarer.core.ItemIds();
     private final dev.wayfarer.core.Services services = new dev.wayfarer.core.Services();
+    private final dev.wayfarer.core.Xp xp = new dev.wayfarer.core.Xp();
     private RewardEnchants rewardEnchants;
     private dev.wayfarer.core.Announcer announcer;
 
@@ -53,6 +54,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         modules.register(new dev.wayfarer.collections.CollectionsModule(this)); // after every module whose items or ladders it lists
         modules.register(new dev.wayfarer.objectives.ObjectivesModule(this)); // after collections, whose Journal it adds pages to
         modules.register(new dev.wayfarer.exploration.ExplorationModule(this));
+        modules.register(new dev.wayfarer.enchanting.EnchantingModule(this));
         modules.enableAll(this);
         // After every plugin has enabled, so ExcellentEnchants can answer.
         getServer().getScheduler().runTask(this, rewardEnchants::check);
@@ -124,6 +126,11 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public dev.wayfarer.core.ItemIds itemIds() {
         return itemIds;
+    }
+
+    @Override
+    public dev.wayfarer.core.Xp xp() {
+        return xp;
     }
 
     @Override

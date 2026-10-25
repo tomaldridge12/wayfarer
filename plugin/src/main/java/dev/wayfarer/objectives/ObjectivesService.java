@@ -307,14 +307,19 @@ final class ObjectivesService implements Listener {
 
     // --- rerolls ---
 
-    /** What rerolling a daily costs the player now: 0 for the free one, else XP levels; -1 if it cannot be rerolled. */
+    /** What rerolling a daily costs the player now: 0 for the free one, else XP points; -1 if it cannot be rerolled. */
     int rerollCost(ObjectivesPlayerData data, int slot) {
         PoolConfigParser.Settings s = state.get().settings();
         if (slot < 0 || slot >= data.dailies.size() || data.dailies.get(slot).done) {
             return -1;
         }
         int free = s.freeRerolls() + extraFree(data);
-        return data.rerollsUsed < free ? 0 : ObjectiveRules.rerollCost(s.rerollBase(), s.rerollStep(), data.rerollsUsed - free);
+        return data.rerollsUsed < free ? 0 : ObjectiveRules.rerollCost(s.rerollPoints(), s.rerollStepPoints(), data.rerollsUsed - free);
+    }
+
+    /** An XP price as the player reads it: "27 XP · about 2 of your levels". */
+    String price(Player player, int points) {
+        return core.xp().price(player, points);
     }
 
     /** One more free reroll today when bought in the shop. */
@@ -329,8 +334,8 @@ final class ObjectivesService implements Listener {
             player.sendMessage(ItemLook.text("That objective can't be rerolled.", INK));
             return false;
         }
-        if (cost > 0 && player.getLevel() < cost) {
-            player.sendMessage(ItemLook.text("A reroll costs " + cost + " levels; you have " + player.getLevel() + ".", INK));
+        if (cost > 0 && !core.xp().canAfford(player, cost)) {
+            player.sendMessage(ItemLook.text(core.xp().cannotAfford(player, cost), INK));
             return false;
         }
         State s = state.get();
@@ -342,8 +347,9 @@ final class ObjectivesService implements Listener {
             player.sendMessage(ItemLook.text("There's nothing else to draw at your stage yet.", INK));
             return false;
         }
-        if (cost > 0) {
-            player.setLevel(player.getLevel() - cost);
+        if (cost > 0 && !core.xp().take(player, cost)) {
+            player.sendMessage(ItemLook.text(core.xp().cannotAfford(player, cost), INK));
+            return false;
         }
         if (!free) {
             data.rerollsUsed++;
@@ -353,7 +359,7 @@ final class ObjectivesService implements Listener {
         store.markDirty(player.getUniqueId());
         player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1f, 1.1f);
         core.logger().info("[objectives] " + player.getName() + " rerolled daily " + (slot + 1) + " to " + d.id()
-                + (cost > 0 ? " for " + cost + " levels" : ""));
+                + (cost > 0 ? " for " + cost + " XP" : ""));
         return true;
     }
 
