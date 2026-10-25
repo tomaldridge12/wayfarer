@@ -8,6 +8,9 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
@@ -16,8 +19,9 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * Dialog screens for every module (the Journal, the shop, animal crates): a title, body parts and a grid of buttons.
- * A button's action runs on the main thread and must either show the next screen or call {@link #close}; the client
- * waits for one or the other. Buttons work for 10 minutes after the screen opens.
+ * A button's action runs on the main thread and either shows the next screen or calls {@link #close}. The screen stays up
+ * until the server does one of those (the client's "waiting for server" screen is avoided on purpose: it ignores the
+ * close packet, so closing would hang for 5 seconds). Buttons work for 10 minutes after the screen opens.
  */
 public final class Menus {
     private static final ClickCallback.Options OPTIONS = ClickCallback.Options.builder()
@@ -29,6 +33,10 @@ public final class Menus {
             this(label, tooltip, 150, click);
         }
     }
+
+    /** Clicks closer together than this from one player are one click: the screen stays up until the server answers. */
+    private static final long DEBOUNCE_MS = 300;
+    private static final Map<UUID, Long> LAST_CLICK = new ConcurrentHashMap<>();
 
     private Menus() {
     }
@@ -52,7 +60,7 @@ public final class Menus {
                         .columns(Math.max(1, columns)).exitAction(button(exit)).build();
         Dialog dialog = Dialog.create(b -> b.empty()
                 .base(DialogBase.builder(title).canCloseWithEscape(true).pause(false)
-                        .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE).body(body).build())
+                        .afterAction(DialogBase.DialogAfterAction.NONE).body(body).build())
                 .type(type));
         player.showDialog(dialog);
     }
@@ -62,10 +70,16 @@ public final class Menus {
         player.closeDialog();
     }
 
+    private static boolean repeated(Player player) {
+        long now = System.currentTimeMillis();
+        Long last = LAST_CLICK.put(player.getUniqueId(), now);
+        return last != null && now - last < DEBOUNCE_MS;
+    }
+
     private static ActionButton button(Button b) {
         return ActionButton.builder(b.label()).tooltip(b.tooltip()).width(b.width())
                 .action(DialogAction.customClick((view, audience) -> {
-                    if (audience instanceof Player p) {
+                    if (audience instanceof Player p && !repeated(p)) {
                         b.click().accept(p);
                     }
                 }, OPTIONS)).build();
