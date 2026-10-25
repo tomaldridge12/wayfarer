@@ -505,6 +505,21 @@ def collection_credits():
     return sorted(klei), recoloured, sorted(drawn)
 
 
+def generate_cosmetics():
+    """Hat and pet models from pack_models.py: a colour sheet, a box model and an item definition each."""
+    import pack_models
+    for name, (palette, _) in pack_models.MODELS.items():
+        rows, colours = pack_models.swatch_rows(palette)
+        write(f"{TEX}/item/{name}.png", png(rows, colours))
+        write_json(f"assets/wayfarer/models/item/{name}.json", pack_models.model_json(name, f"wayfarer:item/{name}"))
+        write_json(f"assets/wayfarer/items/{name}.json", item_json(name))
+
+
+def cosmetic_credits():
+    import pack_models
+    return sorted(f"{TEX}/item/{n}.png" for n in pack_models.MODELS)
+
+
 def write_credits():
     recoloured = [f"{TEX}/item/{a}_{s}.png" for a in RAMPS for s in SHAPES + ["spear_in_hand"]]
     recoloured += [f"{TEX}/entity/equipment/{layer}/{a}.png" for a in RAMPS for layer in ["humanoid", "humanoid_leggings"]]
@@ -524,7 +539,7 @@ def write_credits():
               "Moss Heart from Klei's heart, the Pharaoh's Nazar and Ofuda Charm from Klei's nazar and ofuda. CC BY-NC-SA 4.0.", ""]
     lines += [f"- `{f}`" for f in recoloured + klei_recoloured]
     lines += ["", "## Wayfarer", "", "Drawn for this pack by `scripts/pack_art.py` (sprites in `scripts/pack_sprites.py`).", ""]
-    lines += [f"- `{f}`" for f in drawn + oc_drawn]
+    lines += [f"- `{f}`" for f in drawn + oc_drawn + cosmetic_credits()]
     write("CREDITS.md", ("\n".join(lines) + "\n").encode())
 
 
@@ -558,5 +573,6 @@ if __name__ == "__main__":
     generate()
     generate_marks()
     generate_collections()
+    generate_cosmetics()
     write_credits()
     sys.exit(0)

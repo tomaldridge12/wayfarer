@@ -36,8 +36,10 @@ import org.joml.Vector3f;
  */
 final class HatDisplay implements Listener {
     private static final long CHECK_TICKS = 40;
-    /** How far above the rider's anchor (the top of the head) the hat sits. */
-    private static final float LIFT = 0.25f;
+    /** A hat model fills a 16-unit cube; at this scale it is about as wide as a head. */
+    private static final float SCALE = 0.55f;
+    /** Half the hat's height, so its base rests on the rider's anchor (the top of the head), a touch sunk in. */
+    private static final float LIFT = SCALE / 2 - 0.05f;
 
     private final JavaPlugin plugin;
     private final PlayerStore<ObjectivesPlayerData> store;
@@ -88,7 +90,7 @@ final class HatDisplay implements Listener {
             d.setItemStack(stack(hat.get()));
             d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.HEAD);
             d.setBillboard(Display.Billboard.FIXED);
-            d.setTransformation(new Transformation(new Vector3f(0, LIFT, 0), new AxisAngle4f(), new Vector3f(1, 1, 1), new AxisAngle4f()));
+            d.setTransformation(new Transformation(new Vector3f(0, LIFT, 0), new AxisAngle4f(), new Vector3f(SCALE, SCALE, SCALE), new AxisAngle4f()));
             d.setPersistent(false); // never saved with the chunk, so a crash leaves no stray hats
             d.setInterpolationDuration(0);
         });

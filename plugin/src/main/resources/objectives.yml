@@ -36,6 +36,11 @@ cosmetics:
   cake_hat: {kind: hat, name: "Cake Hat", item: cake}
   lantern_hat: {kind: hat, name: "Lantern Hat", item: lantern}
   mushroom_cap: {kind: hat, name: "Mushroom Cap", item: red_mushroom_block}
+  # Hats with their own pack models (scripts/pack_models.py).
+  top_hat: {kind: hat, name: "Top Hat", item: wayfarer:hat/top_hat}
+  propeller_beanie: {kind: hat, name: "Propeller Beanie", item: wayfarer:hat/propeller_beanie}
+  wizard_hat: {kind: hat, name: "Wizard Hat", item: wayfarer:hat/wizard_hat}
+  crown: {kind: hat, name: "Crown", item: wayfarer:hat/crown}
   # A hat with an ability gives a small perk (curios.yml, hat-abilities) while worn. The shop never sells these;
   # reward tables and feats pay them.
   lamp_cap: {kind: hat, name: "Lamp Cap", item: redstone_lamp, ability: lamplight}
@@ -51,6 +56,8 @@ cosmetics:
   chick: {kind: pet, name: "Chick", entity: chicken}
   bunny: {kind: pet, name: "Bunny", entity: rabbit}
   kit: {kind: pet, name: "Fox Kit", entity: fox}
+  mini_shulker: {kind: pet, name: "Mini Shulker", model: wayfarer:pet/mini_shulker, scale: 0.6}
+  mini_ender_dragon: {kind: pet, name: "Mini Ender Dragon", model: wayfarer:pet/mini_ender_dragon, scale: 0.7}
 
 # Feats: one-off milestones on any count, each paying something that fits it.
 #   name, flavour (one line of story shown in the Journal), counts (activities, as ladders take them: verb:target,
@@ -451,7 +458,7 @@ events:
 shop:
   cosmetics: {wayfarer: 150, trailblazer: 200, night_owl: 200, hearth_keeper: 200, embers: 250, petals: 250, notes: 300,
     sparkles: 300, bubbles: 250, snowfall: 250, pumpkin_hat: 250, cake_hat: 250, lantern_hat: 300, mushroom_cap: 250,
-    piglet: 400, chick: 350, bunny: 400, kit: 500}
+    piglet: 400, chick: 350, bunny: 400, kit: 500, top_hat: 350, propeller_beanie: 300, wizard_hat: 400}
   extra-reroll: 40
   template-copy: 120
   wayfinder: 60
@@ -616,6 +623,7 @@ tables:
       - {reward: "enchant:excellentenchants:night_vision", level: 1, weight: 1}
       - {reward: curio:owl_feather, weight: 1}
     weekly:
+      - {reward: cosmetic:propeller_beanie, weight: 1}
       - {reward: cosmetic:feather_cap, weight: 1}
       - {reward: "item:ender_pearl", amount: 4-8, weight: 2}
       - {reward: "enchant:excellentenchants:jumping", level: 1-2, weight: 1}
@@ -644,6 +652,8 @@ tables:
       - {reward: "enchant:excellentenchants:restore", level: 1, weight: 1}
       - {reward: curio:glow_jar, weight: 1}
     weekly:
+      - {reward: cosmetic:top_hat, weight: 1}
+      - {reward: cosmetic:wizard_hat, weight: 1}
       - {reward: "item:experience_bottle", amount: 8-16, weight: 3}
       - {reward: "enchant:excellentenchants:wisdom", level: 1-2, weight: 2}
       - {reward: "enchant:excellentenchants:thrifty", level: 1-2, weight: 2}

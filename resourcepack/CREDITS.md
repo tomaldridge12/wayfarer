@@ -303,3 +303,9 @@ Drawn for this pack by `scripts/pack_art.py` (sprites in `scripts/pack_sprites.p
 - `assets/wayfarer/textures/item/treasure/gold_coin.png`
 - `assets/wayfarer/textures/item/treasure/piglin_coin.png`
 - `assets/wayfarer/textures/item/treasure/trilobite.png`
+- `assets/wayfarer/textures/item/hat/crown.png`
+- `assets/wayfarer/textures/item/hat/propeller_beanie.png`
+- `assets/wayfarer/textures/item/hat/top_hat.png`
+- `assets/wayfarer/textures/item/hat/wizard_hat.png`
+- `assets/wayfarer/textures/item/pet/mini_ender_dragon.png`
+- `assets/wayfarer/textures/item/pet/mini_shulker.png`
