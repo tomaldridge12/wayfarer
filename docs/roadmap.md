@@ -108,6 +108,10 @@ Mob farms make XP close to free, so purchases need more than XP:
 - You can only buy an enchant you've already got once by normal means.
 - Each purchase of the same enchant costs that player more.
 
+> **Decided 2026-10-25** (`.scratch/xp-sinks-enchanting/spec.md`): reroll is built as the **reshuffle** (one level, lapis in
+> hand, lapis kept). Attune and lectern purchase are cut: the token shop already rebuys unlocked ExcellentEnchants books.
+> No arcane dust or salvager. Open question answered: no ExcellentEnchants enchant stays table-only.
+
 ### 6. Exploration
 
 | Feature | Spec | Size |
@@ -134,6 +138,11 @@ The biome search is slow and runs on the main thread, so it needs a search radiu
 
 Charge XP points, not levels: each level costs more points than the last, so a level charge hurts high-level players more.
 Prices can be shown in levels and converted.
+
+> **Decided 2026-10-25** (`.scratch/xp-sinks-enchanting/spec.md`): Wayfarer XP prices are in points (ADR 0007) and the
+> Wayfinder (section 6) now finds biomes you have not found. Every sink above is cut: anvil fix is already done by endless
+> repair; bottling (vanilla bottles pay a random 3-11 points), return to grave (no graves plugin), shrines (beacons),
+> banner empowerment, grindstone extraction, villager reroll, spawner pickup and the summoning altar are not wanted.
 
 ### 8. Less grind, more use for junk
 
@@ -169,4 +178,4 @@ Steps 1 and 2 alone give players a reason to keep going after elytra.
 - **Do skills reset or prestige?**
 - **How rare are Legendaries, and can they be traded?**
 - **Do existing players get milestone credit from vanilla stats,** or does everyone start at zero?
-- **Which ExcellentEnchants enchants** become quest, shop or lectern rewards, and which stay table-only?
+- **Which ExcellentEnchants enchants** become quest, shop or lectern rewards, and which stay table-only? *(Answered 2026-10-25: all are rewards, rebought in the token shop; none stay table-only.)*
