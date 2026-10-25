@@ -30,7 +30,8 @@ import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
 /**
- * A worn hat: an item display riding on the player's head, seen by everyone and leaving the real helmet slot free.
+ * A worn hat: an item display riding on the player's head, seen by everyone but the wearer (in first person it would
+ * fill their view) and leaving the real helmet slot free.
  * A rider is shaken off by teleports, so it is taken down before one and put back after, and a slow check puts back
  * any that went missing. Main thread.
  */
@@ -94,6 +95,8 @@ final class HatDisplay implements Listener {
             d.setPersistent(false); // never saved with the chunk, so a crash leaves no stray hats
             d.setInterpolationDuration(0);
         });
+        // The wearer sits inside it in first person, where it would block half the screen, so only others see it.
+        player.hideEntity(plugin, display);
         if (player.addPassenger(display)) {
             worn.put(player.getUniqueId(), display);
         } else {
