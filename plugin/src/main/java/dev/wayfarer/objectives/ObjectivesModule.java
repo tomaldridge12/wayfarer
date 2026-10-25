@@ -80,6 +80,7 @@ public final class ObjectivesModule implements Module {
         display = new CosmeticsDisplay(plugin, service.store(), () -> cosmetics);
         display.start();
         listen(display);
+        listen(display.hats());
         core.services().get(JournalPages.class).ifPresent(journal -> {
             journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal, tracker).page());
             journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals, tracker).page());
@@ -319,6 +320,23 @@ public final class ObjectivesModule implements Module {
                     });
                     return Command.SINGLE_SUCCESS;
                 })))
+                .then(Commands.literal("cosmetic").then(player().then(Commands.argument("id", StringArgumentType.word())
+                        .suggests((ctx, b) -> {
+                            cosmetics.keySet().forEach(b::suggest);
+                            return b.buildFuture();
+                        }).executes(ctx -> {
+                            CommandSender sender = ctx.getSource().getSender();
+                            String cosmetic = StringArgumentType.getString(ctx, "id");
+                            withPlayer(sender, StringArgumentType.getString(ctx, "player"), (uuid, data, snap) -> {
+                                if (!cosmetics.containsKey(cosmetic)) {
+                                    sender.sendMessage("No cosmetic '" + cosmetic + "' in objectives.yml");
+                                    return;
+                                }
+                                loot().give(uuid, data, java.util.List.of("cosmetic:" + cosmetic), "admin " + sender.getName());
+                                sender.sendMessage("Gave " + cosmetic + " to " + uuid);
+                            });
+                            return Command.SINGLE_SUCCESS;
+                        }))))
                 .then(Commands.literal("tokens").then(player().then(Commands.argument("change", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             CommandSender sender = ctx.getSource().getSender();

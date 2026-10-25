@@ -43,6 +43,8 @@ final class ObjectivesPlayerData {
     final Set<String> cosmetics = new LinkedHashSet<>();
     String title;
     String trail;
+    String hat;
+    String pet;
     /** Tracked ids ({@code daily:mine_coal}), in the order they were added; see {@link TrackerRules}. */
     final List<String> tracked = new ArrayList<>();
     boolean sidebarHidden;
@@ -51,6 +53,32 @@ final class ObjectivesPlayerData {
     long shopRerollDay = Long.MIN_VALUE;
     /** Alloy templates seen in the player's inventory ({@code alloy:template:steel}), for shop copies. */
     final Set<String> ownedTemplates = new LinkedHashSet<>();
+
+    /** The id worn in the slot of this cosmetic kind, or null. */
+    String worn(String kind) {
+        return switch (kind) {
+            case Cosmetic.TITLE -> title;
+            case Cosmetic.TRAIL -> trail;
+            case Cosmetic.HAT -> hat;
+            case Cosmetic.PET -> pet;
+            default -> null;
+        };
+    }
+
+    /** Puts the cosmetic in its kind's slot, or takes it off when it is what is worn there. Returns whether it is now worn. */
+    boolean toggleWorn(Cosmetic c) {
+        boolean on = !c.id().equals(worn(c.kind()));
+        String id = on ? c.id() : null;
+        switch (c.kind()) {
+            case Cosmetic.TITLE -> title = id;
+            case Cosmetic.TRAIL -> trail = id;
+            case Cosmetic.HAT -> hat = id;
+            case Cosmetic.PET -> pet = id;
+            default -> {
+            }
+        }
+        return on;
+    }
 
     void log(String line) {
         ledger.add(line);
@@ -83,6 +111,8 @@ final class ObjectivesPlayerData {
             d.cosmetics.addAll(strings(raw.get("cosmetics")));
             d.title = raw.get("title") instanceof String s ? s : null;
             d.trail = raw.get("trail") instanceof String s ? s : null;
+            d.hat = raw.get("hat") instanceof String s ? s : null;
+            d.pet = raw.get("pet") instanceof String s ? s : null;
             if (raw.get("unlockedEnchants") instanceof Map<?, ?> m) {
                 m.forEach((k, v) -> d.unlockedEnchants.put(String.valueOf(k), (int) num(v)));
             }
@@ -115,6 +145,12 @@ final class ObjectivesPlayerData {
             }
             if (d.trail != null) {
                 out.put("trail", d.trail);
+            }
+            if (d.hat != null) {
+                out.put("hat", d.hat);
+            }
+            if (d.pet != null) {
+                out.put("pet", d.pet);
             }
             out.put("tracked", List.copyOf(d.tracked));
             out.put("sidebarHidden", d.sidebarHidden);

@@ -38,18 +38,62 @@ public final class ObjectiveConfigParser {
             String kind = String.valueOf(m.get("kind")).toLowerCase(Locale.ROOT);
             String colour = String.valueOf(m.getOrDefault("colour", "#E8D9A8"));
             String particle = m.get("particle") == null ? null : String.valueOf(m.get("particle")).toLowerCase(Locale.ROOT);
-            if (!kind.equals(Cosmetic.TITLE) && !kind.equals(Cosmetic.TRAIL)) {
-                problems.add("Cosmetic " + id + " skipped: kind must be title or trail");
+            String name = String.valueOf(m.getOrDefault("name", id));
+            if (!Cosmetic.KINDS.contains(kind)) {
+                problems.add("Cosmetic " + id + " skipped: kind must be title, trail, hat or pet");
             } else if (!colour.matches("#[0-9a-fA-F]{6}")) {
                 problems.add("Cosmetic " + id + " skipped: colour must be #RRGGBB");
             } else if (kind.equals(Cosmetic.TRAIL) && (particle == null || !names.isParticle(particle))) {
                 problems.add("Cosmetic " + id + " skipped: a trail needs a particle this server has");
+            } else if (kind.equals(Cosmetic.HAT)) {
+                hat(id, m).ifPresent(hat -> out.put(id, new Cosmetic(id, kind, name, Integer.parseInt(colour.substring(1), 16), null, hat, null)));
+            } else if (kind.equals(Cosmetic.PET)) {
+                pet(id, m).ifPresent(pet -> out.put(id, new Cosmetic(id, kind, name, Integer.parseInt(colour.substring(1), 16), null, null, pet)));
             } else {
-                out.put(id, new Cosmetic(id, kind, String.valueOf(m.getOrDefault("name", id)),
-                        Integer.parseInt(colour.substring(1), 16), particle));
+                out.put(id, new Cosmetic(id, kind, name, Integer.parseInt(colour.substring(1), 16), particle));
             }
         });
         return out;
+    }
+
+    /** A hat needs {@code item}: a vanilla item or a pack model key; {@code ability} is optional (checked by its own ticket). */
+    private java.util.Optional<Cosmetic.Hat> hat(String id, Map<String, Object> m) {
+        String item = m.get("item") == null ? "" : String.valueOf(m.get("item")).toLowerCase(Locale.ROOT);
+        boolean model = item.contains(":") && !item.startsWith("minecraft:");
+        if (item.isEmpty() || !model && !names.isItem(item.replaceFirst("^minecraft:", ""))) {
+            problems.add("Cosmetic " + id + " skipped: a hat needs item: a vanilla item or a pack model like wayfarer:hat/name");
+            return java.util.Optional.empty();
+        }
+        String ability = m.get("ability") == null ? null : String.valueOf(m.get("ability"));
+        return java.util.Optional.of(new Cosmetic.Hat(item.replaceFirst("^minecraft:", ""), ability));
+    }
+
+    /** A pet needs {@code entity} (a living mob) or {@code model} (a pack model key), not both. */
+    private java.util.Optional<Cosmetic.Pet> pet(String id, Map<String, Object> m) {
+        String entity = m.get("entity") == null ? null : String.valueOf(m.get("entity")).toLowerCase(Locale.ROOT).replaceFirst("^minecraft:", "");
+        String model = m.get("model") == null ? null : String.valueOf(m.get("model")).toLowerCase(Locale.ROOT);
+        if (entity == null == (model == null)) {
+            problems.add("Cosmetic " + id + " skipped: a pet needs exactly one of entity: or model:");
+            return java.util.Optional.empty();
+        }
+        if (entity != null && !names.isMob(entity)) {
+            problems.add("Cosmetic " + id + " skipped: pet entity '" + entity + "' is not a living mob this server has");
+            return java.util.Optional.empty();
+        }
+        if (model != null && !model.contains(":")) {
+            problems.add("Cosmetic " + id + " skipped: pet model must be a pack model key like wayfarer:pet/name");
+            return java.util.Optional.empty();
+        }
+        double scale = 1.0;
+        if (m.get("scale") != null) {
+            if (m.get("scale") instanceof Number n && n.doubleValue() > 0 && n.doubleValue() <= 4) {
+                scale = n.doubleValue();
+            } else {
+                problems.add("Cosmetic " + id + ": scale must be above 0 and at most 4; using 1");
+            }
+        }
+        return java.util.Optional.of(new Cosmetic.Pet(entity, model, !Boolean.FALSE.equals(m.get("baby")),
+                m.get("pet-name") == null ? null : String.valueOf(m.get("pet-name")), scale));
     }
 
     private Map<String, Feat> feats(Object section, Map<String, Cosmetic> cosmetics) {

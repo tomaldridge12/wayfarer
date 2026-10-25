@@ -7,9 +7,10 @@ enabled: true
 tracker:
   max: 5
 
-# Cosmetics: titles (shown before your name in chat and the tab list) and trails (particles behind you as you move).
-# Feats pay some; the shop sells others. You choose one of each in the Journal.
-#   kind: title or trail; name; colour (titles); particle (trails: a particle name, with colour: for dust).
+# Cosmetics: titles (shown before your name in chat and the tab list), trails (particles behind you as you move), hats and
+# pets. Feats pay some; the shop sells others. You wear one of each kind, chosen in the Wardrobe.
+#   kind: title, trail, hat or pet; name; colour (titles); particle (trails: a particle name, with colour: for dust);
+#   item (hats); entity or model, pet-name, baby, scale (pets).
 cosmetics:
   mossborn: {kind: title, name: "Mossborn", colour: "#7DB356"}
   pumpkin_king: {kind: title, name: "Pumpkin King", colour: "#F29B38"}
@@ -30,6 +31,11 @@ cosmetics:
   sparkles: {kind: trail, name: "Sparkle Trail", particle: wax_on}
   bubbles: {kind: trail, name: "Bubble Trail", particle: bubble_pop}
   snowfall: {kind: trail, name: "Snowfall Trail", particle: snowflake}
+  # Hats ride on your head and leave your helmet slot free. item: a vanilla item, or a pack model like wayfarer:hat/name.
+  pumpkin_hat: {kind: hat, name: "Pumpkin Hat", item: carved_pumpkin}
+  cake_hat: {kind: hat, name: "Cake Hat", item: cake}
+  lantern_hat: {kind: hat, name: "Lantern Hat", item: lantern}
+  mushroom_cap: {kind: hat, name: "Mushroom Cap", item: red_mushroom_block}
 
 # Feats: one-off milestones on any count, each paying something that fits it.
 #   name, flavour (one line of story shown in the Journal), counts (activities, as ladders take them: verb:target,

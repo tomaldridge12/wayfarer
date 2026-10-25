@@ -45,6 +45,19 @@ final class PaperObjectiveVocabulary implements ObjectiveVocabulary {
     }
 
     @Override
+    public boolean isItem(String key) {
+        Material m = Material.matchMaterial(key);
+        return m != null && m.isItem();
+    }
+
+    @Override
+    public boolean isMob(String key) {
+        NamespacedKey k = NamespacedKey.fromString(key);
+        org.bukkit.entity.EntityType type = k == null ? null : org.bukkit.Registry.ENTITY_TYPE.get(k);
+        return type != null && type.getEntityClass() != null && org.bukkit.entity.LivingEntity.class.isAssignableFrom(type.getEntityClass());
+    }
+
+    @Override
     public boolean isParticle(String key) {
         try {
             Particle.valueOf(key.toUpperCase(Locale.ROOT));

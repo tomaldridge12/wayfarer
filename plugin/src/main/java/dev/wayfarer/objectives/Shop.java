@@ -61,7 +61,7 @@ final class Shop {
     }
 
     JournalPages.Page wardrobePage() {
-        return new JournalPages.Page("wardrobe", ItemLook.text("Wardrobe", 0xC9B8E8), ItemLook.text("Wear a title and a trail you own.",
+        return new JournalPages.Page("wardrobe", ItemLook.text("Wardrobe", 0xC9B8E8), ItemLook.text("Wear a title, trail, hat and pet you own.",
                 ObjectivesService.INK), 31, this::wardrobe);
     }
 
@@ -202,34 +202,37 @@ final class Shop {
         service.with(player.getUniqueId(), (data, snap) -> {
             Set<String> owned = owned(player.getUniqueId(), data);
             List<DialogBody> body = new ArrayList<>();
-            body.add(Menus.text(Component.text("Titles show before your name in chat and the player list; trails follow you as you walk.",
-                    TextColor.color(FADED)).decoration(TextDecoration.ITALIC, true)));
-            body.add(Menus.text(ItemLook.text("Wearing: ", ObjectivesService.INK).append(data.title == null ? ItemLook.text("no title", FADED)
-                    : display.title(data.title)).append(ItemLook.text(" · ", ObjectivesService.INK))
-                    .append(ItemLook.text(data.trail == null || !cosmetics.get().containsKey(data.trail) ? "no trail"
-                            : cosmetics.get().get(data.trail).name(), 0xC9B8E8))));
+            body.add(Menus.text(Component.text("Titles show before your name; trails follow you as you walk; a hat sits on your head and a pet "
+                    + "keeps you company. One of each at a time.", TextColor.color(FADED)).decoration(TextDecoration.ITALIC, true)));
+            for (String kind : Cosmetic.KINDS) {
+                Cosmetic worn = cosmetics.get().get(data.worn(kind));
+                body.add(Menus.text(ItemLook.text(kind.substring(0, 1).toUpperCase(java.util.Locale.ROOT) + kind.substring(1) + ": ",
+                        ObjectivesService.INK).append(worn == null ? ItemLook.text("none", FADED) : label(worn))));
+            }
             List<Menus.Button> buttons = new ArrayList<>();
-            for (Cosmetic c : cosmetics.get().values()) {
-                if (!owned.contains(c.id())) {
-                    continue;
+            for (String kind : Cosmetic.KINDS) {
+                for (Cosmetic c : cosmetics.get().values()) {
+                    if (!c.kind().equals(kind) || !owned.contains(c.id())) {
+                        continue;
+                    }
+                    boolean worn = c.id().equals(data.worn(kind));
+                    buttons.add(new Menus.Button(label(c), ItemLook.text((worn ? "Take off the " : "Wear the ") + kind, ObjectivesService.INK), 150, p -> {
+                        data.toggleWorn(c);
+                        service.store().markDirty(p.getUniqueId());
+                        display.refresh(p);
+                        wardrobe(p);
+                    }));
                 }
-                boolean worn = c.id().equals(c.title() ? data.title : data.trail);
-                buttons.add(new Menus.Button(c.title() ? display.title(c.id()) : ItemLook.text(c.name(), 0xC9B8E8),
-                        ItemLook.text(worn ? "Take it off" : "Wear it", ObjectivesService.INK), 150, p -> {
-                            if (c.title()) {
-                                data.title = worn ? null : c.id();
-                            } else {
-                                data.trail = worn ? null : c.id();
-                            }
-                            service.store().markDirty(p.getUniqueId());
-                            display.refresh(p);
-                            wardrobe(p);
-                        }));
             }
             if (buttons.isEmpty()) {
                 body.add(Menus.text(ItemLook.text("Nothing yet. Feats pay some; the shop sells others.", FADED)));
             }
             Menus.show(player, ItemLook.text("Wardrobe", 0xC9B8E8), body, buttons, 2, journal.back());
         });
+    }
+
+    /** A cosmetic's name as it is worn: a title in its colour in brackets, the rest in the wardrobe purple. */
+    private Component label(Cosmetic c) {
+        return c.title() ? display.title(c.id()) : ItemLook.text(c.name(), 0xC9B8E8);
     }
 }

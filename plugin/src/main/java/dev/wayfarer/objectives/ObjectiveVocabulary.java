@@ -11,4 +11,14 @@ public interface ObjectiveVocabulary {
     Set<String> group(String group);
 
     boolean isParticle(String key);
+
+    /** A vanilla item such as {@code carved_pumpkin}; tests accept any. */
+    default boolean isItem(String key) {
+        return true;
+    }
+
+    /** A living mob type such as {@code sheep}; tests accept any. */
+    default boolean isMob(String key) {
+        return true;
+    }
 }
