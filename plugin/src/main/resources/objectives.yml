@@ -434,7 +434,7 @@ feats:
     counts: ["breed:*"]
     distinct: true
     at: 10
-    rewards: [cosmetic:menagerie, supply:animal_crate*2]
+    rewards: [cosmetic:menagerie, supply:animal_crate*4]
   old_salt:
     name: "Old Salt"
     flavour: "A thousand catches. You talk to the water and it sometimes answers."
