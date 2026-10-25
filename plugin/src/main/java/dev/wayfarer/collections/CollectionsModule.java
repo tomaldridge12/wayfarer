@@ -172,6 +172,7 @@ public final class CollectionsModule implements Module {
             }
         }
         state = new Journal.State(r.settings(), List.copyOf(r.collections().values()), entries);
+        core.services().register(id(), dev.wayfarer.core.AtlasHints.class, new AtlasHintBook(state.entries("atlas")));
         core.progression().setLadders(id(), ladders);
         Map<String, Integer> enchants = new LinkedHashMap<>();
         r.collections().values().forEach(def -> def.milestones().forEach(m -> m.rewards().stream()
