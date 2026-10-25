@@ -12,6 +12,11 @@ public final class Xp {
         return XpPoints.held(player.getLevel(), player.getExp());
     }
 
+    /** Whether the player can pay: they hold enough points, or are in creative. */
+    public boolean canAfford(Player player, int points) {
+        return player.getGameMode() == GameMode.CREATIVE || points(player) >= points;
+    }
+
     /** Takes the points and returns true, or takes nothing and returns false if the player holds fewer. Free in creative. */
     public boolean take(Player player, int points) {
         if (player.getGameMode() == GameMode.CREATIVE || points <= 0) {

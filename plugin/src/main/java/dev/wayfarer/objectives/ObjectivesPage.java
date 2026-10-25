@@ -75,7 +75,7 @@ final class ObjectivesPage {
             if (cost >= 0) {
                 int index = i;
                 buttons.add(new Menus.Button(ItemLook.text("Reroll " + (i + 1), ObjectivesService.PAPER),
-                        ItemLook.text(cost == 0 ? "Free (once a day)" : "Costs " + cost + " levels", ObjectivesService.INK), 100, p ->
+                        ItemLook.text(cost == 0 ? "Free (once a day)" : "Costs " + service.price(player, cost), ObjectivesService.INK), 100, p ->
                         service.with(p.getUniqueId(), (dd, ss) -> {
                             service.reroll(p, dd, ss, index, false);
                             show(p, dd, ss);

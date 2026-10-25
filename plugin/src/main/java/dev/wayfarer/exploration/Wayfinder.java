@@ -256,7 +256,7 @@ final class Wayfinder implements Listener, Wayfinding {
             player.sendMessage(ItemLook.text("The needle is still settling. Try again in " + (left / 1000 + 59) / 60 + " min.", INK));
             return;
         }
-        if (!free && core.xp().points(player) < cost) {
+        if (!free && !core.xp().canAfford(player, cost)) {
             player.sendMessage(ItemLook.text(core.xp().cannotAfford(player, cost), INK));
             return;
         }

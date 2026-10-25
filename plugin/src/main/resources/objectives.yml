@@ -1,6 +1,6 @@
 # Objectives module: feats (odd one-off milestones), dailies and the weekly, the server goal, weekend events, tokens
 # and the shop. Set enabled: false to skip the module. Every number here is a first pass, to be tuned from play.
-version: 1
+version: 2
 enabled: true
 
 # Cosmetics: titles (shown before your name in chat and the tab list) and trails (particles behind you as you move).
@@ -258,8 +258,11 @@ stages:
 
 dailies:
   count: 3
-  # One free reroll a day; after that each costs xp-levels, plus xp-step for every paid one before it.
-  rerolls: {free: 1, xp-levels: 3, xp-step: 2}
+  # One free reroll a day; after that each costs xp-points, plus xp-step-points for every paid one before it. Prices are
+  # XP points, the same at any level (shown to players as "27 XP · about 2 of your levels"). A version 1 file with
+  # xp-levels and xp-step is still read, each converted to the points it takes to reach that many levels from 0; the
+  # file is never rewritten.
+  rerolls: {free: 1, xp-points: 27, xp-step-points: 16}
   # A day with every daily done adds one to your streak (a missed day pauses it); every so many days pays a bonus.
   streak: {every: 7, tokens: 50, reward: supply:tome_of_experience}
 

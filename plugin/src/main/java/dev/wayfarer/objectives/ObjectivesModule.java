@@ -129,6 +129,7 @@ public final class ObjectivesModule implements Module {
             return m != null && m.isItem();
         });
         pool.problems().forEach(p -> core.logger().warning("[objectives] " + p));
+        pool.notes().forEach(n -> core.logger().info("[objectives] " + n));
         problems.addAll(pool.problems());
         pools = new ObjectivesService.State(pool.settings(), pool.daily(), pool.weekly(), pool.goal(), pool.tables());
         Map<String, Object> root = core.config().load(id());
@@ -150,7 +151,9 @@ public final class ObjectivesModule implements Module {
                 + pool.goal().size() + " server goals, "
                 + pool.tables().all().size() + " reward tables, " + pool.settings().stages().size() + " stages "
                 + pool.settings().stages() + ", dailies turn over at " + pool.settings().schedule().dailyReset() + " "
-                + pool.settings().schedule().zone() + ", " + pool.problems().size() + " problems");
+                + pool.settings().schedule().zone() + ", " + pool.problems().size() + " problems; dailies reroll free x"
+                + pool.settings().freeRerolls() + ", then " + pool.settings().rerollPoints() + " XP plus " + pool.settings().rerollStepPoints()
+                + " for each paid one before it");
         long hidden = feats.values().stream().filter(Feat::hidden).count();
         core.logger().info("Feats loaded: " + feats.size() + " feats (" + hidden + " hidden), " + cosmetics.size() + " cosmetics ("
                 + cosmetics.values().stream().filter(Cosmetic::title).count() + " titles), " + problems.size() + " problems");
