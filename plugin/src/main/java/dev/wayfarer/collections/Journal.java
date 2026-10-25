@@ -56,10 +56,13 @@ final class Journal implements JournalPages {
     private final Supplier<State> state;
     private final Map<String, OwnedPage> pages = new LinkedHashMap<>();
     private final java.util.function.BiFunction<Player, CollectionEntry, String> detail;
+    private final Supplier<Optional<dev.wayfarer.core.TrackerControl>> tracker;
 
     /** @param detail a found entry's line in place of its count ("Heaviest 2.41 kg"), or null for the usual one */
     Journal(Progression progression, ItemMakers<ItemStack> makers, Supplier<State> state,
-            java.util.function.BiFunction<Player, CollectionEntry, String> detail) {
+            java.util.function.BiFunction<Player, CollectionEntry, String> detail,
+            Supplier<Optional<dev.wayfarer.core.TrackerControl>> tracker) {
+        this.tracker = tracker;
         this.progression = progression;
         this.makers = makers;
         this.state = state;
@@ -168,6 +171,14 @@ final class Journal implements JournalPages {
         }
 
         List<Menus.Button> buttons = new ArrayList<>();
+        int next = CollectionRules.nextMilestone(def, all.size(), found);
+        if (next >= 0 && tracker.get().isPresent()) {
+            dev.wayfarer.core.TrackerControl control = tracker.get().get();
+            String trackedId = "collection:" + id + ":" + next;
+            String name = milestoneName(def, all.size(), next);
+            buttons.add(new Menus.Button(text((control.isTracked(player.getUniqueId(), trackedId) ? "Untrack" : "Track") + " next milestone", INK),
+                    text(name, INK), 150, p -> control.toggle(p, trackedId, name, () -> openCollection(p, id, shown, at))));
+        }
         for (String t : tabs) {
             buttons.add(new Menus.Button(text(t, t.equals(shown) ? lift(def.colour()) : INK), Component.empty(), 90,
                     p -> openCollection(p, id, t, 0)));
@@ -179,6 +190,35 @@ final class Journal implements JournalPages {
             buttons.add(new Menus.Button(text("Turn over ▸", INK), Component.empty(), 90, p -> openCollection(p, id, shown, at + 1)));
         }
         Menus.show(player, text(def.title(), def.colour()), body, buttons, Math.max(1, Math.min(4, buttons.size())), back());
+    }
+
+    private static String milestoneName(CollectionDefinition def, int size, int index) {
+        long at = CollectionRules.threshold(def.milestones().get(index), size);
+        return def.title() + ": " + at + " " + def.unit(at);
+    }
+
+    /** A collection's milestone for the tracker ({@code collection:<id>:<index>}): found so far out of its count. */
+    Optional<dev.wayfarer.core.Trackable> milestone(java.util.UUID player, String rest) {
+        int colon = rest.lastIndexOf(':');
+        Optional<Progression.Snapshot> snap = progression.snapshot(player);
+        if (colon < 0 || snap.isEmpty()) {
+            return Optional.empty();
+        }
+        try {
+            String id = rest.substring(0, colon);
+            int index = Integer.parseInt(rest.substring(colon + 1));
+            State s = state.get();
+            CollectionDefinition def = s.collections().stream().filter(c -> c.id().equals(id)).findFirst().orElse(null);
+            List<CollectionEntry> all = s.entries(id);
+            if (def == null || index < 0 || index >= def.milestones().size() || all.isEmpty()) {
+                return Optional.empty();
+            }
+            long at = CollectionRules.threshold(def.milestones().get(index), all.size());
+            return Optional.of(new dev.wayfarer.core.Trackable("collection:" + rest, milestoneName(def, all.size(), index),
+                    Math.min(at, CollectionRules.found(all, snap.get().counters())), at));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     /** "✔ 10 · Tome of Experience" for each milestone, reached ones ticked. */

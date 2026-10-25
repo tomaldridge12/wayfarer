@@ -32,6 +32,7 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     private final dev.wayfarer.core.ItemIds itemIds = new dev.wayfarer.core.ItemIds();
     private final dev.wayfarer.core.Services services = new dev.wayfarer.core.Services();
     private final dev.wayfarer.core.Xp xp = new dev.wayfarer.core.Xp();
+    private final dev.wayfarer.core.ItemCatalogue catalogue = new dev.wayfarer.core.ItemCatalogue();
     private RewardEnchants rewardEnchants;
     private dev.wayfarer.core.Announcer announcer;
 
@@ -59,6 +60,9 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         modules.register(new dev.wayfarer.exploration.ExplorationModule(this));
         modules.register(new dev.wayfarer.enchanting.EnchantingModule(this));
         modules.enableAll(this);
+        dev.wayfarer.core.ItemBrowser itemBrowser = new dev.wayfarer.core.ItemBrowser(catalogue, getLogger());
+        getServer().getPluginManager().registerEvents(itemBrowser, this);
+        commands.register("items", itemBrowser.command());
         // After every plugin has enabled, so ExcellentEnchants can answer.
         getServer().getScheduler().runTask(this, rewardEnchants::check);
         // Fires after every module has enabled (and again on a datapack reload), so the tree is complete.
@@ -129,6 +133,11 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
     @Override
     public ItemMakers<ItemStack> itemMakers() {
         return itemMakers;
+    }
+
+    @Override
+    public dev.wayfarer.core.ItemCatalogue catalogue() {
+        return catalogue;
     }
 
     @Override

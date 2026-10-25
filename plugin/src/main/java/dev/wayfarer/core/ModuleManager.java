@@ -33,6 +33,7 @@ public final class ModuleManager {
                 core.commands().drop(id);
                 core.progression().drop(id);
                 core.itemMakers().drop(id);
+                core.catalogue().drop(id);
                 core.itemIds().drop(id);
                 core.services().drop(id);
                 core.rewardEnchants().drop(id);
@@ -45,6 +46,7 @@ public final class ModuleManager {
         for (Module module : running.reversed()) {
             try {
                 core.itemMakers().drop(module.id());
+                core.catalogue().drop(module.id());
                 core.itemIds().drop(module.id());
                 core.services().drop(module.id());
                 module.disable();

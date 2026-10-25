@@ -1,5 +1,7 @@
 package dev.wayfarer.marks;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -62,6 +64,12 @@ public final class MarksModule implements Module {
         core.progression().registerRewardType(id(), MarkRules.MARK, new Templates());
         core.progression().registerRewardType(id(), MarkRules.BOOK, new Books());
         core.commands().register(id(), commands());
+        core.catalogue().add(id(), "mark_templates", Component.text("Mark templates", NamedTextColor.WHITE), Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE,
+                viewer -> rules.marks().stream().flatMap(m -> java.util.stream.IntStream.rangeClosed(1, m.topRank())
+                        .mapToObj(rank -> items.template(m.id(), rank))).flatMap(java.util.Optional::stream).toList());
+        core.catalogue().add(id(), "mark_books", Component.text("Mark books", NamedTextColor.WHITE), Material.ENCHANTED_BOOK,
+                viewer -> rules.books().stream().flatMap(b -> java.util.stream.IntStream.rangeClosed(1, b.thresholds().size())
+                        .mapToObj(level -> items.book(b.id(), level))).flatMap(java.util.Optional::stream).toList());
     }
 
     @Override

@@ -1,5 +1,8 @@
 package dev.wayfarer.exploration;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.wayfarer.core.Core;
@@ -57,6 +60,8 @@ public final class ExplorationModule implements Module {
         core.services().register(id(), Wayfinding.class, wayfinder);
         core.itemMakers().register(id(), id(), name -> name.equals("beacon_kindling") ? Optional.of(kindling.item()) : Optional.empty());
         core.commands().register(id(), commands());
+        core.catalogue().add(id(), "exploration", Component.text("Exploration", NamedTextColor.WHITE), Material.COMPASS,
+                viewer -> List.of(kindling.item()));
         core.logger().info("Safe surface: " + (state.safeSurface ? "on" : "off") + (state.dragonDown ? " (the dragon has fallen)" : ""));
     }
 

@@ -1,5 +1,8 @@
 package dev.wayfarer.alloys;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -60,6 +63,12 @@ public final class AlloysModule implements Module {
         clock = plugin.getServer().getScheduler().runTaskTimer(plugin, crucibles::tick, Crucibles.PERIOD_TICKS, Crucibles.PERIOD_TICKS);
         core.commands().register(id(), commands());
         // Relics are built on alloy gear through core: "alloy:steel_axe".
+        core.catalogue().add(id(), "alloy_materials", Component.text("Alloy ingots and templates", NamedTextColor.WHITE), Material.IRON_INGOT,
+                viewer -> items.names().stream().filter(n -> n.startsWith("ingot:") || n.startsWith("template:"))
+                        .map(n -> items.byName(n, 1)).flatMap(java.util.Optional::stream).toList());
+        core.catalogue().add(id(), "alloy_gear", Component.text("Alloy gear", NamedTextColor.WHITE), Material.IRON_PICKAXE,
+                viewer -> items.names().stream().filter(n -> !n.startsWith("ingot:") && !n.startsWith("template:"))
+                        .map(n -> items.byName(n, 1)).flatMap(java.util.Optional::stream).toList());
         core.itemMakers().register(id(), "alloy", name -> name.contains(":") ? java.util.Optional.empty() : items.byName(name, 1));
     }
 

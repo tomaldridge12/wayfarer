@@ -13,8 +13,13 @@ final class ObjectiveTrackables {
     private final Core core;
     private final ObjectivesService service;
     private final Supplier<ObjectivesService.State> state;
+    private final Supplier<java.util.Map<String, Feat>> feats;
+    private final ServerGoals goals;
 
-    ObjectiveTrackables(Core core, ObjectivesService service, Supplier<ObjectivesService.State> state) {
+    ObjectiveTrackables(Core core, ObjectivesService service, Supplier<ObjectivesService.State> state,
+            Supplier<java.util.Map<String, Feat>> feats, ServerGoals goals) {
+        this.feats = feats;
+        this.goals = goals;
         this.core = core;
         this.service = service;
         this.state = state;
@@ -24,10 +29,26 @@ final class ObjectiveTrackables {
         Trackables trackables = core.trackables();
         trackables.register(owner, "daily", (player, id) -> view(player, "daily", id));
         trackables.register(owner, "weekly", (player, id) -> view(player, "weekly", id));
+        trackables.register(owner, "feat", this::feat);
+        trackables.register(owner, "goal", (player, id) -> goals.trackable(id));
     }
 
     static String idOf(String tier, String objectiveId) {
         return tier + ":" + objectiveId;
+    }
+
+    /** A feat the player can see and has not earned; hidden feats stay untrackable until earned (and then they are done). */
+    private Optional<Trackable> feat(UUID player, String id) {
+        Feat f = feats.get().get(id);
+        Optional<Progression.Snapshot> snap = core.progression().snapshot(player);
+        if (f == null || snap.isEmpty()) {
+            return Optional.empty();
+        }
+        FeatRules.Status status = FeatRules.status(f, snap.get().counters(), snap.get().earned());
+        if (!status.shown(f)) {
+            return Optional.empty();
+        }
+        return Optional.of(new Trackable("feat:" + id, f.name(), status.earned() ? f.at() : Math.min(status.progress(), f.at()), f.at()));
     }
 
     private Optional<Trackable> view(UUID player, String tier, String objectiveId) {

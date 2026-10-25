@@ -49,6 +49,16 @@ class CollectionsTest {
     }
 
     @Test
+    void theNextMilestoneIsTheFirstNotYetReached() {
+        CollectionDefinition def = new CollectionDefinition("c", "C", 0, "", "entry|entries", List.of(
+                new CollectionDefinition.Milestone("5", List.of()), new CollectionDefinition.Milestone("50%", List.of())),
+                Map.of(), Map.of());
+        assertEquals(0, CollectionRules.nextMilestone(def, 20, 4));
+        assertEquals(1, CollectionRules.nextMilestone(def, 20, 5));
+        assertEquals(-1, CollectionRules.nextMilestone(def, 20, 10));
+    }
+
+    @Test
     void sharesRoundUpAndCountsAreCappedAtTheSize() {
         assertEquals(20, CollectionRules.threshold(new CollectionDefinition.Milestone("25%", List.of()), 80));
         assertEquals(21, CollectionRules.threshold(new CollectionDefinition.Milestone("25%", List.of()), 81));

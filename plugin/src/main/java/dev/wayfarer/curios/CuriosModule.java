@@ -1,5 +1,8 @@
 package dev.wayfarer.curios;
 
+import dev.wayfarer.core.ItemCatalogue;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -89,6 +92,12 @@ public final class CuriosModule implements Module {
         core.services().register(id(), Bait.class, supplies::useCast);
         core.services().register(id(), CurioBoosts.class, (player, what) -> CurioRules.boost(effects.working(player), what));
         core.commands().register(id(), commands());
+        core.catalogue().add(id(), "curios", Component.text("Curios", NamedTextColor.WHITE), Material.AMETHYST_SHARD,
+                ItemCatalogue.madeFrom(core.itemIds(), core.itemMakers(), CurioItems.KIND));
+        core.catalogue().add(id(), "gear", Component.text("Special gear", NamedTextColor.WHITE), Material.DIAMOND_PICKAXE,
+                ItemCatalogue.madeFrom(core.itemIds(), core.itemMakers(), LootItems.GEAR));
+        core.catalogue().add(id(), "supplies", Component.text("Supplies", NamedTextColor.WHITE), Material.WHEAT_SEEDS,
+                ItemCatalogue.madeFrom(core.itemIds(), core.itemMakers(), LootItems.SUPPLY));
     }
 
     @Override

@@ -78,6 +78,7 @@ class ModuleManagerTest {
         Logger logger = Logger.getAnonymousLogger();
         logger.setUseParentHandlers(false);
         ItemMakers<org.bukkit.inventory.ItemStack> makers = new ItemMakers<>();
+        ItemCatalogue catalogue = new ItemCatalogue();
         ItemIds ids = new ItemIds();
         Services services = new Services();
         return new Core() {
@@ -125,6 +126,11 @@ class ModuleManagerTest {
             @Override
             public ItemTagService itemTags() {
                 return null;
+            }
+
+            @Override
+            public ItemCatalogue catalogue() {
+                return catalogue;
             }
 
             @Override

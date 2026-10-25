@@ -26,7 +26,7 @@ import org.bukkit.scoreboard.Scoreboard;
  * Each player's tracked things on the right-hand sidebar: one line each with live progress. Redraws are driven by
  * the counter changes core already raises and merged so a busy tick redraws a player once. Main thread.
  */
-final class TrackerSidebar implements Listener {
+final class TrackerSidebar implements Listener, dev.wayfarer.core.TrackerControl {
     private static final String OBJECTIVE = "wf_tracker";
     private static final int SLOTS = 15;
     private static final long REFRESH_TICKS = 20L * 30;
@@ -75,6 +75,24 @@ final class TrackerSidebar implements Listener {
                 redraw(id);
             });
         }
+    }
+
+    @Override
+    public boolean isTracked(UUID player, String trackedId) {
+        ObjectivesPlayerData data = store(player);
+        return data != null && data.tracked.contains(trackedId);
+    }
+
+    @Override
+    public void toggle(Player player, String trackedId, String name, Runnable after) {
+        service.with(player.getUniqueId(), (data, snap) -> {
+            if (data.tracked.contains(trackedId)) {
+                untrack(player, data, trackedId, name);
+            } else {
+                track(player, data, trackedId, name);
+            }
+            after.run();
+        });
     }
 
     /** Tracks the thing for the player (refused at the cap) and says what happened. */

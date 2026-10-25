@@ -45,18 +45,21 @@ permissions:
   wayfarer.curios.admin:
     description: List curios, special gear and supplies, give them and reload curios.yml (testing tools)
     default: op
+  wayfarer.items:
+    description: Browse and take every Wayfarer item (/wayfarer items); creative mode needs no permission
+    default: op
   wayfarer.journal:
     description: Open your Journal
     default: true
   wayfarer.collections.admin:
     description: List collections, give fish and treasures and reload collections.yml (testing tools)
     default: op
-  wayfarer.objectives.admin:
-    description: List feats and objectives, set tokens, reroll, reset, run events and roll reward tables (testing tools)
-    default: op
   wayfarer.objectives.track:
     description: Show or hide your own tracker sidebar
     default: true
+  wayfarer.objectives.admin:
+    description: List feats and objectives, set tokens, reroll, reset, run events and roll reward tables (testing tools)
+    default: op
   wayfarer.exploration.admin:
     description: Turn safe surface on or off and give Wayfarer exploration items (testing tools)
     default: op

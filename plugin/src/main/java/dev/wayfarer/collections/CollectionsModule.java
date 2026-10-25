@@ -78,7 +78,9 @@ public final class CollectionsModule implements Module {
                 () -> core.services().get(dev.wayfarer.core.Wayfinding.class), core.logger());
         almanac = new Almanac(plugin.getServer(), core.itemTags(), () -> fish, store,
                 () -> core.services().get(dev.wayfarer.core.Bait.class), core.logger());
-        journal = new Journal(core.progression(), core.itemMakers(), () -> state, this::detail);
+        journal = new Journal(core.progression(), core.itemMakers(), () -> state, this::detail,
+                () -> core.services().get(dev.wayfarer.core.TrackerControl.class));
+        core.trackables().register(id(), "collection", journal::milestone);
         // Before load, so the collections can list fish (and later treasures) by their ids.
         core.itemIds().register(id(), Almanac.KIND, () -> fish.species().stream().map(FishSpecies::id).toList());
         core.itemMakers().register(id(), Almanac.KIND, name -> almanac.make(name, "a Wayfarer"));
@@ -106,6 +108,7 @@ public final class CollectionsModule implements Module {
         }
         listeners.forEach(HandlerList::unregisterAll);
         listeners.clear();
+        core.trackables().drop(id());
     }
 
     private void listen(Listener listener) {

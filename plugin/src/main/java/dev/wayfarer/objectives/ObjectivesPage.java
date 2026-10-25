@@ -102,6 +102,10 @@ final class ObjectivesPage {
         }
         body.add(Menus.text(ItemLook.text("The server goal · everyone, together", ServerGoals.BLUE)));
         body.add(Menus.item(ItemStack.of(Material.BELL), goals.line(player.getUniqueId())));
+        ObjectiveDefinition goal = goals.goal();
+        if (goal != null && goals.trackable(goal.id()).filter(t -> !t.done()).isPresent()) {
+            buttons.add(trackButton(data, "goal:" + goal.id(), "goal", "Server goal: " + goal.task()));
+        }
         buttons.add(new Menus.Button(ItemLook.text(data.sidebarHidden ? "Show sidebar" : "Hide sidebar", ObjectivesService.PAPER),
                 ItemLook.text("Show or hide the tracker on the right of your screen", ObjectivesService.INK), 100, p ->
                 service.with(p.getUniqueId(), (dd, ss) -> {

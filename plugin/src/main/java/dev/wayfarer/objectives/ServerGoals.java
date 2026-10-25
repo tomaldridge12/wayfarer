@@ -239,6 +239,16 @@ final class ServerGoals implements Listener {
         }
     }
 
+    /** The week's goal for the tracker ({@code goal:<id>}); gone once it is another week's goal, done once completed. */
+    Optional<dev.wayfarer.core.Trackable> trackable(String id) {
+        ObjectiveDefinition g = goal();
+        if (g == null || !g.id().equals(id)) {
+            return Optional.empty();
+        }
+        long total = state.completed ? g.target() : Math.min(g.target(), ServerGoalRules.total(state.contributions));
+        return Optional.of(new dev.wayfarer.core.Trackable("goal:" + id, "Server goal: " + g.task(), total, g.target()));
+    }
+
     /** "Ender Hunt · 1,204 / 5,000 · you 212 (4%)" for the Objectives page. */
     Component line(UUID player) {
         ObjectiveDefinition g = goal();

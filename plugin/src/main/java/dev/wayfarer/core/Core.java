@@ -41,6 +41,9 @@ public interface Core {
     /** XP prices in points (ADR 0007): what a player holds, taking a price, and how it reads. Main thread. */
     Xp xp();
 
+    /** Every item the modules add, by kind, for the /wayfarer items browser. Main thread. */
+    ItemCatalogue catalogue();
+
     /** The /wayfarer root; modules register their subtrees under their own id while enabling. */
     CommandTree<CommandSourceStack> commands();
 }

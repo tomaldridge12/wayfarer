@@ -1,5 +1,8 @@
 package dev.wayfarer.banners;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 import dev.wayfarer.core.Core;
 import dev.wayfarer.core.Module;
 import dev.wayfarer.core.PlayerNames;
@@ -105,6 +108,20 @@ public final class BannersModule implements Module {
             core.progression().registerRewardType(id(), type, new Rewards(type));
         }
         registerLadders();
+        registerCatalogue();
+    }
+
+    /** The browser's banners, trophy heads (made for whoever opens it) and relics, from the current config. */
+    private void registerCatalogue() {
+        var catalogue = core.catalogue();
+        catalogue.add(id(), "banners", Component.text("Banners", NamedTextColor.WHITE), Material.WHITE_BANNER,
+                viewer -> loaded.banners().values().stream().map(items::create).toList());
+        catalogue.add(id(), "heads", Component.text("Trophy heads", NamedTextColor.WHITE), Material.ZOMBIE_HEAD,
+                viewer -> loaded.heads().values().stream()
+                        .map(def -> heads.create(def, viewer == null ? new UUID(0, 0) : viewer.getUniqueId(),
+                                viewer == null ? "Wayfarer" : viewer.getName(), System.currentTimeMillis())).toList());
+        catalogue.add(id(), "relics", Component.text("Relics and regalia", NamedTextColor.WHITE), Material.NETHERITE_SWORD,
+                viewer -> loaded.relics().values().stream().map(def -> relics.create(def, System.currentTimeMillis())).toList());
     }
 
     @Override

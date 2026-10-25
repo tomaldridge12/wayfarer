@@ -19,6 +19,16 @@ public final class CollectionRules {
         return Math.max(1, Math.min(Long.parseLong(m.at()), size));
     }
 
+    /** The index of the first milestone not yet reached with {@code found} entries, or -1 when all are. */
+    public static int nextMilestone(CollectionDefinition def, int size, long found) {
+        for (int i = 0; i < def.milestones().size(); i++) {
+            if (found < threshold(def.milestones().get(i), size)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     /** The distinct ladder counting a collection: one rung per milestone reward, and only completion is announced. */
     public static Ladder ladder(CollectionDefinition def, List<CollectionEntry> entries) {
         List<Ladder.Rung> rungs = new ArrayList<>();

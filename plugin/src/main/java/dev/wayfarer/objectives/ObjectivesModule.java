@@ -68,19 +68,20 @@ public final class ObjectivesModule implements Module {
         service.start();
         goals = new ServerGoals(plugin, core, () -> pools, () -> pools.goal(), service, loot);
         goals.start();
+        new ObjectiveTrackables(core, service, () -> pools, () -> feats, goals).register(id());
         listen(goals);
         events = new Events(plugin, core, () -> pools, () -> eventConfig, goals, service, loot);
         events.start();
         listen(events);
-        new ObjectiveTrackables(core, service, () -> pools).register(id());
         tracker = new TrackerSidebar(plugin, core, service, () -> trackerCap);
+        core.services().register(id(), dev.wayfarer.core.TrackerControl.class, tracker);
         tracker.start();
         listen(tracker);
         display = new CosmeticsDisplay(plugin, service.store(), () -> cosmetics);
         display.start();
         listen(display);
         core.services().get(JournalPages.class).ifPresent(journal -> {
-            journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal).page());
+            journal.add(id(), new FeatsPage(core.progression(), () -> feats, journal, tracker).page());
             journal.add(id(), new ObjectivesPage(service, () -> pools, journal, goals, tracker).page());
             Shop shop = new Shop(core, service, loot, () -> pools, () -> prices, () -> cosmetics, journal, display);
             journal.add(id(), shop.shopPage());

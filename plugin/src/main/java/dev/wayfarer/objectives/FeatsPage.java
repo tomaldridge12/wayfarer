@@ -39,8 +39,10 @@ final class FeatsPage {
     private final Progression progression;
     private final Supplier<Map<String, Feat>> feats;
     private final JournalPages journal;
+    private final dev.wayfarer.core.TrackerControl tracker;
 
-    FeatsPage(Progression progression, Supplier<Map<String, Feat>> feats, JournalPages journal) {
+    FeatsPage(Progression progression, Supplier<Map<String, Feat>> feats, JournalPages journal, dev.wayfarer.core.TrackerControl tracker) {
+        this.tracker = tracker;
         this.progression = progression;
         this.feats = feats;
         this.journal = journal;
@@ -70,6 +72,15 @@ final class FeatsPage {
             body.add(row(player, f, FeatRules.status(f, snap.counters(), snap.earned()), snap.earned().getOrDefault(f.marker(), 0L)));
         }
         List<Menus.Button> buttons = new ArrayList<>();
+        for (Feat f : all.subList(at * PER_PAGE, Math.min(all.size(), (at + 1) * PER_PAGE))) {
+            FeatRules.Status status = FeatRules.status(f, snap.counters(), snap.earned());
+            if (status.shown(f) && !status.earned()) {
+                String id = "feat:" + f.id();
+                boolean on = tracker.isTracked(player.getUniqueId(), id);
+                buttons.add(new Menus.Button(text((on ? "Untrack " : "Track ") + f.name(), PAPER),
+                        text("Watch this feat's progress on your sidebar", INK), 150, p -> tracker.toggle(p, id, f.name(), () -> open(p, at))));
+            }
+        }
         if (at > 0) {
             buttons.add(new Menus.Button(text("◂ Turn back", INK), Component.empty(), 90, p -> open(p, at - 1)));
         }
