@@ -1,7 +1,7 @@
 ---
 // The objective rhythm in numbers: dailies, the weekly, rerolls, streaks, events and the shop. From objectives.yml.
 import { guide } from '../data/repo';
-import { num, title } from '../data/text';
+import { num, title, xp } from '../data/text';
 import { rewardLook } from '../data/rewards';
 
 interface Props { part: 'rhythm' | 'events' | 'shop' }
@@ -15,7 +15,7 @@ const day = (s: string) => title(s.split(' ')[0].toLowerCase()) + ' ' + (s.split
   <ul class="facts">
     <li><b>{o.dailies} dailies</b> a day, new at <b>{o.dailyReset}</b> ({o.zone.replace('_', ' ')}), drawn from {o.dailyCount} so the day is varied.</li>
     <li><b>One weekly</b>, new every {o.weeklyDay}, drawn from {o.weeklyCount}.</li>
-    <li><b>{o.freeRerolls} free reroll</b> a day; after that each costs {o.rerollLevels} levels, then {o.rerollLevels + o.rerollStep}, {o.rerollLevels + 2 * o.rerollStep} and so on.</li>
+    <li><b>{o.freeRerolls} free reroll</b> a day; after that each costs {xp(o.rerollPoints)}, then {xp(o.rerollPoints + o.rerollStepPoints)}, {xp(o.rerollPoints + 2 * o.rerollStepPoints)} and so on.</li>
     <li>Every <b>{o.streakEvery}th day</b> of your streak pays <b>{num(o.streakTokens)} tokens</b>{o.streakReward ? <> and a {rewardLook(config, o.streakReward).name}</> : null}.</li>
     <li>A curio you already own, rolled again, becomes <b>{o.duplicateTokens} tokens</b> instead.</li>
   </ul>

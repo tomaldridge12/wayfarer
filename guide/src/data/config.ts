@@ -79,12 +79,13 @@ export interface FeatRow { id: string; name: string; flavour: string; counts: st
 export interface CosmeticRow { id: string; kind: 'title' | 'trail'; name: string; colour: string }
 export interface ObjectiveRules {
   dailies: number; dailyReset: string; zone: string; weeklyDay: string; eventStart: string; eventEnd: string;
-  freeRerolls: number; rerollLevels: number; rerollStep: number; streakEvery: number; streakTokens: number; streakReward: string | null;
+  freeRerolls: number; rerollPoints: number; rerollStepPoints: number; streakEvery: number; streakTokens: number; streakReward: string | null;
   duplicateTokens: number; stages: string[]; dailyCount: number; weeklyCount: number; goalCount: number; tables: string[];
 }
 export interface EventRow { id: string; name: string; blurb: string; goal: string; target: number }
 export interface ShopRules { cosmetics: Record<string, number>; supplies: Record<string, number>; extraReroll: number; templateCopy: number; wayfinder: number; kindling: number; enchantPerLevel: number }
-export interface ExplorationRules { range: number; cooldown: number; structureLevels: number; biomeLevels: number; chartLevels: number; rare: Record<string, number>; structures: Record<string, string>; kindlingSeconds: number }
+export interface EnchantingRules { reshuffle: boolean; levels: number; trigger: string }
+export interface ExplorationRules { range: number; cooldown: number; structurePoints: number; biomePoints: number; chartPoints: number; unfoundMultiplier: number; rare: Record<string, number>; structures: Record<string, string>; kindlingSeconds: number }
 
 export interface Config {
   families: Family[];
@@ -116,6 +117,7 @@ export interface Config {
   eventRotation: string[];
   shop: ShopRules | null;
   exploration: ExplorationRules | null;
+  enchanting: EnchantingRules | null;
 }
 
 function read(files: GuideFiles, dir: string, file: string): any {
@@ -316,6 +318,7 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   const collectionsYml = read(files, dir, 'collections.yml');
   const objectivesYml = read(files, dir, 'objectives.yml');
   const explorationYml = read(files, dir, 'exploration.yml');
+  const enchantingYml = read(files, dir, 'enchanting.yml');
   const curios: CurioRow[] = entries(curiosYml.curios).map(([id, c]) => ({
     id, name: c.name ?? title(id), colour: c.colour ?? '#e8d9a8', description: asList(c.description), flavour: c.flavour ?? '',
     tool: TOOL_EFFECTS.includes(c.effect), cooldown: c.cooldown ?? 0, icon: `wayfarer:curio/${id}`,
@@ -370,8 +373,8 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   const objectives: ObjectiveRules | null = objectivesYml['daily-pool'] ? {
     dailies: dl.count ?? 3, dailyReset: sched['daily-reset'] ?? '06:00', zone: sched.zone ?? 'Europe/London',
     weeklyDay: title(String(sched['weekly-reset'] ?? 'MONDAY').toLowerCase()), eventStart: String(sched['event-start'] ?? 'FRIDAY 18:00'),
-    eventEnd: String(sched['event-end'] ?? 'MONDAY 00:00'), freeRerolls: dl.rerolls?.free ?? 1, rerollLevels: dl.rerolls?.['xp-levels'] ?? 3,
-    rerollStep: dl.rerolls?.['xp-step'] ?? 2, streakEvery: dl.streak?.every ?? 7, streakTokens: dl.streak?.tokens ?? 50,
+    eventEnd: String(sched['event-end'] ?? 'MONDAY 00:00'), freeRerolls: dl.rerolls?.free ?? 1, rerollPoints: dl.rerolls?.['xp-points'] ?? 27,
+    rerollStepPoints: dl.rerolls?.['xp-step-points'] ?? 16, streakEvery: dl.streak?.every ?? 7, streakTokens: dl.streak?.tokens ?? 50,
     streakReward: dl.streak?.reward ?? null, duplicateTokens: objectivesYml['duplicate-tokens'] ?? 30,
     stages: Object.keys(objectivesYml.stages ?? {}), dailyCount: Object.keys(objectivesYml['daily-pool'] ?? {}).length,
     weeklyCount: Object.keys(objectivesYml['weekly-pool'] ?? {}).length, goalCount: Object.keys(objectivesYml['goal-pool'] ?? {}).length,
@@ -389,14 +392,19 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   } : null;
   const wf = explorationYml.wayfinder;
   const exploration: ExplorationRules | null = wf ? {
-    range: wf.range ?? 3200, cooldown: wf.cooldown ?? 300, structureLevels: wf['structure-levels'] ?? 5, biomeLevels: wf['biome-levels'] ?? 3,
-    chartLevels: wf['chart-levels'] ?? 8, rare: wf.rare ?? {}, structures: wf.structures ?? {},
+    range: wf.range ?? 3200, cooldown: wf.cooldown ?? 300, structurePoints: wf['structure-points'] ?? 55, biomePoints: wf['biome-points'] ?? 27,
+    chartPoints: wf['chart-points'] ?? 112, unfoundMultiplier: wf['unfound-multiplier'] ?? 2, rare: wf.rare ?? {}, structures: wf.structures ?? {},
     kindlingSeconds: explorationYml['beacon-kindling']?.seconds ?? 90,
+  } : null;
+
+  const reshuffle = enchantingYml.reshuffle;
+  const enchanting: EnchantingRules | null = reshuffle ? {
+    reshuffle: reshuffle.enabled ?? true, levels: reshuffle.levels ?? 1, trigger: String(reshuffle.trigger ?? 'lapis_lazuli'),
   } : null;
 
   return {
     curios, gear, supplies, collections, fish, fishChance: almanac.chance ?? 0.5, treasures, treasureRules, feats, cosmetics,
-    objectives, events, eventRotation: asList(objectivesYml.events?.rotation), shop, exploration,
+    objectives, events, eventRotation: asList(objectivesYml.events?.rotation), shop, exploration, enchanting,
     alloys, alloyRules, marks, books,
     families, allMobs: banners.counting?.['all-mobs'] ?? null,
     banners: bannerRows, heads, relics,

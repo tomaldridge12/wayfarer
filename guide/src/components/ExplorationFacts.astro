@@ -1,15 +1,16 @@
 ---
 // Wayfinder prices and limits. From exploration.yml.
 import { guide } from '../data/repo';
-import { num, title } from '../data/text';
+import { num, title, xp } from '../data/text';
 
 const e = guide().config.exploration;
 ---
 {e && (
   <ul class="facts">
     <li>It searches up to <b>{num(e.range)} blocks</b> away, and needs <b>{Math.round(e.cooldown / 60)} minutes</b> to settle between searches.</li>
-    <li>A structure costs <b>{e.structureLevels} levels</b>, a land <b>{e.biomeLevels}</b>, a Guardian's Chart <b>{e.chartLevels}</b>. Rarer places cost more:
-      {' '}{Object.entries(e.rare).map(([k, v]) => `${title(k)} ${v}`).join(', ')}.</li>
+    <li>A structure costs <b>{xp(e.structurePoints)}</b>, a land you have found <b>{xp(e.biomePoints)}</b>, a Guardian's Chart <b>{xp(e.chartPoints)}</b>. Rarer places cost more:
+      {' '}{Object.entries(e.rare).map(([k, v]) => `${title(k)} ${xp(v)}`).join(', ')}.</li>
+    <li>A land you have <b>not found yet</b> costs <b>{e.unfoundMultiplier}&times;</b> as much, and shows the same hint as your Atlas.</li>
     <li>It offers {Object.keys(e.structures).length} kinds of structure: {Object.values(e.structures).join(', ')}.</li>
     <li>Beacon kindling burns as a signal for <b>{e.kindlingSeconds} seconds</b>.</li>
   </ul>
