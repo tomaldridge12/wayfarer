@@ -69,6 +69,24 @@ final class BossSpawning implements Listener {
         }
     }
 
+    /**
+     * A defeat starts the guardian cooldown of every structure the boss died in or called home, so a guardian that
+     * stood waiting for hours (or a roaming boss killed in a structure) is not replaced the moment it falls.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    void onDefeat(dev.wayfarer.core.BossDefeatedEvent event) {
+        long now = System.currentTimeMillis();
+        var mark = event.boss();
+        Location home = new Location(event.location().getWorld(), mark.homeX(), mark.homeY(), mark.homeZ());
+        for (Location point : new Location[] {event.location(), home}) {
+            for (GeneratedStructure structure : point.getChunk().getStructures()) {
+                if (structure.getBoundingBox().contains(point.toVector())) {
+                    structure.getPersistentDataContainer().set(GUARDIAN_LAST, PersistentDataType.LONG, now);
+                }
+            }
+        }
+    }
+
     /** Every two seconds: players inside a listed structure wake its guardian. */
     void checkGuardians() {
         long now = System.currentTimeMillis();
