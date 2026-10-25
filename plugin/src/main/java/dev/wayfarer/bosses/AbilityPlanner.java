@@ -28,8 +28,7 @@ public final class AbilityPlanner {
             Ability.SHIELD, new Spec(600, 0, 30)));
 
     /** Extra abilities granted at 3 and 5 stars, the first not already known. */
-    private static final List<Ability> BONUS = List.of(Ability.GROUND_SLAM, Ability.CHARGE, Ability.PULL,
-            Ability.SUMMON_MINIONS);
+    private static final List<Ability> BONUS = List.of(Ability.CHARGE, Ability.SUMMON_MINIONS, Ability.POISON_CLOUD);
 
     /** Ticks between any two abilities. */
     static final int GLOBAL_COOLDOWN = 60;

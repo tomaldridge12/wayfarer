@@ -13,9 +13,9 @@ class FightTest {
     void starsAddAbilitiesAtThreeAndFive() {
         assertEquals(List.of(Ability.POISON_CLOUD, Ability.SUMMON_MINIONS),
                 new AbilityPlanner(List.of(Ability.POISON_CLOUD, Ability.SUMMON_MINIONS), 2).abilities());
-        assertEquals(List.of(Ability.POISON_CLOUD, Ability.SUMMON_MINIONS, Ability.GROUND_SLAM),
+        assertEquals(List.of(Ability.POISON_CLOUD, Ability.SUMMON_MINIONS, Ability.CHARGE),
                 new AbilityPlanner(List.of(Ability.POISON_CLOUD, Ability.SUMMON_MINIONS), 3).abilities());
-        assertEquals(List.of(Ability.CHARGE, Ability.GROUND_SLAM, Ability.PULL, Ability.SUMMON_MINIONS),
+        assertEquals(List.of(Ability.CHARGE, Ability.GROUND_SLAM, Ability.SUMMON_MINIONS, Ability.POISON_CLOUD),
                 new AbilityPlanner(List.of(Ability.CHARGE, Ability.GROUND_SLAM, Ability.ENRAGE), 5).abilities());
     }
 
@@ -33,14 +33,18 @@ class FightTest {
         assertEquals(Optional.of(Ability.GROUND_SLAM), planner.next(1140, 3, false));
     }
 
+    private static void used(AbilityPlanner planner, long tick) {
+        planner.abilities().forEach(a -> planner.used(a, tick));
+    }
+
     @Test
     void moreStarsAndPhaseTwoShortenCooldowns() {
-        AbilityPlanner fiveStar = new AbilityPlanner(List.of(Ability.GROUND_SLAM), 5);
-        fiveStar.used(Ability.GROUND_SLAM, 0);
+        AbilityPlanner fiveStar = new AbilityPlanner(List.of(Ability.GROUND_SLAM, Ability.CHARGE, Ability.SUMMON_MINIONS, Ability.POISON_CLOUD), 5);
+        used(fiveStar, 0);
         assertEquals(Optional.empty(), fiveStar.next(83, 3, false));
         assertEquals(Optional.of(Ability.GROUND_SLAM), fiveStar.next(84, 3, false)); // 140 * 0.6
-        AbilityPlanner enraged = new AbilityPlanner(List.of(Ability.GROUND_SLAM), 5);
-        enraged.used(Ability.GROUND_SLAM, 0);
+        AbilityPlanner enraged = new AbilityPlanner(List.of(Ability.GROUND_SLAM, Ability.CHARGE, Ability.SUMMON_MINIONS, Ability.POISON_CLOUD), 5);
+        used(enraged, 0);
         assertEquals(Optional.of(Ability.GROUND_SLAM), enraged.next(63, 3, true)); // 140 * 0.6 * 0.75
     }
 

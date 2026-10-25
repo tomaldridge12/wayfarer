@@ -50,9 +50,9 @@ final class AbilityEffects {
                 e.getWorld().playSound(at, Sound.ENTITY_GENERIC_EXPLODE, 0.8f, 0.7f);
                 for (Player p : e.getWorld().getPlayers()) {
                     if (p.getLocation().distanceSquared(at) <= 25 && hittable(p)) {
-                        p.damage(damage * 1.2, e);
+                        p.damage(damage, e);
                         Vector away = p.getLocation().toVector().subtract(at.toVector()).setY(0);
-                        p.setVelocity((away.lengthSquared() > 0 ? away.normalize() : away).multiply(1.1).setY(0.6));
+                        p.setVelocity((away.lengthSquared() > 0 ? away.normalize() : away).multiply(0.5).setY(0.3));
                     }
                 }
                 yield true;
@@ -108,9 +108,9 @@ final class AbilityEffects {
             case PULL -> {
                 for (Player p : e.getWorld().getPlayers()) {
                     double d2 = p.getLocation().distanceSquared(at);
-                    if (d2 <= 400 && d2 > 9 && hittable(p)) {
+                    if (d2 <= 225 && d2 > 16 && hittable(p)) {
                         Vector in = at.toVector().subtract(p.getLocation().toVector()).normalize();
-                        p.setVelocity(in.multiply(1.4).setY(0.4));
+                        p.setVelocity(in.multiply(0.6).setY(0.2));
                     }
                 }
                 e.getWorld().spawnParticle(Particle.REVERSE_PORTAL, at, 60, 1.5, 1, 1.5, 0.2);

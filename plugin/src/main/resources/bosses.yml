@@ -20,7 +20,7 @@ spawning:
 # beatable in iron gear with some preparation). cooldown-minutes: how long before the same structure's guardian returns.
 # Variants: entity (a vanilla mob), glow (a text colour name), scale (size, 1 = normal), equipment by slot (head,
 # chest, legs, feet, hand, offhand), colours (name gradient, two #hex values) and abilities from the library:
-# charge, ground_slam, summon_minions, poison_cloud, arrow_volley, blink, fire_ring, pull, shield, enrage.
+# charge, summon_minions, poison_cloud, arrow_volley, blink, fire_ring, shield, enrage (ground_slam and pull exist in code but are unused: too strong).
 # spawn: entity (whose natural spawn can become the boss), biomes (a list, or any), chance per natural spawn,
 # biomes may be names (plains, terralith:desert_canyon) or biome tags (#minecraft:is_forest). Tags make lists work with
 # datapacks like Terralith, which adds its biomes to the vanilla tags; a tag the server lacks (e.g. #c:is_cave without
@@ -89,7 +89,7 @@ bosses:
         scale: 1.4
         colours: ["#E3FBFF", "#4FB3D9"]
         equipment: {head: chainmail_helmet, hand: bow}
-        abilities: [arrow_volley, pull]
+        abilities: [arrow_volley, summon_minions]
       ossuary_knight:
         name: "Ossuary Knight"
         entity: wither_skeleton
@@ -130,7 +130,7 @@ bosses:
         glow: gray
         scale: 1.8
         colours: ["#F2F2F2", "#7A7A7A"]
-        abilities: [pull, summon_minions]
+        abilities: [poison_cloud, summon_minions]
 
   blast_prophet:
     name: "Blast Prophet"
@@ -156,7 +156,7 @@ bosses:
         glow: blue
         scale: 1.6
         colours: ["#A8D8FF", "#2A5BD9"]
-        abilities: [charge, pull]
+        abilities: [charge, poison_cloud]
       volatile_saint:
         name: "Volatile Saint"
         entity: creeper
@@ -222,7 +222,7 @@ bosses:
         glow: dark_purple
         scale: 1.4
         colours: ["#E6A8FF", "#3A1E5A"]
-        abilities: [summon_minions, pull]
+        abilities: [summon_minions, poison_cloud]
 
   sand_pharaoh:
     name: "Sand Pharaoh"
@@ -270,7 +270,7 @@ bosses:
         scale: 1.5
         colours: ["#A8F0FF", "#1E5A7A"]
         equipment: {head: chainmail_helmet, hand: trident}
-        abilities: [arrow_volley, pull]
+        abilities: [arrow_volley, summon_minions]
       tidecaller:
         name: "Tidecaller"
         entity: drowned
@@ -278,7 +278,7 @@ bosses:
         scale: 1.5
         colours: ["#D2FFFF", "#2E8CA8"]
         equipment: {hand: trident, offhand: nautilus_shell}
-        abilities: [pull, summon_minions]
+        abilities: [poison_cloud, summon_minions]
 
   piglin_warlord:
     name: "Piglin Warlord"
