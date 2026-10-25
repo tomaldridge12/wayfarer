@@ -17,7 +17,7 @@ class FeatTest {
     @Test
     void theShippedFeatsAllLoadEachWithAStoryAndAPrize() {
         assertEquals(List.of(), SHIPPED.problems());
-        assertEquals(33, SHIPPED.feats().size());
+        assertTrue(SHIPPED.feats().size() >= 35, "feats are added over time, never lost");
         assertEquals(3, SHIPPED.feats().values().stream().filter(Feat::hidden).count());
         SHIPPED.feats().values().forEach(f -> {
             assertFalse(f.flavour().isBlank(), f.id());
@@ -33,6 +33,17 @@ class FeatTest {
         assertEquals(3, records.at(), "at: all is every record");
         assertTrue(records.distinct());
         assertTrue(SHIPPED.feats().get("deep_delver").selector().contains("mine:deepslate*"));
+    }
+
+    @Test
+    void thePetFeatsNeedEverySheepColourAndADragonRespawn() {
+        Feat sheep = SHIPPED.feats().get("rainbow_shepherd");
+        assertEquals(16, sheep.at());
+        assertTrue(sheep.distinct() && sheep.selector().contains("dye:sheep/light_blue"));
+        assertEquals(List.of("cosmetic:rainbow_sheep"), sheep.rewards());
+        Feat dragon = SHIPPED.feats().get("dragon_encore");
+        assertTrue(dragon.selector().contains("respawn:ender_dragon"));
+        assertEquals(List.of("cosmetic:mini_ender_dragon"), dragon.rewards());
     }
 
     @Test

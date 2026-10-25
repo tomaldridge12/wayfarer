@@ -11,6 +11,10 @@ public final class Activity {
     public static final String BREED = "breed";
     public static final String DISCOVER = "discover";
     public static final String CRAFT = "craft";
+    /** A sheep dyed a colour: {@code dye:sheep/red}. */
+    public static final String DYE = "dye";
+    /** The Ender Dragon brought back after its first defeat: {@code respawn:ender_dragon}. */
+    public static final String RESPAWN = "respawn";
     /** An item held at least once; stays at 1. */
     public static final String FIND = "find";
     /** Brushing started on a suspicious block whose loot was not rolled yet. */

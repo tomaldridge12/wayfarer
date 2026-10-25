@@ -150,6 +150,43 @@ final class ProgressionListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onDye(org.bukkit.event.entity.SheepDyeWoolEvent event) {
+        Player dyer = event.getPlayer();
+        if (dyer != null) {
+            String dyed = Activity.DYE + ":sheep/" + event.getColor().name().toLowerCase(java.util.Locale.ROOT);
+            service.act(dyer, (engine, data) -> engine.record(data, dyed));
+        }
+    }
+
+    /** Who put end crystals down on the exit portal lately, so the one who brings the dragon back is credited. */
+    private final java.util.Map<java.util.UUID, Long> crystalPlacers = new java.util.HashMap<>();
+    private static final long CRYSTAL_MEMORY_MS = 5 * 60 * 1000;
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onCrystal(org.bukkit.event.entity.EntityPlaceEvent event) {
+        Player placer = event.getPlayer();
+        if (placer != null && event.getEntityType() == org.bukkit.entity.EntityType.END_CRYSTAL
+                && event.getBlock().getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END) {
+            crystalPlacers.put(placer.getUniqueId(), System.currentTimeMillis());
+        }
+    }
+
+    /** A dragon appearing after the battle has been won once is a respawn; the crystal placers each get the credit. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onDragonAppears(org.bukkit.event.entity.EntitySpawnEvent event) {
+        if (!(event.getEntity() instanceof org.bukkit.entity.EnderDragon dragon) || dragon.getDragonBattle() == null
+                || !dragon.getDragonBattle().hasBeenPreviouslyKilled()) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        crystalPlacers.values().removeIf(at -> now - at > CRYSTAL_MEMORY_MS);
+        for (java.util.UUID id : java.util.List.copyOf(crystalPlacers.keySet())) {
+            service.record(id, Activity.RESPAWN + ":ender_dragon", "respawned the dragon");
+        }
+        crystalPlacers.clear();
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onBreed(EntityBreedEvent event) {
         if (event.getBreeder() instanceof Player breeder) {
             String bred = Activity.BREED + ":" + target(event.getEntity().getType());

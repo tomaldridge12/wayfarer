@@ -65,6 +65,19 @@ cosmetics:
 #   than a sum, at (the count, or all for every target counts lists), hidden: true to stay a "???" until earned,
 #   rewards (curio:, gear:, supply:, enchant:<key>_<level>, cosmetic:). A feat credits everything done before it existed.
 feats:
+  rainbow_shepherd:
+    name: "Rainbow Shepherd"
+    flavour: "Sixteen dyes, sixteen sheep. The flock has never looked so pleased with itself."
+    counts: [dye:sheep/white, dye:sheep/orange, dye:sheep/magenta, dye:sheep/light_blue, dye:sheep/yellow, dye:sheep/lime, dye:sheep/pink, dye:sheep/gray, dye:sheep/light_gray, dye:sheep/cyan, dye:sheep/purple, dye:sheep/blue, dye:sheep/brown, dye:sheep/green, dye:sheep/red, dye:sheep/black]
+    distinct: true
+    at: all
+    rewards: [cosmetic:rainbow_sheep]
+  dragon_encore:
+    name: "Dragon Encore"
+    flavour: "It fell once. You stood four crystals on the portal and asked it to come back."
+    counts: [respawn:ender_dragon]
+    at: 1
+    rewards: [cosmetic:mini_ender_dragon]
   moss_tender:
     name: "Moss Tender"
     flavour: "Ten thousand blocks of moss, every one picked up gently."
