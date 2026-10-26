@@ -1,0 +1,18 @@
+# Comforts module: small vanilla rule tweaks, each with its own switch. Set enabled: false to skip the module.
+version: 1
+enabled: true
+
+# Rotten flesh is junk in vanilla and leather means a cow farm. Craft `flesh` rotten flesh (1 to 9) into `leather`
+# leather (1 to 64), shapeless, in the 2x2 grid or at a table. The recipe is in everyone's recipe book from the start.
+leather-from-flesh:
+  enabled: true
+  flesh: 4
+  leather: 1
+
+# What a death keeps: hotbar, armour and offhand stay with the player; the rest of the inventory drops as vanilla does
+# (into a grave, with the graves datapack). Curse of Vanishing items still vanish. XP is untouched.
+keep-on-death:
+  enabled: true
+  hotbar: true
+  armour: true
+  offhand: true

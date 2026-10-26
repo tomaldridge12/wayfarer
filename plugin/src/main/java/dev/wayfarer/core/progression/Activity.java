@@ -19,6 +19,10 @@ public final class Activity {
     public static final String FIND = "find";
     /** Brushing started on a suspicious block whose loot was not rolled yet. */
     public static final String BRUSH = "brush";
+    /** A food finished eating: {@code eat:cooked_beef}, {@code eat:wayfarer:dish/miners_stew}. */
+    public static final String EAT = "eat";
+    /** A forage ingredient found by breaking a plant: {@code forage:wild_rice}. */
+    public static final String FORAGE = "forage";
 
     /**
      * Blocks whose fully grown break is also a harvest. Melons and pumpkins only exist grown; stems and

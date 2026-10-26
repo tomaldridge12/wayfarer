@@ -96,6 +96,7 @@ public final class CollectionsModule implements Module {
         listen(new RecipeGuard(i -> isJournal(i) || i != null && Treasures.KIND.equals(kindOf(i))));
         listen(new Book());
         core.services().register(id(), JournalPages.class, journal);
+        core.services().register(id(), dev.wayfarer.core.FishWaters.class, species -> fish.species(species).map(FishSpecies::water));
         core.commands().register(id(), journalCommand());
         core.catalogue().add(id(), "journal", Component.text("Journal", NamedTextColor.WHITE), Material.BRICK,
                 viewer -> List.of(journalItem()));

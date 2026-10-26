@@ -129,6 +129,16 @@ public final class ProgressionEngine {
         return record(data, Activity.BRUSH + ":" + block);
     }
 
+    /** A food finished eating ({@code target} as for any item: its Wayfarer id or its material). */
+    public Outcome eat(ProgressionData data, String target) {
+        return record(data, Activity.EAT + ":" + target);
+    }
+
+    /** A forage ingredient found (the foods module rolls the chance; this only counts it). */
+    public Outcome forage(ProgressionData data, String ingredient) {
+        return record(data, Activity.FORAGE + ":" + ingredient);
+    }
+
     /** Items a player crafted: {@code craft:<item>} goes up by the amount made. */
     public Outcome craft(ProgressionData data, String item, int amount) {
         if (amount <= 0) {

@@ -50,4 +50,14 @@ class EverydayActivityTest {
         ENGINE.record(data, Activity.BREED + ":cow");
         assertEquals(Map.of("catch:salmon", 2L, "shear:sheep", 1L, "breed:cow", 1L), data.countersView());
     }
+
+    @Test
+    void foodsEatenAndForageFoundCountByTarget() {
+        ProgressionData data = new ProgressionData();
+        assertEquals(List.of("eat:cooked_beef"), ENGINE.eat(data, "cooked_beef").raised());
+        ENGINE.eat(data, "cooked_beef");
+        ENGINE.eat(data, "wayfarer:dish/miners_stew");
+        assertEquals(List.of("forage:wild_rice"), ENGINE.forage(data, "wild_rice").raised());
+        assertEquals(Map.of("eat:cooked_beef", 2L, "eat:wayfarer:dish/miners_stew", 1L, "forage:wild_rice", 1L), data.countersView());
+    }
 }

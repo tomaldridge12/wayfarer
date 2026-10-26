@@ -143,6 +143,16 @@ final class ProgressionListener implements Listener {
         }
     }
 
+    /** Only things that are food count: a potion or a bucket of milk is consumable but carries no food component. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    void onEat(org.bukkit.event.player.PlayerItemConsumeEvent event) {
+        ItemStack eaten = event.getItem();
+        if (!eaten.hasData(io.papermc.paper.datacomponent.DataComponentTypes.FOOD)) {
+            return;
+        }
+        service.target(eaten).ifPresent(target -> service.act(event.getPlayer(), (engine, data) -> engine.eat(data, target)));
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onShear(PlayerShearEntityEvent event) {
         String shorn = Activity.SHEAR + ":" + target(event.getEntity().getType());

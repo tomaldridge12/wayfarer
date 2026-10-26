@@ -1,0 +1,17 @@
+---
+// The small comforts in numbers: the leather recipe and what a death keeps. From comforts.yml.
+import { guide } from '../data/repo';
+import { plural } from '../data/text';
+
+const c = guide().config.comforts;
+const kept = c ? [c.hotbar && 'your hotbar', c.armour && 'your armour', c.offhand && 'your offhand item'].filter(Boolean) as string[] : [];
+---
+{c && (
+  <ul class="facts">
+    {c.leather && <li>Craft <b>{plural(c.flesh, 'rotten flesh', 'rotten flesh')}</b> into <b>{plural(c.leatherOut, 'leather', 'leather')}</b>, in the 2×2 grid or at a table. The recipe is in your recipe book from the start.</li>}
+    {c.keep && kept.length > 0 && <li>When you die you keep <b>{kept.join(', ')}</b>.</li>}
+  </ul>
+)}
+<style>
+  .facts { display: grid; gap: 6px; }
+</style>

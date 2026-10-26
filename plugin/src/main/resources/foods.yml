@@ -1,0 +1,401 @@
+# Foods module: forage, dishes and the Cookbook. Set enabled: false to skip the module.
+# Forage first, then dishes. The counters eat:<item> and forage:<ingredient> are recorded by core whether or not
+# this module runs. Every number here is a first pass, to be tuned from play.
+version: 1
+enabled: true
+
+# Forage: breaking a listed plant in a listed biome may drop an ingredient vanilla lacks. Each ingredient rolls on its
+# own, so grass can give a tomato and an onion at once. A player's streak of qualifying breaks that gave nothing is
+# kept per ingredient, and at `pity` the next one is certain. Creative, pistons, fire and explosions give nothing.
+#   chance (0-1), pity (breaks): the defaults below unless an ingredient sets its own.
+#   biomes: a biome key (plains, terralith:alpine_grove) or #tag (#minecraft:is_forest, which includes datapack biomes).
+#   plants: block keys. colour: #RRGGBB for the name. description: one or two short lines. flavour: one line of story.
+forage:
+  chance: 0.04
+  pity: 40
+  ingredients:
+    wild_rice:
+      name: "Wild Rice"
+      colour: "#D8C98A"
+      description: ["Seed heads from the shallows."]
+      flavour: "Light as dry rain, and it keeps for years."
+      biomes: [swamp, mangrove_swamp, "#minecraft:is_river"]
+      plants: [tall_grass, seagrass, tall_seagrass]
+    tomato:
+      name: "Tomato"
+      colour: "#D9482F"
+      description: ["Grows wild where the grass is warm."]
+      flavour: "Sun-warm and a little bit smug."
+      biomes: [plains, sunflower_plains, meadow, "#minecraft:is_savanna"]
+      plants: [short_grass, tall_grass]
+    onion:
+      name: "Onion"
+      colour: "#D6B583"
+      description: ["A wild bulb from the forest floor."]
+      flavour: "Makes everyone cry, and everyone cooks with it anyway."
+      biomes: ["#minecraft:is_forest", "#minecraft:is_taiga", grove]
+      plants: [fern, large_fern, short_grass]
+    cabbage:
+      name: "Cabbage"
+      colour: "#8DB360"
+      description: ["A tight green head of leaves."]
+      flavour: "Grows wild on windy slopes, as if it had somewhere to be."
+      biomes: [plains, meadow, "#minecraft:is_hill"]
+      plants: [short_grass, fern]
+    wild_herbs:
+      name: "Wild Herbs"
+      colour: "#6FA85A"
+      description: ["Whatever smelled best on the path."]
+      flavour: "Every bunch is a little different, which is the point."
+      biomes: ["#minecraft:is_forest", cherry_grove]
+      plants: [short_grass, fern, dandelion, poppy]
+    chilli:
+      name: "Chilli"
+      colour: "#C93A22"
+      description: ["Small, bright and fierce."]
+      flavour: "Found where it is hot enough to get ideas."
+      biomes: ["#minecraft:is_badlands", desert, "#minecraft:is_savanna", nether_wastes, crimson_forest]
+      plants: [dead_bush, cactus, nether_sprouts, crimson_roots]
+    samphire:
+      name: "Samphire"
+      colour: "#5FA78C"
+      description: ["Salt-crisp green from the tide line."]
+      flavour: "Tastes of the sea and slightly of apology."
+      biomes: ["#minecraft:is_beach", "#minecraft:is_ocean", mangrove_swamp]
+      plants: [seagrass, tall_seagrass, kelp, kelp_plant]
+    mountain_garlic:
+      name: "Mountain Garlic"
+      colour: "#E3DCC3"
+      description: ["Dug from cold, high ground."]
+      flavour: "Keeps well, and so does the smell."
+      biomes: [grove, snowy_slopes, jagged_peaks, frozen_peaks]
+      plants: [fern, short_grass]
+    truffle:
+      name: "Truffle"
+      colour: "#4A3A32"
+      description: ["A dark knot found under old roots."]
+      flavour: "Found by luck, patience or a very good nose."
+      biomes: [dark_forest, old_growth_pine_taiga, old_growth_spruce_taiga, mushroom_fields]
+      plants: [brown_mushroom, red_mushroom, rooted_dirt]
+      chance: 0.02
+      pity: 80
+    peppercorn:
+      name: "Peppercorn"
+      colour: "#3A2F2C"
+      description: ["Little dark spheres of jungle heat."]
+      flavour: "The reason ships once crossed oceans."
+      biomes: ["#minecraft:is_jungle"]
+      plants: [vine, bamboo, jungle_leaves]
+
+# Dishes: custom foods built on a vanilla food item (base), always edible, better than vanilla food, with themed effects.
+#   name, colour (#RRGGBB), family (mining, fishing, travel, farming), flavour (one line of story), hint (what the Cookbook
+#   shows before the dish is found), nutrition (hunger points, 1-20), saturation (0-40), base (a vanilla food item),
+#   effects: [{type: potion effect, amplifier: 0 is level I, minutes}], rare: true lets effects go above max-amplifier.
+#   ingredients (a shapeless crafting recipe, at most nine in all): an item (potato), a count (wheat*2),
+#   meat:cooked (any cooked meat), forage:<ingredient>, fish:any (any fish, vanilla too), fish:fresh, fish:salt or
+#   fish:<species> (Wayfarer fish only). recipe: smoker or campfire instead takes one plain item and cooks it.
+dishes:
+  max-amplifier: 0
+  items:
+    miners_stew:
+      name: "Miner's Stew"
+      colour: "#B88A5A"
+      family: mining
+      base: mushroom_stew
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: haste, minutes: 8}]
+      ingredients: [potato, "forage:onion", "meat:cooked", bowl]
+      flavour: "Thick enough to stand a pickaxe in."
+      hint: "A hearty stew. Onions grow wild in forests and taiga."
+    delvers_pasty:
+      name: "Delver's Pasty"
+      colour: "#C9A36B"
+      family: mining
+      base: bread
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: night_vision, minutes: 8}]
+      ingredients: ["wheat*2", "forage:onion", cooked_porkchop]
+      flavour: "Folded to fit a pocket, a glove and a long dark shift."
+      hint: "A pastry for the underground. Onions grow wild in forests and taiga."
+    glowberry_tart:
+      name: "Glowberry Tart"
+      colour: "#E8B13C"
+      family: mining
+      base: pumpkin_pie
+      nutrition: 8
+      saturation: 10.0
+      effects: [{type: night_vision, minutes: 4}]
+      ingredients: ["glow_berries*3", sugar, egg, wheat]
+      flavour: "It lights the way home, and then the way to seconds."
+      hint: "Sweet, and faintly lit. The berries hang in lush caves."
+    smiths_chilli:
+      name: "Smith's Chilli"
+      colour: "#B5442B"
+      family: mining
+      base: beetroot_soup
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: fire_resistance, minutes: 5}]
+      ingredients: ["forage:chilli", cooked_beef, beetroot, bowl]
+      flavour: "Hot enough that the forge feels mild."
+      hint: "A fierce bowl. The chillies grow where it is hot."
+    fishers_chowder:
+      name: "Fisher's Chowder"
+      colour: "#D9CBA8"
+      family: fishing
+      base: mushroom_stew
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: luck, minutes: 10}]
+      ingredients: ["fish:any", potato, "forage:onion", milk_bucket, bowl]
+      flavour: "The pot never quite empties, and neither does the story."
+      hint: "A creamy soup for anyone with a fish and a patient hook."
+    pike_pie:
+      name: "Pike Pie"
+      colour: "#A8956B"
+      family: fishing
+      base: pumpkin_pie
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: luck, minutes: 6}]
+      ingredients: ["fish:northern_pike", "wheat*2", "forage:onion"]
+      flavour: "All teeth going in, all comfort coming out."
+      hint: "A pie for a very particular catch from cold fresh water."
+    caviar_toast:
+      name: "Caviar Toast"
+      colour: "#3D4A55"
+      family: fishing
+      base: bread
+      nutrition: 12
+      saturation: 16.0
+      effects: [{type: luck, amplifier: 1, minutes: 5}]
+      rare: true
+      ingredients: ["fish:siberian_sturgeon", bread, "forage:samphire"]
+      flavour: "A little dark luxury for those who land the giants."
+      hint: "A rarity. It needs a catch from the coldest rivers."
+    sushi_bowl:
+      name: "Sushi Bowl"
+      colour: "#E8D9C0"
+      family: fishing
+      base: cooked_salmon
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: water_breathing, minutes: 8}]
+      ingredients: ["forage:wild_rice", "fish:any", dried_kelp, bowl]
+      flavour: "Rice, fish and the patience of the shallows."
+      hint: "A seaside bowl. The rice grows wild in swamps and rivers."
+    salt_baked_salmon:
+      name: "Salt-Baked Salmon"
+      colour: "#E48F72"
+      family: fishing
+      base: cooked_salmon
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: dolphins_grace, minutes: 5}]
+      ingredients: [salmon, "forage:samphire", "forage:wild_herbs"]
+      flavour: "Cracked out of its crust, steaming and a little smug."
+      hint: "Salmon with a tang of the tide line."
+    fish_tacos:
+      name: "Fish Tacos"
+      colour: "#E3C27A"
+      family: fishing
+      base: bread
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: speed, minutes: 6}]
+      ingredients: ["wheat*2", "fish:any", "forage:tomato", "forage:cabbage"]
+      flavour: "Eaten standing up, by the water, with both hands."
+      hint: "Quick food for a fisher in a hurry."
+    fish_and_chips:
+      name: "Fish and Chips"
+      colour: "#D8B66A"
+      family: fishing
+      base: baked_potato
+      nutrition: 8
+      saturation: 11.0
+      effects: [{type: dolphins_grace, minutes: 4}]
+      ingredients: ["fish:any", "potato*2"]
+      flavour: "Best eaten from the paper, best eaten hot."
+      hint: "A simple supper from the day's catch."
+    trail_mix:
+      name: "Trail Mix"
+      colour: "#8A5A3C"
+      family: travel
+      base: dried_kelp
+      nutrition: 6
+      saturation: 9.0
+      effects: [{type: jump_boost, minutes: 5}]
+      ingredients: [sweet_berries, pumpkin_seeds, honey_bottle, cocoa_beans]
+      flavour: "A handful at every ridge. It adds up."
+      hint: "A snack for the road. Berries grow in taiga."
+    travellers_sandwich:
+      name: "Traveller's Sandwich"
+      colour: "#D6B77C"
+      family: travel
+      base: bread
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: speed, minutes: 10}]
+      ingredients: ["bread*2", "meat:cooked", "forage:tomato", "forage:cabbage"]
+      flavour: "The road is longer after lunch, and somehow shorter."
+      hint: "A proper lunch for a long walk."
+    campfire_kebab:
+      name: "Campfire Kebab"
+      colour: "#B5683C"
+      family: travel
+      base: cooked_beef
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: absorption, minutes: 3}]
+      ingredients: ["cooked_beef*2", "forage:onion", "forage:chilli", stick]
+      flavour: "Charred outside, juicy in, and gone in three bites."
+      hint: "A camp supper with a bit of heat."
+    cactus_salsa:
+      name: "Cactus Salsa"
+      colour: "#9CB84A"
+      family: travel
+      base: beetroot_soup
+      nutrition: 8
+      saturation: 11.0
+      effects: [{type: fire_resistance, minutes: 5}]
+      ingredients: ["forage:tomato", "forage:onion", "forage:chilli", cactus, bowl]
+      flavour: "Sharp, bright and unreasonably cooling."
+      hint: "A desert dish. The cactus is the easy part."
+    sweetberry_toast:
+      name: "Sweetberry Toast"
+      colour: "#C8506A"
+      family: travel
+      base: bread
+      nutrition: 6
+      saturation: 9.0
+      effects: [{type: slow_falling, minutes: 5}]
+      ingredients: [bread, "sweet_berries*2", honey_bottle]
+      flavour: "Sticky fingers, light feet."
+      hint: "Sweet and sticky. Berries grow in cold forests."
+    hellfire_skewer:
+      name: "Hellfire Skewer"
+      colour: "#C9301E"
+      family: travel
+      base: cooked_porkchop
+      nutrition: 12
+      saturation: 16.0
+      effects: [{type: fire_resistance, amplifier: 1, minutes: 5}]
+      rare: true
+      ingredients: ["cooked_porkchop*2", "forage:chilli*2", stick]
+      flavour: "Cooked on the wrong side of the world, and proud of it."
+      hint: "A Nether rarity. The chillies grow in the heat there."
+    chorus_dumplings:
+      name: "Chorus Dumplings"
+      colour: "#B58CC8"
+      family: travel
+      base: bread
+      nutrition: 12
+      saturation: 16.0
+      effects: [{type: slow_falling, minutes: 6}, {type: jump_boost, amplifier: 1, minutes: 2}]
+      rare: true
+      ingredients: ["chorus_fruit*2", wheat, "forage:wild_herbs"]
+      flavour: "Light as air, and a little bit unreliable about gravity."
+      hint: "An End rarity. The fruit grows far from home."
+    farmers_plate:
+      name: "Farmer's Plate"
+      colour: "#D49A62"
+      family: farming
+      base: cooked_porkchop
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: regeneration, minutes: 0.25}]
+      ingredients: ["egg*2", cooked_porkchop, potato, "forage:tomato"]
+      flavour: "Everything on the plate came from within sight of the table."
+      hint: "A farmhouse breakfast with all the trimmings."
+    pumpkin_soup:
+      name: "Pumpkin Soup"
+      colour: "#E39A3C"
+      family: farming
+      base: pumpkin_pie
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: absorption, minutes: 5}]
+      ingredients: [pumpkin, "forage:onion", milk_bucket, bowl]
+      flavour: "Orange, warm and quietly sustaining."
+      hint: "A harvest soup for autumn."
+    tomato_soup:
+      name: "Tomato Soup"
+      colour: "#C9402E"
+      family: farming
+      base: mushroom_stew
+      nutrition: 8
+      saturation: 11.0
+      effects: [{type: saturation, minutes: 0.25}]
+      ingredients: ["forage:tomato*2", "forage:wild_herbs", bowl]
+      flavour: "A red cup of summer in a cold week."
+      hint: "A simple soup. Tomatoes grow wild on warm grass."
+    cabbage_rolls:
+      name: "Cabbage Rolls"
+      colour: "#9CC078"
+      family: farming
+      base: cooked_beef
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: absorption, minutes: 4}]
+      ingredients: ["forage:cabbage*2", "forage:wild_rice", cooked_beef]
+      flavour: "Wrapped carefully, opened gladly."
+      hint: "A tidy supper. Cabbage grows wild on windy slopes."
+    fried_rice:
+      name: "Fried Rice"
+      colour: "#E3CC8A"
+      family: farming
+      base: baked_potato
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: saturation, minutes: 0.25}]
+      ingredients: ["forage:wild_rice", egg, "forage:onion", "forage:wild_herbs"]
+      flavour: "Yesterday's rice, made into today's best meal."
+      hint: "Rice with whatever is to hand."
+    vegetable_soup:
+      name: "Vegetable Soup"
+      colour: "#C98A4A"
+      family: farming
+      base: beetroot_soup
+      nutrition: 10
+      saturation: 14.0
+      effects: [{type: health_boost, minutes: 5}]
+      ingredients: [carrot, potato, "forage:onion", "forage:cabbage", bowl]
+      flavour: "A little of everything the garden gave."
+      hint: "A plain soup that does more than it looks."
+    honey_bun:
+      name: "Honey Bun"
+      colour: "#D9A441"
+      family: farming
+      base: bread
+      nutrition: 6
+      saturation: 9.0
+      effects: [{type: speed, minutes: 3}]
+      ingredients: ["wheat*2", honey_bottle, sugar]
+      flavour: "Sticky, warm and gone before the tray cooled."
+      hint: "A sweet bun from the bakehouse."
+    truffle_risotto:
+      name: "Truffle Risotto"
+      colour: "#5A453A"
+      family: farming
+      base: cooked_beef
+      nutrition: 12
+      saturation: 16.0
+      effects: [{type: luck, amplifier: 1, minutes: 5}]
+      rare: true
+      ingredients: ["forage:truffle", "forage:wild_rice", "forage:onion", milk_bucket, bowl]
+      flavour: "Slow, creamy, and worth every shaving."
+      hint: "A rarity. The truffle hides in the oldest forests."
+    harvest_feast:
+      name: "Harvest Feast"
+      colour: "#D98A2E"
+      family: farming
+      base: pumpkin_pie
+      nutrition: 12
+      saturation: 16.0
+      effects: [{type: hero_of_the_village, minutes: 5}]
+      rare: true
+      ingredients: [pumpkin, wheat, egg, honey_bottle, "meat:cooked", "forage:wild_herbs"]
+      flavour: "Everything the year gave, on one table, for everyone."
+      hint: "A feast for a good year. It wants a bit of everything."
