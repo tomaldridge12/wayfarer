@@ -93,6 +93,11 @@ export interface ObjectiveRules {
 export interface EventRow { id: string; name: string; blurb: string; goal: string; target: number }
 export interface ShopRules { cosmetics: Record<string, number>; supplies: Record<string, number>; extraReroll: number; templateCopy: number; wayfinder: number; kindling: number; enchantPerLevel: number }
 export interface EnchantingRules { reshuffle: boolean; levels: number; trigger: string }
+export interface ForageRow { id: string; name: string; colour: string; description: string[]; flavour: string; biomes: string[]; plants: string[]; chance: number; pity: number; icon: string }
+export interface DishRow {
+  id: string; name: string; colour: string; family: string; base: string; nutrition: number; saturation: number;
+  effects: { type: string; amplifier: number; seconds: number }[]; rare: boolean; ingredients: string[]; flavour: string; hint: string; icon: string;
+}
 export interface ComfortsRules { leather: boolean; flesh: number; leatherOut: number; keep: boolean; hotbar: boolean; armour: boolean; offhand: boolean }
 export interface ExplorationRules { range: number; cooldown: number; structurePoints: number; biomePoints: number; chartPoints: number; unfoundMultiplier: number; rare: Record<string, number>; structures: Record<string, string>; kindlingSeconds: number }
 
@@ -135,6 +140,8 @@ export interface Config {
   exploration: ExplorationRules | null;
   enchanting: EnchantingRules | null;
   comforts: ComfortsRules | null;
+  forage: ForageRow[];
+  dishes: DishRow[];
 }
 
 function read(files: GuideFiles, dir: string, file: string): any {
@@ -340,6 +347,7 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   const explorationYml = read(files, dir, 'exploration.yml');
   const enchantingYml = read(files, dir, 'enchanting.yml');
   const comfortsYml = read(files, dir, 'comforts.yml');
+  const foodsYml = read(files, dir, 'foods.yml');
   const curios: CurioRow[] = entries(curiosYml.curios).map(([id, c]) => ({
     id, name: c.name ?? title(id), colour: c.colour ?? '#e8d9a8', description: asList(c.description), flavour: c.flavour ?? '',
     tool: TOOL_EFFECTS.includes(c.effect), cooldown: c.cooldown ?? 0, icon: `wayfarer:curio/${id}`,
@@ -428,6 +436,18 @@ export function readConfig(dir: string, files: GuideFiles): Config {
     reshuffle: reshuffle.enabled ?? true, levels: reshuffle.levels ?? 1, trigger: String(reshuffle.trigger ?? 'lapis_lazuli'),
   } : null;
 
+  const forageDefaults = { chance: foodsYml.forage?.chance ?? 0.04, pity: foodsYml.forage?.pity ?? 40 };
+  const forage: ForageRow[] = entries(foodsYml.forage?.ingredients).map(([id, f]) => ({
+    id, name: f.name ?? title(id), colour: f.colour ?? '#e8d9a8', description: asList(f.description), flavour: f.flavour ?? '',
+    biomes: asList(f.biomes), plants: asList(f.plants), chance: f.chance ?? forageDefaults.chance, pity: f.pity ?? forageDefaults.pity,
+    icon: `wayfarer:forage/${id}`,
+  }));
+  const dishes: DishRow[] = entries(foodsYml.dishes?.items).map(([id, d]) => ({
+    id, name: d.name ?? title(id), colour: d.colour ?? '#e8d9a8', family: d.family ?? 'other', base: d.base ?? '',
+    nutrition: d.nutrition ?? 0, saturation: d.saturation ?? 0,
+    effects: (Array.isArray(d.effects) ? d.effects : []).map((e: any) => ({ type: String(e.type), amplifier: e.amplifier ?? 0, seconds: Math.round((e.minutes ?? 0) * 60) })),
+    rare: !!d.rare, ingredients: asList(d.ingredients), flavour: d.flavour ?? '', hint: d.hint ?? '', icon: `wayfarer:dish/${id}`,
+  }));
   const lf = comfortsYml['leather-from-flesh'];
   const kd = comfortsYml['keep-on-death'];
   const comforts: ComfortsRules | null = lf || kd ? {
@@ -438,7 +458,7 @@ export function readConfig(dir: string, files: GuideFiles): Config {
   return {
     curios, gear, supplies, collections, fish, fishChance: almanac.chance ?? 0.5, treasures, treasureRules, feats, cosmetics,
     hatAbilities, tableCosmetics, trackerMax: objectivesYml.tracker?.max ?? 5,
-    objectives, events, eventRotation: asList(objectivesYml.events?.rotation), shop, exploration, enchanting, comforts,
+    objectives, events, eventRotation: asList(objectivesYml.events?.rotation), shop, exploration, enchanting, comforts, forage, dishes,
     alloys, alloyRules, marks, books,
     families, allMobs: banners.counting?.['all-mobs'] ?? null,
     banners: bannerRows, heads, relics,

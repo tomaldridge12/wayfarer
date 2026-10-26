@@ -1,0 +1,30 @@
+---
+// The forage ingredients: where each is found, what to break, how often. From foods.yml.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { pct, title } from '../data/text';
+
+const forage = guide().config.forage;
+
+/** "#minecraft:is_forest" is "any forest"; "terralith:alpine_grove" and "plains" read as names. */
+function biome(entry: string): string {
+  if (entry.startsWith('#')) {
+    const tag = entry.slice(1).replace(/^minecraft:/, '').replace(/^is_/, '');
+    return `any ${tag.replace(/_/g, ' ')}`;
+  }
+  return title(entry.replace(/^minecraft:/, '').replace(/^[a-z0-9_.-]+:/, ''));
+}
+---
+<div class="grid">
+  {forage.map((f) => (
+    <ItemCard item={f.icon} name={f.name} colour={f.colour} lines={[
+      { text: `Found in: ${f.biomes.map(biome).join(', ')}`, colour: 'var(--mc-white)' },
+      { text: `Break: ${f.plants.map((p) => title(p).toLowerCase()).join(', ')}`, colour: 'var(--mc-white)' },
+      { text: `${pct(f.chance)} a break, certain after ${f.pity} without`, colour: '#b5ad9c' },
+      { text: f.flavour, colour: '#9a9080' },
+    ]} />
+  ))}
+</div>
+<style>
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1rem 0 1.6rem; }
+</style>

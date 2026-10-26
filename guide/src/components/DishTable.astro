@@ -1,0 +1,43 @@
+---
+// The dishes, by family: what goes in, what you get, the effect and how long it lasts. From foods.yml.
+import ItemCard from './ItemCard.astro';
+import { guide } from '../data/repo';
+import { num, title } from '../data/text';
+
+const config = guide().config;
+const families = [['mining', 'For the mine'], ['fishing', 'For the water'], ['travel', 'For the road'], ['farming', 'For the table']];
+const levels = ['', ' II', ' III', ' IV', ' V'];
+
+function ingredient(text: string): string {
+  const [what, count] = text.split('*');
+  const times = count ? ` ×${count}` : '';
+  if (what === 'meat:cooked') return `any cooked meat${times}`;
+  if (what.startsWith('forage:')) return `${title(what.slice(7))}${times}`;
+  if (what === 'fish:any') return `any fish${times}`;
+  if (what === 'fish:fresh') return `a freshwater fish${times}`;
+  if (what === 'fish:salt') return `a saltwater fish${times}`;
+  if (what.startsWith('fish:')) return `a ${title(what.slice(5))}${times}`;
+  return `${title(what)}${times}`;
+}
+function minutes(seconds: number): string {
+  return seconds < 60 ? `${seconds}s` : `${+(seconds / 60).toFixed(1)} min`;
+}
+---
+{families.map(([family, heading]) => (
+  <>
+    <h3>{heading}</h3>
+    <div class="grid">
+      {config.dishes.filter((d) => d.family === family).map((d) => (
+        <ItemCard item={d.icon} name={d.name} colour={d.colour} lines={[
+          { text: `${d.effects.map((e) => `${title(e.type)}${levels[Math.min(e.amplifier, 4)]} · ${minutes(e.seconds)}`).join(', ')}${d.rare ? ' · Rare' : ''}`, colour: d.colour },
+          { text: `Made from: ${d.ingredients.map(ingredient).join(', ')}`, colour: 'var(--mc-white)' },
+          { text: `Fills ${num(d.nutrition)} hunger, ${num(d.saturation)} saturation`, colour: '#b5ad9c' },
+          { text: d.flavour, colour: '#9a9080' },
+        ]} />
+      ))}
+    </div>
+  </>
+))}
+<style>
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin: 1rem 0 1.6rem; }
+</style>

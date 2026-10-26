@@ -1,0 +1,31 @@
+import ForageTable from '../components/ForageTable.astro';
+import DishTable from '../components/DishTable.astro';
+import CollectionMilestones from '../components/CollectionMilestones.astro';
+
+Vanilla food is solved by one stack of cooked beef. Wayfarer gives cooking a reason to go out into the world: ingredients vanilla doesn't have, found in particular places, and dishes made from them that are better than anything you could buy with hunger alone.
+
+## Foraging
+
+Break a natural plant (grass, ferns, kelp, cactus and the like) in the right biome and you may find an ingredient: wild rice in the swamp, tomatoes on warm grass, chillies where it's hot. Each ingredient rolls on its own, so one patch of grass can give a tomato and an onion at once. Run a long streak of breaks without finding one and the next is certain.
+
+Forage isn't something you can plant, eat or craft with by accident. It's an ingredient, nothing more. Pistons, fire and creative mode find nothing, and the first time you find each kind, you're told.
+
+<ForageTable />
+
+## Dishes
+
+A dish is a food with its own look and a short, themed effect. You make one at a crafting table from ingredients you can see in the recipe book: a recipe appears the first time you hold any one of its ingredients. Fish dishes take any Wayfarer fish of the right water, or a vanilla fish when they say "any fish"; a few signature dishes want one named species.
+
+Dishes can be eaten at any time, even when you're full. Eating the same dish again refreshes its effect, and the effects of different dishes can overlap, so you can plan a meal before a long dig. They never help you fight: they're comfort, not power.
+
+<DishTable />
+
+## The Cookbook
+
+The Journal's Cookbook lists every dish. One counts the first time you eat it, and a dish you haven't eaten yet shows as "???" with a hint about where to look. Milestones pay reward loot as you fill it.
+
+<CollectionMilestones only={['cookbook']} />
+
+## The Harvest Feast
+
+Some weekends the wild gives freely: during the **Harvest Feast**, forage turns up twice as often, and the whole server works towards a goal of eating dishes together.
