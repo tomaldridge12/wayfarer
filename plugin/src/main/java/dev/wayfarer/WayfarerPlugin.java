@@ -55,12 +55,12 @@ public final class WayfarerPlugin extends JavaPlugin implements Core {
         modules.register(new BossesModule(this));
         modules.register(new dev.wayfarer.marks.MarksModule(this));
         modules.register(new dev.wayfarer.curios.CuriosModule(this));
+        modules.register(new dev.wayfarer.foods.FoodsModule(this)); // before collections, whose Cookbook lists its dishes
         modules.register(new dev.wayfarer.collections.CollectionsModule(this)); // after every module whose items or ladders it lists
         modules.register(new dev.wayfarer.objectives.ObjectivesModule(this)); // after collections, whose Journal it adds pages to
         modules.register(new dev.wayfarer.exploration.ExplorationModule(this));
         modules.register(new dev.wayfarer.enchanting.EnchantingModule(this));
         modules.register(new dev.wayfarer.comforts.ComfortsModule(this));
-        modules.register(new dev.wayfarer.foods.FoodsModule(this));
         modules.enableAll(this);
         dev.wayfarer.core.ItemBrowser itemBrowser = new dev.wayfarer.core.ItemBrowser(catalogue, getLogger());
         getServer().getPluginManager().registerEvents(itemBrowser, this);

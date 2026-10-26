@@ -283,6 +283,19 @@ collections:
     hints:
       curio: "A curio. Feats, objectives and collections pay them."
 
+  # The Cookbook: every dish, found the first time you eat it. Dishes, their families (the tabs) and their hints come from
+  # foods.yml; with the foods module off the page is empty.
+  cookbook:
+    title: "Cookbook"
+    colour: "#D98A2E"
+    blurb: "Every dish Wayfarer's kitchens know. Eat one to write it in."
+    unit: "dish|dishes"
+    milestones:
+      "5": [supply:seed_bundle]
+      "25%": ["dish:truffle_risotto*3"]
+      "50%": ["dish:harvest_feast*3"]
+      "100%": ["enchant:excellentenchants:saturation_2"]
+
   # The Almanac: Wayfarer's fish. When you catch a vanilla fish, with this chance it is instead one of the species that
   # could bite there and then, picked by rarity (bait doubles rare and legendary). Junk and treasure catches never change.
   # Each species: name, rarity, water (fresh, salt, brackish, any), temp (cold, cool, temperate, warm, hot; none for any),

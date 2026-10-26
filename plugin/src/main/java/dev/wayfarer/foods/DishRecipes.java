@@ -30,7 +30,7 @@ import org.bukkit.inventory.recipe.CraftingBookCategory;
  * Wayfarer item stands in for a plain one). Main thread.
  */
 final class DishRecipes implements Listener {
-    private static final String PREFIX = "dish_";
+    static final String PREFIX = "dish_";
     private static final List<Material> MEATS = List.of(Material.COOKED_BEEF, Material.COOKED_PORKCHOP, Material.COOKED_CHICKEN,
             Material.COOKED_MUTTON, Material.COOKED_RABBIT);
     private static final List<Material> ANY_FISH = List.of(Material.COD, Material.SALMON, Material.TROPICAL_FISH, Material.PUFFERFISH);

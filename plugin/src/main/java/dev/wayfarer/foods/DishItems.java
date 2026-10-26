@@ -36,7 +36,19 @@ final class DishItems {
     }
 
     Optional<ItemStack> make(String id) {
-        return dishes.get().stream().filter(d -> d.id().equals(id)).findFirst().map(this::build);
+        return make(id, 1);
+    }
+
+    Optional<ItemStack> make(String id, int amount) {
+        return dishes.get().stream().filter(d -> d.id().equals(id)).findFirst().map(d -> {
+            ItemStack stack = build(d);
+            stack.setAmount(Math.max(1, Math.min(amount, stack.getMaxStackSize())));
+            return stack;
+        });
+    }
+
+    Optional<DishDefinition> definition(String id) {
+        return dishes.get().stream().filter(d -> d.id().equals(id)).findFirst();
     }
 
     ItemStack build(DishDefinition d) {

@@ -74,7 +74,7 @@ public final class CollectionsModule implements Module {
         plugin.getServer().getOnlinePlayers().forEach(p -> store.load(p.getUniqueId()));
         saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin, store::flush, 1200, 1200);
         sources = new CollectionSources(plugin.getServer(), core.itemIds(), core.itemMakers(), () -> fish.species(),
-                () -> treasureState.treasures());
+                () -> treasureState.treasures(), () -> core.services().get(dev.wayfarer.core.DishGuide.class));
         treasures = new Treasures(core.itemTags(), () -> treasureState, store, core.progression(),
                 () -> core.services().get(dev.wayfarer.core.CurioBoosts.class),
                 () -> core.services().get(dev.wayfarer.core.Wayfinding.class), core.logger());

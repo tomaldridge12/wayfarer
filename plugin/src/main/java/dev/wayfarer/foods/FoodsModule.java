@@ -1,6 +1,7 @@
 package dev.wayfarer.foods;
 
 import dev.wayfarer.core.Core;
+import dev.wayfarer.core.DishGuide;
 import dev.wayfarer.core.FishWaters;
 import dev.wayfarer.core.ItemCatalogue;
 import dev.wayfarer.core.Module;
@@ -12,6 +13,7 @@ import io.papermc.paper.registry.tag.TagKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -35,6 +37,7 @@ public final class FoodsModule implements Module {
     private DishRecipes recipes;
     private PlayerStore<ForageData> store;
     private BukkitTask saveTask;
+    private BukkitTask discoveryTask;
 
     public FoodsModule(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -67,12 +70,32 @@ public final class FoodsModule implements Module {
         saveTask = plugin.getServer().getScheduler().runTaskTimer(plugin, store::flush, 1200, 1200);
         listen(new RecipeGuard(i -> items.idOf(i).isPresent() || dishItems.idOf(i).isPresent()));
         listen(recipes);
+        DishDiscoveryListener discovery = new DishDiscoveryListener(() -> dishes, core.itemTags());
+        listen(discovery);
+        discoveryTask = plugin.getServer().getScheduler().runTaskTimer(plugin,
+                () -> plugin.getServer().getOnlinePlayers().forEach(discovery::scan), 200, 200);
         listen(new Forage(core, () -> forage, items, store));
         listen(new Joins());
         core.itemMakers().register(id(), ForageItems.KIND, items::make);
         core.itemMakers().register(id(), DishItems.KIND, dishItems::make);
         core.itemIds().register(id(), ForageItems.KIND, () -> forage.stream().map(ForageDefinition::id).toList());
         core.itemIds().register(id(), DishItems.KIND, () -> dishes.stream().map(DishDefinition::id).toList());
+        core.services().register(id(), DishGuide.class, dish -> dishes.stream().filter(d -> d.id().equals(dish)).findFirst()
+                .map(d -> new DishGuide.Info(d.family(), d.hint())));
+        // Collections is not up yet, so a named species cannot be checked now; say so once every module has started.
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            List<String> known = core.itemIds().ids("fish");
+            for (DishDefinition d : dishes) {
+                for (DishDefinition.Ingredient ing : d.recipe().ingredients()) {
+                    if (ing.kind() == DishDefinition.Kind.FISH && !Set.of("any", "fresh", "salt").contains(ing.what())
+                            && !known.contains(ing.what())) {
+                        core.logger().warning("[foods] dishes." + d.id() + " asks for fish '" + ing.what() + "', which no species has; "
+                                + "it can never be crafted");
+                    }
+                }
+            }
+        });
+        core.progression().registerRewardType(id(), DishItems.KIND, new DishReward(dishItems));
         core.catalogue().add(id(), "forage", Component.text("Forage", NamedTextColor.WHITE), Material.SWEET_BERRIES,
                 ItemCatalogue.madeFrom(core.itemIds(), core.itemMakers(), ForageItems.KIND));
         core.catalogue().add(id(), "dishes", Component.text("Dishes", NamedTextColor.WHITE), Material.MUSHROOM_STEW,
@@ -89,6 +112,9 @@ public final class FoodsModule implements Module {
         }
         if (store != null) {
             store.close();
+        }
+        if (discoveryTask != null) {
+            discoveryTask.cancel();
         }
         if (recipes != null) {
             recipes.unregister();
@@ -145,7 +171,7 @@ public final class FoodsModule implements Module {
 
         @Override
         public boolean isFishSpecies(String id) {
-            return core.itemIds().ids("fish").contains(id);
+            return true; // checked once every module is up: collections, which owns the species, starts after foods
         }
     }
 

@@ -40,13 +40,17 @@ final class CollectionSources {
 
     private final java.util.function.Supplier<List<TreasureDefinition>> treasures;
 
+    private final java.util.function.Supplier<java.util.Optional<dev.wayfarer.core.DishGuide>> dishes;
+
     CollectionSources(Server server, ItemIds ids, ItemMakers<ItemStack> makers, java.util.function.Supplier<List<FishSpecies>> fish,
-            java.util.function.Supplier<List<TreasureDefinition>> treasures) {
+            java.util.function.Supplier<List<TreasureDefinition>> treasures,
+            java.util.function.Supplier<java.util.Optional<dev.wayfarer.core.DishGuide>> dishes) {
         this.server = server;
         this.ids = ids;
         this.makers = makers;
         this.fish = fish;
         this.treasures = treasures;
+        this.dishes = dishes;
     }
 
     /** Entries for a built-in collection by id; empty for one this class does not know (other tickets add theirs). */
@@ -58,6 +62,7 @@ final class CollectionSources {
             case "curios" -> curios(def);
             case "almanac" -> almanac(def);
             case "treasures" -> treasures(def);
+            case "cookbook" -> cookbook(def);
             default -> List.of();
         };
     }
@@ -216,6 +221,26 @@ final class CollectionSources {
                                 default -> "Coins";
                             }, "found"));
                 }
+            }
+        }
+        return out;
+    }
+
+    /** One entry per dish, on a tab per family; a dish counts once it has been eaten. Hints come from the foods module. */
+    private List<CollectionEntry> cookbook(CollectionDefinition def) {
+        List<CollectionEntry> out = new ArrayList<>();
+        java.util.Optional<dev.wayfarer.core.DishGuide> guide = dishes.get();
+        for (String family : List.of("mining", "fishing", "travel", "farming", "other")) {
+            for (String id : ids.ids("dish")) {
+                dev.wayfarer.core.DishGuide.Info info = guide.flatMap(g -> g.dish(id)).orElse(null);
+                if (info == null || !info.family().equals(family)) {
+                    continue;
+                }
+                ItemStack item = makers.make("dish:" + id).orElse(null);
+                String name = item == null || !item.hasData(DataComponentTypes.ITEM_NAME) ? CollectionRules.title(id)
+                        : PlainTextComponentSerializer.plainText().serialize(item.getData(DataComponentTypes.ITEM_NAME));
+                out.add(new CollectionEntry(id, Activity.EAT + ":" + ItemIds.NAMESPACE + ":dish/" + id, "#" + name, "dish:" + id,
+                        info.hint().isBlank() ? "A dish." : info.hint(), CollectionRules.title(family), "eaten"));
             }
         }
         return out;
