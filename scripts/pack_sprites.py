@@ -646,3 +646,170 @@ sprite("gear/tidecaller", ROD, ROD_PALETTE)
 # Cast: the line and bobber are out in the water.
 sprite("gear/tidecaller_cast", [r.replace("s", ".").replace("R", ".")[:14] + (".." if i in (11, 12) else r[14:])
                                 for i, r in enumerate(ROD)], ROD_PALETTE)
+
+
+# --- foods: forage and the dishes Farmer's Delight has nothing for ---
+
+def food(name, rows, palette):
+    """Like sprite(), for hand-written food art: rows are centred across the top and padded on the right with '.'."""
+    width = max(len(r) for r in rows)
+    left = (16 - width) // 2
+    padded = ["." * left + r + "." * (16 - left - len(r)) for r in rows]
+    top = (16 - len(padded)) // 2
+    padded = ["." * 16] * top + padded + ["." * 16] * (16 - top - len(padded))
+    sprite(name, padded, palette)
+
+
+food("forage/wild_herbs", [
+    "....oo.......",
+    "...ogGo..oo..",
+    ".oo.oGgoogGo.",
+    "ogGooGGoGGgo.",
+    "oGgGoGgGoGGo.",
+    ".oGGgGGGGgo..",
+    "..oGGGGGGo...",
+    "...ooGGGoo...",
+    "....oBBBo....",
+    "....oBbBo....",
+    ".....oBo.....",
+], {"g": 0xA6D27F, "G": 0x5E9C45, "B": 0xC9A15F, "b": 0x8F6B3A})
+
+food("forage/chilli", [
+    "........oo...",
+    ".......oGGo..",
+    "......oGGo...",
+    ".....orrrro..",
+    "....orRRRrro.",
+    "...orRRrrRrro",
+    "...orRrro.orr",
+    "..orRrro...oo",
+    "..orrro......",
+    "..orro.......",
+    "..oro........",
+    "...oo........",
+], {"r": 0xC93A22, "R": 0xEE6A52, "G": 0x3E8E41})
+
+food("forage/samphire", [
+    "o....o...o...",
+    "ogo..ogo.ogo.",
+    "ogo..ogo.ogo.",
+    "oGo.oGGo.oGo.",
+    "oGooGgGooGGo.",
+    ".oGoGGGoGGo..",
+    ".oGGGgGGGo...",
+    "..oGGGGGo....",
+    "...ooGGoo....",
+    ".....oo......",
+], {"g": 0x9ADBB0, "G": 0x4FA38A})
+
+food("forage/mountain_garlic", [
+    ".....oo.....",
+    ".....oWo....",
+    "....oWWo....",
+    "...oWWWWo...",
+    "..oWWwWWWo..",
+    ".oWWwWWwWWo.",
+    ".oWwWWWWwWo.",
+    ".oWWWWpWWWo.",
+    ".oWWwWWwWWo.",
+    "..oWWWWWWo..",
+    "...ooWWoo...",
+    ".....oo.....",
+], {"W": 0xEDE6D0, "w": 0xC4BAA0, "p": 0xB89BC4})
+
+food("forage/truffle", [
+    "....oooooo....",
+    "..ooDDddDDoo..",
+    ".oDDdDDDdDDDo.",
+    ".oDdDDhDDDdDo.",
+    "oDDDDdDDdDDDDo",
+    "oDhDDDDDDDhDDo",
+    "oDDDdDDdDDDDDo",
+    ".oDDDDDDDdDDo.",
+    "..ooDDDDDDoo..",
+    "....oooooo....",
+], {"D": 0x56443B, "d": 0x33261F, "h": 0x8A7263})
+
+food("forage/peppercorn", [
+    ".....oo.....",
+    "....oGGo....",
+    "...oGGo.....",
+    ".oo.oGo.oo..",
+    "oPPoGGooPPo.",
+    "oPhPooGoPhPo",
+    "oPPPoGoPPPo.",
+    ".ooo.oGo.ooo",
+    "....oGGoo...",
+    "...oPPPo....",
+    "..oPhPPPo...",
+    "..oPPPPPo...",
+    "...ooooo....",
+], {"P": 0x4A3C38, "h": 0x8E7E76, "G": 0x4F8F43})
+
+food("dish/caviar_toast", [
+    "oooooooooooo",
+    "oCTTTTTTTTCo",
+    "oTTkkTkkTTTo",
+    "oTkwkkkwkTTo",
+    "oTkkkTkkkgTo",
+    "oTTkTkkkTggo",
+    "oTkkkkTkTgTo",
+    "oTTkTkkkTTTo",
+    "oCTTTTTTTTCo",
+    "oooooooooooo",
+], {"C": 0xB07A3F, "T": 0xE8CD94, "k": 0x2B3440, "w": 0x7C8EA3, "g": 0x5FA047})
+
+food("dish/trail_mix", [
+    "......oo......",
+    ".....oBBo.....",
+    "....oBBbBo....",
+    ".....oRRo.....",
+    "....oBBBBo....",
+    "...oBBbBBBo...",
+    "..oBBBBBBbBo..",
+    "..oBbBBRBBBo..",
+    "..oBBSBBBSBo..",
+    "...oBBBBBBo...",
+    "....oooooo....",
+], {"B": 0xA8794A, "b": 0x7F5632, "R": 0xC8506A, "S": 0xE8D7A0})
+
+food("dish/sweetberry_toast", [
+    "oooooooooooo",
+    "oCTTTTTTTTCo",
+    "oTHHHHHHHHTo",
+    "oTHrHHrHHHTo",
+    "oTHHrHHHrHTo",
+    "oTHHHhHHHHTo",
+    "oTHrHHrHhHTo",
+    "oTHHHHHHHHTo",
+    "oCTTTTTTTTCo",
+    "oooooooooooo",
+], {"C": 0xB07A3F, "T": 0xE8CD94, "H": 0xE0A83A, "h": 0xF2D27A, "r": 0xC83A55})
+
+food("dish/honey_bun", [
+    "....oooooo....",
+    "..ooBBBBBBoo..",
+    ".oBBbBBBBBbBo.",
+    "oBBBHHHHHBBBBo",
+    "oBbHHhHHHHhBBo",
+    "oBBBHHHHHHBBBo",
+    "oBBbBHHHHBbBBo",
+    ".oBBBBBBBBBBo.",
+    "..ooBBbBBBoo..",
+    "....oooooo....",
+], {"B": 0xC98A4A, "b": 0x9E6733, "H": 0xF0B83C, "h": 0xFAD878})
+
+food("dish/fish_and_chips", [
+    "..o.o.o.o.......",
+    ".oYoYoYoYo......",
+    ".oYoYoYoYo..oo..",
+    ".oYYYYYYYoooFFo.",
+    "..ooooooooFFFFo.",
+    "...ooooFFFFFFo..",
+    "..oFFFFFFfFFo...",
+    ".oFFeoFFFFFoo...",
+    "oFFoFFFFfFFFFo..",
+    ".oFFFFFFFFFFo...",
+    "..ooFFFFFFoo....",
+    "....oooooo......",
+], {"Y": 0xE8B94A, "F": 0xD8935A, "f": 0xA8683A, "e": 0x2B2420})

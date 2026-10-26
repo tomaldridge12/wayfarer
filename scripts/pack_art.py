@@ -520,6 +520,80 @@ def cosmetic_credits():
     return sorted(f"{TEX}/item/{n}.png" for n in pack_models.MODELS)
 
 
+
+# Farmer's Delight (vectorwing, MIT): icons that fit a dish or forage item as they are, and some recoloured. Fetched
+# flat into a folder from its assets/farmersdelight/textures/item and copied in under Wayfarer's names.
+FD_ITEMS = {  # target under textures/item -> Farmer's Delight file name
+    "forage/tomato": "tomato", "forage/onion": "onion", "forage/cabbage": "cabbage", "forage/wild_rice": "rice_panicle",
+    "dish/miners_stew": "beef_stew", "dish/delvers_pasty": "mutton_wrap", "dish/fishers_chowder": "fish_stew",
+    "dish/pike_pie": "shepherds_pie", "dish/sushi_bowl": "salmon_roll", "dish/salt_baked_salmon": "grilled_salmon",
+    "dish/fish_tacos": "cod_roll", "dish/travellers_sandwich": "chicken_sandwich", "dish/campfire_kebab": "barbecue_stick",
+    "dish/cactus_salsa": "tomato_sauce", "dish/farmers_plate": "bacon_and_eggs", "dish/pumpkin_soup": "pumpkin_soup",
+    "dish/cabbage_rolls": "cabbage_rolls", "dish/fried_rice": "fried_rice", "dish/vegetable_soup": "vegetable_soup",
+    "dish/truffle_risotto": "mushroom_rice", "dish/harvest_feast": "stuffed_pumpkin",
+}
+# (Farmer's Delight file, target, hue shift in degrees): the original is kept under source/ and credited too.
+FD_RECOLOURED = [("apple_pie", "dish/glowberry_tart", 20), ("beef_stew", "dish/smiths_chilli", -18),
+                 ("barbecue_stick", "dish/hellfire_skewer", 10), ("dumplings", "dish/chorus_dumplings", 235),
+                 ("pumpkin_soup", "dish/tomato_soup", -28)]
+
+
+def import_foods(src):
+    """Copies the Farmer's Delight icons listed above, fetched flat into src, into the pack."""
+    import shutil
+    for target, name in FD_ITEMS.items():
+        os.makedirs(os.path.dirname(os.path.join(ROOT, f"{TEX}/item/{target}.png")), exist_ok=True)
+        shutil.copyfile(os.path.join(src, f"{name}.png"), os.path.join(ROOT, f"{TEX}/item/{target}.png"))
+        print("imported", target)
+    os.makedirs(os.path.join(ROOT, f"{TEX}/item/source"), exist_ok=True)
+    for name in sorted({n for n, _, _ in FD_RECOLOURED}):
+        shutil.copyfile(os.path.join(src, f"{name}.png"), os.path.join(ROOT, f"{TEX}/item/source/fd_{name}.png"))
+        print("imported source/fd_" + name)
+
+
+def food_models():
+    """Every model name the foods module uses that is not drawn in pack_sprites: Farmer's Delight's, as is and recoloured."""
+    return sorted(set(FD_ITEMS) | {t for _, t, _ in FD_RECOLOURED})
+
+
+def generate_foods():
+    for name, target, shift in FD_RECOLOURED:
+        write(f"{TEX}/item/{target}.png", png_pixels(hue_shift(read(f"{TEX}/item/source/fd_{name}.png"), shift)))
+    for name in food_models():
+        write_json(f"assets/wayfarer/items/{name}.json", item_json(name))
+        write_json(f"assets/wayfarer/models/item/{name}.json", model_json(name))
+
+
+def food_credits():
+    """(Farmer's Delight's files as they are, its files recoloured) for CREDITS.md."""
+    as_is = [f"{TEX}/item/{t}.png" for t in FD_ITEMS]
+    as_is += [f"{TEX}/item/source/fd_{n}.png" for n in sorted({n for n, _, _ in FD_RECOLOURED})]
+    return sorted(as_is), [f"{TEX}/item/{t}.png" for _, t, _ in FD_RECOLOURED]
+
+
+FD_LICENCE = """MIT License
+
+Copyright (c) 2020 vectorwing
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE."""
+
+
 def write_credits():
     recoloured = [f"{TEX}/item/{a}_{s}.png" for a in RAMPS for s in SHAPES + ["spear_in_hand"]]
     recoloured += [f"{TEX}/entity/equipment/{layer}/{a}.png" for a in RAMPS for layer in ["humanoid", "humanoid_leggings"]]
@@ -534,10 +608,23 @@ def write_credits():
              "CC BY-NC-SA 4.0. Renamed to Wayfarer's names; otherwise unchanged.", ""]
     klei, klei_recoloured, oc_drawn = collection_credits()
     lines += [f"- `{f}`" for f in matcha_files() + klei]
+    fd_as_is, fd_recoloured = food_credits()
+    lines += ["", "## vectorwing (Farmer's Delight)", "",
+              "From Farmer's Delight by vectorwing, https://github.com/vectorwing/FarmersDelight (the 1.21 branch), whose",
+              "LICENSE file is the MIT licence below; the repository has no separate notice for its art. Renamed to",
+              "Wayfarer's names; otherwise unchanged. The licence text, as the MIT licence asks:", ""]
+    lines += ["    " + line if line else "" for line in FD_LICENCE.split("\n")]
+    lines += [""]
+    lines += [f"- `{f}`" for f in fd_as_is]
     lines += ["", "## Wayfarer, recoloured from Klei's Matcha Flavoured", "",
               "Klei's textures (above) recoloured by `scripts/pack_art.py`: bronze and adamant from Klei's steel; the",
               "Moss Heart from Klei's heart, the Pharaoh's Nazar and Ofuda Charm from Klei's nazar and ofuda. CC BY-NC-SA 4.0.", ""]
     lines += [f"- `{f}`" for f in recoloured + klei_recoloured]
+    lines += ["", "## Wayfarer, recoloured from vectorwing's Farmer's Delight", "",
+              "Farmer's Delight's textures (above, under `source/` where the original is not used as it is) recoloured by",
+              "`scripts/pack_art.py`: the Glowberry Tart, Smith's Chilli, Hellfire Skewer, Chorus Dumplings and Tomato Soup.",
+              "Distributed under the MIT licence above, and CC BY-NC-SA 4.0 as part of this pack.", ""]
+    lines += [f"- `{f}`" for f in fd_recoloured]
     lines += ["", "## Wayfarer", "", "Drawn for this pack by `scripts/pack_art.py` (sprites in `scripts/pack_sprites.py`).", ""]
     lines += [f"- `{f}`" for f in drawn + oc_drawn + cosmetic_credits()]
     write("CREDITS.md", ("\n".join(lines) + "\n").encode())
@@ -549,6 +636,15 @@ if __name__ == "__main__":
         sys.exit(0)
     if len(sys.argv) == 3 and sys.argv[1] == "--import-collections":
         import_collections(sys.argv[2])
+        sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "--import-foods":
+        import_foods(sys.argv[2])
+        sys.exit(0)
+    if len(sys.argv) == 3 and sys.argv[1] == "--food-sheet":
+        import pack_sprites
+        names = sorted({n for n in pack_sprites.SPRITES if n.startswith(("forage/", "dish/"))} | set(food_models()))
+        sheet([os.path.join(ROOT, f"{TEX}/item/{n}.png") for n in names], sys.argv[2], scale=8, columns=8)
+        print(len(names), "icons:", " ".join(names))
         sys.exit(0)
     if len(sys.argv) == 3 and sys.argv[1] == "--collection-sheets":
         out = sys.argv[2]
@@ -573,6 +669,7 @@ if __name__ == "__main__":
     generate()
     generate_marks()
     generate_collections()
+    generate_foods()
     generate_cosmetics()
     write_credits()
     sys.exit(0)

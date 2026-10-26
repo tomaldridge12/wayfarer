@@ -212,6 +212,61 @@ CC BY-NC-SA 4.0. Renamed to Wayfarer's names; otherwise unchanged.
 - `assets/wayfarer/textures/item/wayfinder_compass/30.png`
 - `assets/wayfarer/textures/item/wayfinder_compass/31.png`
 
+## vectorwing (Farmer's Delight)
+
+From Farmer's Delight by vectorwing, https://github.com/vectorwing/FarmersDelight (the 1.21 branch), whose
+LICENSE file is the MIT licence below; the repository has no separate notice for its art. Renamed to
+Wayfarer's names; otherwise unchanged. The licence text, as the MIT licence asks:
+
+    MIT License
+
+    Copyright (c) 2020 vectorwing
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+- `assets/wayfarer/textures/item/dish/cabbage_rolls.png`
+- `assets/wayfarer/textures/item/dish/cactus_salsa.png`
+- `assets/wayfarer/textures/item/dish/campfire_kebab.png`
+- `assets/wayfarer/textures/item/dish/delvers_pasty.png`
+- `assets/wayfarer/textures/item/dish/farmers_plate.png`
+- `assets/wayfarer/textures/item/dish/fish_tacos.png`
+- `assets/wayfarer/textures/item/dish/fishers_chowder.png`
+- `assets/wayfarer/textures/item/dish/fried_rice.png`
+- `assets/wayfarer/textures/item/dish/harvest_feast.png`
+- `assets/wayfarer/textures/item/dish/miners_stew.png`
+- `assets/wayfarer/textures/item/dish/pike_pie.png`
+- `assets/wayfarer/textures/item/dish/pumpkin_soup.png`
+- `assets/wayfarer/textures/item/dish/salt_baked_salmon.png`
+- `assets/wayfarer/textures/item/dish/sushi_bowl.png`
+- `assets/wayfarer/textures/item/dish/travellers_sandwich.png`
+- `assets/wayfarer/textures/item/dish/truffle_risotto.png`
+- `assets/wayfarer/textures/item/dish/vegetable_soup.png`
+- `assets/wayfarer/textures/item/forage/cabbage.png`
+- `assets/wayfarer/textures/item/forage/onion.png`
+- `assets/wayfarer/textures/item/forage/tomato.png`
+- `assets/wayfarer/textures/item/forage/wild_rice.png`
+- `assets/wayfarer/textures/item/source/fd_apple_pie.png`
+- `assets/wayfarer/textures/item/source/fd_barbecue_stick.png`
+- `assets/wayfarer/textures/item/source/fd_beef_stew.png`
+- `assets/wayfarer/textures/item/source/fd_dumplings.png`
+- `assets/wayfarer/textures/item/source/fd_pumpkin_soup.png`
+
 ## Wayfarer, recoloured from Klei's Matcha Flavoured
 
 Klei's textures (above) recoloured by `scripts/pack_art.py`: bronze and adamant from Klei's steel; the
@@ -252,6 +307,18 @@ Moss Heart from Klei's heart, the Pharaoh's Nazar and Ofuda Charm from Klei's na
 - `assets/wayfarer/textures/item/curio/pharaohs_nazar.png`
 - `assets/wayfarer/textures/item/curio/ofuda_charm.png`
 
+## Wayfarer, recoloured from vectorwing's Farmer's Delight
+
+Farmer's Delight's textures (above, under `source/` where the original is not used as it is) recoloured by
+`scripts/pack_art.py`: the Glowberry Tart, Smith's Chilli, Hellfire Skewer, Chorus Dumplings and Tomato Soup.
+Distributed under the MIT licence above, and CC BY-NC-SA 4.0 as part of this pack.
+
+- `assets/wayfarer/textures/item/dish/glowberry_tart.png`
+- `assets/wayfarer/textures/item/dish/smiths_chilli.png`
+- `assets/wayfarer/textures/item/dish/hellfire_skewer.png`
+- `assets/wayfarer/textures/item/dish/chorus_dumplings.png`
+- `assets/wayfarer/textures/item/dish/tomato_soup.png`
+
 ## Wayfarer
 
 Drawn for this pack by `scripts/pack_art.py` (sprites in `scripts/pack_sprites.py`).
@@ -287,6 +354,17 @@ Drawn for this pack by `scripts/pack_art.py` (sprites in `scripts/pack_sprites.p
 - `assets/wayfarer/textures/item/curio/reed_pipe.png`
 - `assets/wayfarer/textures/item/curio/stormglass.png`
 - `assets/wayfarer/textures/item/curio/strider_sole.png`
+- `assets/wayfarer/textures/item/dish/caviar_toast.png`
+- `assets/wayfarer/textures/item/dish/fish_and_chips.png`
+- `assets/wayfarer/textures/item/dish/honey_bun.png`
+- `assets/wayfarer/textures/item/dish/sweetberry_toast.png`
+- `assets/wayfarer/textures/item/dish/trail_mix.png`
+- `assets/wayfarer/textures/item/forage/chilli.png`
+- `assets/wayfarer/textures/item/forage/mountain_garlic.png`
+- `assets/wayfarer/textures/item/forage/peppercorn.png`
+- `assets/wayfarer/textures/item/forage/samphire.png`
+- `assets/wayfarer/textures/item/forage/truffle.png`
+- `assets/wayfarer/textures/item/forage/wild_herbs.png`
 - `assets/wayfarer/textures/item/gear/tidecaller.png`
 - `assets/wayfarer/textures/item/gear/tidecaller_cast.png`
 - `assets/wayfarer/textures/item/journal.png`
