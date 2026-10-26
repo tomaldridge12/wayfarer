@@ -26,5 +26,5 @@ chapters:
   - { slug: treasures, title: Treasures, group: exploring, stage: iron, status: live }
   - { slug: exploration, title: Exploration, group: exploring, stage: post_end, status: live }
   - { slug: enchanting, title: The enchanting table, group: enchanting, stage: diamond, status: live }
-  - { slug: comforts, title: Small comforts, group: comforts, stage: none, status: planned }
-  - { slug: foods, title: Foods and foraging, group: cooking, stage: none, status: planned }
+  - { slug: comforts, title: Small comforts, group: comforts, stage: none, status: live }
+  - { slug: foods, title: Foods and foraging, group: cooking, stage: none, status: live }
