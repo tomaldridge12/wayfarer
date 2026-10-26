@@ -23,7 +23,7 @@ class ServerGoalTest {
 
     @Test
     void theShippedGoalPoolLoads() {
-        assertEquals(14, SHIPPED.goal().size());
+        assertEquals(15, SHIPPED.goal().size());
         assertTrue(SHIPPED.tables().has("farming", "goal"));
     }
 

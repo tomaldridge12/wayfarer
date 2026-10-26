@@ -27,8 +27,8 @@ class ObjectiveRulesTest {
     @Test
     void theShippedPoolsAndTablesLoad() {
         assertEquals(List.of(), SHIPPED.problems());
-        assertEquals(66, SHIPPED.daily().size());
-        assertEquals(14, SHIPPED.weekly().size());
+        assertEquals(70, SHIPPED.daily().size());
+        assertEquals(17, SHIPPED.weekly().size());
         assertEquals(List.of("start", "iron", "nether", "end"), SHIPPED.settings().stages());
         assertEquals("Mine 32 coal ore", SHIPPED.daily().get("coal_run").task());
         assertTrue(SHIPPED.tables().has("fishing", "goal"));
@@ -67,9 +67,9 @@ class ObjectiveRulesTest {
             assertEquals(3, drawn.stream().map(ObjectiveDefinition::id).distinct().count());
             assertEquals(3, drawn.stream().map(ObjectiveDefinition::table).distinct().count(), "a varied day");
         }
-        List<ObjectiveDefinition> excluded = ObjectiveRules.draw(SHIPPED.daily().values(), SHIPPED.settings().stages(), "end", 66,
+        List<ObjectiveDefinition> excluded = ObjectiveRules.draw(SHIPPED.daily().values(), SHIPPED.settings().stages(), "end", 70,
                 Set.of("coal_run"), random);
-        assertEquals(65, excluded.size());
+        assertEquals(69, excluded.size());
         assertFalse(excluded.stream().anyMatch(d -> d.id().equals("coal_run")));
     }
 

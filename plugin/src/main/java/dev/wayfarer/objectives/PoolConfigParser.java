@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  * skipped with a problem; a bad setting keeps its default.
  */
 public final class PoolConfigParser {
-    static final Set<String> REWARD_KINDS = Set.of("tokens", "supply", "curio", "gear", "cosmetic", "enchant", "item");
+    static final Set<String> REWARD_KINDS = Set.of("tokens", "supply", "curio", "gear", "cosmetic", "enchant", "item", "dish");
 
     /** Daily, weekly and streak settings. */
     public record Settings(Schedule schedule, List<String> stages, Map<String, String> stageAdvancements, int dailies,
@@ -155,7 +155,7 @@ public final class PoolConfigParser {
             return null;
         }
         if (!REWARD_KINDS.contains(kind) || !kind.equals("tokens") && !reward.contains(":")) {
-            problems.add("Table " + where + ": reward '" + reward + "' is not tokens, supply:, curio:, gear:, cosmetic:, enchant: or item:; line skipped");
+            problems.add("Table " + where + ": reward '" + reward + "' is not tokens, supply:, curio:, gear:, cosmetic:, enchant:, dish: or item:; line skipped");
             return null;
         }
         if (kind.equals("item") && !isItem.test(reward.substring(5))) {

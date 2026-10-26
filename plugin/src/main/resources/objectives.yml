@@ -117,6 +117,18 @@ cosmetics:
   skyborne: {kind: title, name: "Skyborne", colour: "#CFE6F2"}
   listeners_hood: {kind: hat, name: "Listener's Hood", item: sculk_catalyst, ability: deep_focus}
   windrunner_cap: {kind: hat, name: "Windrunner Cap", item: copper_bulb, ability: windrunner}
+  stew_enthusiast: {kind: title, name: "Stew Enthusiast", colour: "#B88A5A"}
+  chowder_head: {kind: title, name: "Chowder Head", colour: "#D9CBA8"}
+  trail_cook: {kind: title, name: "Trail Cook", colour: "#D6B77C"}
+  pit_cook: {kind: title, name: "Pit Cook", colour: "#C9A36B"}
+  farm_to_table: {kind: title, name: "Farm to Table", colour: "#9CC078"}
+  head_chef: {kind: title, name: "Head Chef", colour: "#D98A2E"}
+  chefs_hat: {kind: hat, name: "Chef's Hat", item: white_wool}
+  forager: {kind: title, name: "Forager", colour: "#6FA85A"}
+  hedgerow_hand: {kind: title, name: "Hedgerow Hand", colour: "#8FB36A"}
+  spice_trader: {kind: title, name: "Spice Trader", colour: "#C93A22"}
+  truffle_hound: {kind: title, name: "Truffle Hound", colour: "#8A6F60"}
+  bottomless: {kind: title, name: "Bottomless", colour: "#E8B94A"}
 
 # Feats: one-off milestones on any count, each paying something that fits it.
 #   name, flavour (one line of story shown in the Journal), counts (activities, as ladders take them: verb:target,
@@ -653,6 +665,75 @@ feats:
     counts: [kill:breeze]
     at: 1000
     rewards: [cosmetic:windrunner_cap]
+  stew_enthusiast:
+    name: "Stew Enthusiast"
+    flavour: "A hundred bowls. The pot has not been cold since spring."
+    counts: [eat:wayfarer:dish/miners_stew, eat:wayfarer:dish/smiths_chilli, eat:wayfarer:dish/fishers_chowder, eat:wayfarer:dish/pumpkin_soup, eat:wayfarer:dish/tomato_soup, eat:wayfarer:dish/vegetable_soup]
+    at: 100
+    rewards: ["dish:cabbage_rolls*4", cosmetic:stew_enthusiast]
+  chowder_head:
+    name: "Chowder Head"
+    flavour: "Fifty fish suppers. Even the cat has started to look concerned."
+    counts: [eat:wayfarer:dish/fishers_chowder, eat:wayfarer:dish/pike_pie, eat:wayfarer:dish/caviar_toast, eat:wayfarer:dish/sushi_bowl, eat:wayfarer:dish/salt_baked_salmon, eat:wayfarer:dish/fish_tacos, eat:wayfarer:dish/fish_and_chips]
+    at: 50
+    rewards: ["dish:fish_and_chips*8", cosmetic:chowder_head]
+  trail_cook:
+    name: "Trail Cook"
+    flavour: "Fifty meals eaten on the move. Elbows on the saddle, never on the table."
+    counts: [eat:wayfarer:dish/trail_mix, eat:wayfarer:dish/travellers_sandwich, eat:wayfarer:dish/campfire_kebab, eat:wayfarer:dish/cactus_salsa, eat:wayfarer:dish/sweetberry_toast, eat:wayfarer:dish/hellfire_skewer, eat:wayfarer:dish/chorus_dumplings]
+    at: 50
+    rewards: ["dish:campfire_kebab*8", cosmetic:trail_cook]
+  pit_cook:
+    name: "Pit Cook"
+    flavour: "Fifty lunches taken a long way underground. The pasties travel better than you do."
+    counts: [eat:wayfarer:dish/miners_stew, eat:wayfarer:dish/delvers_pasty, eat:wayfarer:dish/glowberry_tart, eat:wayfarer:dish/smiths_chilli]
+    at: 50
+    rewards: ["dish:glowberry_tart*8", cosmetic:pit_cook]
+  farm_to_table:
+    name: "Farm to Table"
+    flavour: "Fifty plates from the harvest. Nothing travelled further than the barn door."
+    counts: [eat:wayfarer:dish/farmers_plate, eat:wayfarer:dish/pumpkin_soup, eat:wayfarer:dish/tomato_soup, eat:wayfarer:dish/cabbage_rolls, eat:wayfarer:dish/fried_rice, eat:wayfarer:dish/vegetable_soup, eat:wayfarer:dish/honey_bun, eat:wayfarer:dish/truffle_risotto, eat:wayfarer:dish/harvest_feast]
+    at: 50
+    rewards: ["dish:fried_rice*8", cosmetic:farm_to_table]
+  head_chef:
+    name: "Head Chef"
+    flavour: "Every dish in the book, eaten at least once. The kitchen is yours."
+    counts: ["eat:wayfarer:dish/*"]
+    distinct: true
+    at: 27
+    rewards: ["dish:harvest_feast*5", cosmetic:head_chef, cosmetic:chefs_hat]
+  forager:
+    name: "Forager"
+    flavour: "Every wild ingredient, found at least once. You can name them all from the path."
+    counts: [forage:wild_rice, forage:tomato, forage:onion, forage:cabbage, forage:wild_herbs, forage:chilli, forage:samphire, forage:mountain_garlic, forage:truffle, forage:peppercorn]
+    distinct: true
+    at: all
+    rewards: ["supply:seed_bundle*3", cosmetic:forager]
+  hedgerow_hand:
+    name: "Hedgerow Hand"
+    flavour: "Two hundred and fifty finds. The hedgerows know you by your first name."
+    counts: ["forage:*"]
+    at: 250
+    rewards: ["supply:mushy_bundle*2", cosmetic:hedgerow_hand]
+  spice_trader:
+    name: "Spice Trader"
+    flavour: "A hundred pinches from the four corners of the map. Your pockets smell wonderful."
+    counts: [forage:chilli, forage:peppercorn, forage:samphire, forage:mountain_garlic]
+    at: 100
+    rewards: ["dish:hellfire_skewer*3", cosmetic:spice_trader]
+  truffle_hound:
+    name: "Truffle Hound"
+    flavour: "Ten truffles. Something under the oldest trees has started to trust you."
+    counts: [forage:truffle]
+    at: 10
+    hidden: true
+    rewards: ["dish:truffle_risotto*4", cosmetic:truffle_hound]
+  bottomless:
+    name: "Bottomless"
+    flavour: "Five hundred dishes. The hunger bar is merely a suggestion."
+    counts: ["eat:wayfarer:dish/*"]
+    at: 500
+    rewards: ["supply:tome_of_experience*3", cosmetic:bottomless]
 
 # When things turn over, in this time zone: dailies at daily-reset, the weekly on weekly-reset at that time, weekend
 # events from event-start to event-end ("MONDAY 00:00" is Sunday midnight).
@@ -763,6 +844,11 @@ daily-pool:
   chorus_line: {name: "Chorus Line", text: "Break {n} chorus plants", counts: [mine:chorus_plant, mine:chorus_flower], target: 32, stage: end, table: end, tokens: 12}
   purple_haze: {name: "Purple Haze", text: "Mine {n} purpur blocks", counts: [mine:purpur_block, mine:purpur_pillar], target: 48, stage: end, table: end, tokens: 12}
   long_stares: {name: "Long Stares", text: "Defeat {n} endermen", counts: [kill:enderman], target: 16, stage: end, table: end, tokens: 14}
+  # Cooking
+  second_helpings: {name: "Second Helpings", text: "Eat {n} dishes", counts: ["eat:wayfarer:dish/*"], target: 3, stage: start, table: cooking, tokens: 12}
+  a_balanced_diet: {name: "A Balanced Diet", text: "Eat {n} different dishes", counts: ["eat:wayfarer:dish/*"], distinct: true, target: 2, stage: start, table: cooking, tokens: 15}
+  foraging_trip: {name: "Foraging Trip", text: "Forage {n} ingredients", counts: ["forage:*"], target: 5, stage: start, table: cooking, tokens: 12}
+  new_flavours: {name: "New Flavours", text: "Forage {n} ingredient new to you", counts: ["forage:*"], distinct: true, target: 1, stage: start, table: cooking, tokens: 15}
 
 weekly-pool:
   the_long_dig: {name: "The Long Dig", text: "Mine {n} ore of any kind", counts: ["mine:#minecraft:coal_ores", "mine:#minecraft:iron_ores", "mine:#minecraft:copper_ores", "mine:#minecraft:gold_ores", "mine:#minecraft:redstone_ores", "mine:#minecraft:lapis_ores", "mine:#minecraft:diamond_ores", "mine:#minecraft:emerald_ores"], target: 256, stage: iron, table: mining, tokens: 60}
@@ -778,6 +864,9 @@ weekly-pool:
   the_dig_site: {name: "The Dig Site", text: "Brush {n} suspicious blocks", counts: ["brush:*"], target: 40, stage: start, table: archaeology, tokens: 80}
   treasure_seeker: {name: "Treasure Seeker", text: "Find {n} treasures new to you", counts: ["find:wayfarer:treasure/*"], distinct: true, target: 3, stage: start, table: archaeology, tokens: 90}
   hellfire_week: {name: "Hellfire Week", text: "Defeat {n} Nether mobs", counts: [kill:blaze, kill:ghast, kill:hoglin, kill:piglin_brute, kill:magma_cube, kill:wither_skeleton, kill:zoglin], target: 80, stage: nether, table: nether, tokens: 80}
+  kitchen_week: {name: "Kitchen Week", text: "Eat {n} dishes", counts: ["eat:wayfarer:dish/*"], target: 20, stage: start, table: cooking, tokens: 60}
+  tasting_menu: {name: "Tasting Menu", text: "Eat {n} dishes new to you this week", counts: ["eat:wayfarer:dish/*"], distinct: true, target: 5, stage: start, table: cooking, tokens: 80}
+  forager_week: {name: "Forager's Week", text: "Forage {n} ingredients", counts: ["forage:*"], target: 40, stage: start, table: cooking, tokens: 60}
   void_walker: {name: "Void Walker", text: "Defeat {n} endermen or shulkers", counts: [kill:enderman, kill:shulker], target: 60, stage: end, table: end, tokens: 80}
 
 # The weekly server goal: one shared objective for everyone, drawn at the stage most players have reached (from those
@@ -797,6 +886,7 @@ goal-pool:
   forgefire: {name: "Forgefire", text: "Melt {n} alloy ingots", counts: ["forge:*"], target: 60, stage: iron, table: crafting}
   into_the_fire: {name: "Into the Fire", text: "Defeat {n} Nether mobs", counts: [kill:blaze, kill:ghast, kill:hoglin, kill:piglin_brute, kill:magma_cube, kill:wither_skeleton, kill:zoglin], target: 600, stage: nether, table: nether}
   quartz_rush: {name: "Quartz Rush", text: "Mine {n} nether quartz ore", counts: [mine:nether_quartz_ore], target: 1500, stage: nether, table: nether}
+  the_long_table: {name: "The Long Table", text: "Eat {n} dishes between you", counts: ["eat:wayfarer:dish/*"], target: 400, stage: start, table: cooking}
   end_of_days: {name: "End of Days", text: "Defeat {n} endermen and shulkers", counts: [kill:enderman, kill:shulker], target: 500, stage: end, table: end}
 
 # Weekend events, from schedule.event-start to event-end: one per weekend, in rotation order. Each switches on a
@@ -805,7 +895,7 @@ goal-pool:
 # and pays every contributor a roll from table's event tier when the goal is met. Modifiers undo themselves when the
 # event ends or the plugin stops.
 events:
-  rotation: [drowned_tide, harvest_moon, deep_rush, bone_night]
+  rotation: [drowned_tide, harvest_moon, deep_rush, bone_night, harvest_feast]
   list:
     drowned_tide:
       name: "The Drowned Tide"
@@ -831,6 +921,12 @@ events:
       mobs: [skeleton, stray, bogged, parched, wither_skeleton]
       multiplier: 2
       goal: {name: "Rattle Their Bones", text: "Defeat {n} skeletons between you", counts: [kill:skeleton, kill:stray, kill:bogged, kill:parched, kill:wither_skeleton], target: 500}
+    harvest_feast:
+      name: "Harvest Feast"
+      blurb: "The wild gives freely: forage turns up twice as often."
+      modifier: forage_chance
+      multiplier: 2
+      goal: {name: "A Table for Everyone", text: "Eat {n} dishes between you", counts: ["eat:wayfarer:dish/*"], target: 300}
 
 # The tokens shop: looks and conveniences, never power. Only these keys can be sold; relics, ingots, marks, curios and
 # enchants nobody has unlocked are not for sale and cannot be added. Prices in tokens.
@@ -930,7 +1026,7 @@ tables:
   fishing:
     daily:
       - {reward: supply:wayfarers_bait, weight: 4}
-      - {reward: "item:cooked_salmon", amount: 4-8, weight: 2}
+      - {reward: "dish:fish_and_chips", amount: 3-5, weight: 2}
       - {reward: "item:nautilus_shell", weight: 1}
       - {reward: "enchant:excellentenchants:seasoned_angler", level: 1, weight: 1}
       - {reward: curio:mermaids_comb, weight: 1}
@@ -954,7 +1050,7 @@ tables:
     daily:
       - {reward: cosmetic:kit, weight: 1}
       - {reward: "item:arrow", amount: 16-32, weight: 3}
-      - {reward: "item:cooked_beef", amount: 6-10, weight: 2}
+      - {reward: "dish:campfire_kebab", amount: 4-6, weight: 2}
       - {reward: supply:tome_of_experience, weight: 2}
       - {reward: "enchant:excellentenchants:vampire", level: 1, weight: 1}
       - {reward: "enchant:excellentenchants:cutter", level: 1, weight: 1}
@@ -1115,8 +1211,28 @@ tables:
       - {reward: "enchant:excellentenchants:hover", level: 2-3, weight: 1}
       - {reward: gear:wyrmscale, weight: 1}
       - {reward: cosmetic:night_owl, weight: 2}
+  cooking:
+    daily:
+      - {reward: "dish:honey_bun", amount: 3-5, weight: 3}
+      - {reward: "dish:campfire_kebab", amount: 2-4, weight: 3}
+      - {reward: "dish:fish_and_chips", amount: 2-3, weight: 3}
+      - {reward: supply:seed_bundle, weight: 3}
+      - {reward: supply:tome_of_experience, weight: 2}
+      - {reward: "enchant:excellentenchants:saturation", level: 1, weight: 1}
+    weekly:
+      - {reward: "dish:farmers_plate", amount: 4-6, weight: 3}
+      - {reward: "dish:truffle_risotto", amount: 1-2, weight: 2}
+      - {reward: "dish:harvest_feast", amount: 1, weight: 1}
+      - {reward: supply:animal_crate, weight: 2}
+      - {reward: "enchant:excellentenchants:saturation", level: 1-2, weight: 2}
+    goal:
+      - {reward: "dish:harvest_feast", amount: 2-3, weight: 3}
+      - {reward: "dish:truffle_risotto", amount: 2-3, weight: 3}
+      - {reward: "enchant:excellentenchants:saturation", level: 2, weight: 2}
+      - {reward: supply:animal_crate, amount: 2, weight: 2}
   event:
     event:
+      - {reward: "dish:harvest_feast", amount: 2, weight: 1}
       - {reward: supply:animal_crate, weight: 2}
       - {reward: supply:wayfarers_bait, amount: 2, weight: 2}
       - {reward: cosmetic:notes, weight: 2}

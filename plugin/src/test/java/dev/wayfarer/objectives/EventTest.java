@@ -22,8 +22,11 @@ class EventTest {
     @Test
     void theShippedEventsLoadInRotation() {
         assertEquals(List.of(), SHIPPED.problems());
-        assertEquals(List.of("drowned_tide", "harvest_moon", "deep_rush", "bone_night"), SHIPPED.rotation());
+        assertEquals(List.of("drowned_tide", "harvest_moon", "deep_rush", "bone_night", "harvest_feast"), SHIPPED.rotation());
         assertEquals(12, SHIPPED.events().get("harvest_moon").number("tick-speed", 0));
+        assertEquals("forage_chance", SHIPPED.events().get("harvest_feast").modifier());
+        assertEquals(2, SHIPPED.events().get("harvest_feast").number("multiplier", 0));
+        assertEquals("Eat 300 dishes between you", SHIPPED.events().get("harvest_feast").goal().task());
         assertEquals("Catch 400 fish between you", SHIPPED.events().get("drowned_tide").goal().task());
     }
 
@@ -33,7 +36,7 @@ class EventTest {
         String first = EventRules.forWeekend(SHIPPED.rotation(), friday, LONDON);
         String second = EventRules.forWeekend(SHIPPED.rotation(), friday.plus(Duration.ofDays(7)), LONDON);
         assertNotEquals(first, second);
-        assertEquals(first, EventRules.forWeekend(SHIPPED.rotation(), friday.plus(Duration.ofDays(28)), LONDON));
+        assertEquals(first, EventRules.forWeekend(SHIPPED.rotation(), friday.plus(Duration.ofDays(35)), LONDON));
         assertEquals(first, EventRules.forWeekend(SHIPPED.rotation(), friday.plus(Duration.ofHours(30)), LONDON), "same weekend");
         assertEquals(null, EventRules.forWeekend(List.of(), friday, LONDON));
     }

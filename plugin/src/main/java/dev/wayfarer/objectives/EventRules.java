@@ -7,7 +7,7 @@ import java.util.List;
 
 /** Which event a weekend holds: the rotation, in order, one per week. No server types. */
 public final class EventRules {
-    public static final List<String> MODIFIERS = List.of("double_catch", "crop_growth", "ore_xp", "mob_drops");
+    public static final List<String> MODIFIERS = List.of("double_catch", "crop_growth", "ore_xp", "mob_drops", "forage_chance");
 
     private EventRules() {
     }

@@ -77,6 +77,7 @@ public final class ObjectivesModule implements Module {
         events = new Events(plugin, core, () -> pools, () -> eventConfig, goals, service, loot);
         events.start();
         listen(events);
+        core.services().register(id(), dev.wayfarer.core.ForageMultiplier.class, events::forageMultiplier);
         tracker = new TrackerSidebar(plugin, core, service, () -> trackerCap);
         core.services().register(id(), dev.wayfarer.core.TrackerControl.class, tracker);
         tracker.start();

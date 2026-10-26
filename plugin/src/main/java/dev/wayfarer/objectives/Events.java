@@ -197,6 +197,12 @@ final class Events implements Listener {
         return e != null && e.modifier().equals(modifier);
     }
 
+    /** The Harvest Feast: how many times as often forage turns up right now (1 when no feast is on). The foods module asks. */
+    double forageMultiplier() {
+        EventDefinition e = running();
+        return e != null && e.modifier().equals("forage_chance") ? e.number("multiplier", 2) : 1.0;
+    }
+
     /** The Drowned Tide: every fish caught is caught twice. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     void onFish(PlayerFishEvent event) {
